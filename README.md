@@ -39,4 +39,4 @@ npx serve .
 
 ## 授權
 
-MIT
+本作品以 [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/) 授權釋出。
