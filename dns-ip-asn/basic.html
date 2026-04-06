@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DNS / IP / ASN — HIW</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=Noto+Sans+TC:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../shared/style.css">
+</head>
+<body>
+  <nav class="site-nav">
+    <a href="../index.html" class="logo">HIW</a>
+    <ul class="nav-links">
+      <li><a href="../index.html">首頁</a></li>
+      <li><a href="index.html">DNS / IP / ASN</a></li>
+      <li><a href="basic.html" class="active">基礎：封包的旅程</a></li>
+    </ul>
+  </nav>
+
+  <div class="page-container">
+    <h1 class="page-title">DNS / IP / ASN</h1>
+    <p class="page-subtitle">當你輸入網址按下 Enter，封包如何穿越網路找到目的地？</p>
+
+    <!-- 步驟列 -->
+    <div class="step-bar" id="stepBar"></div>
+
+    <!-- SVG 拓撲圖 -->
+    <div class="diagram-container">
+      <svg id="diagram" viewBox="0 0 900 340" xmlns="http://www.w3.org/2000/svg">
+        <!-- ===== 連線 (edges) ===== -->
+        <!-- 使用者 → Local DNS -->
+        <line id="edge-user-ldns" class="edge-line" x1="80" y1="170" x2="230" y2="80"/>
+        <!-- Local DNS → Root DNS -->
+        <line id="edge-ldns-root" class="edge-line" x1="280" y1="80" x2="420" y2="45"/>
+        <!-- Root DNS → TLD DNS -->
+        <line id="edge-root-tld" class="edge-line" x1="480" y1="45" x2="600" y2="45"/>
+        <!-- TLD DNS → Auth DNS -->
+        <line id="edge-tld-auth" class="edge-line" x1="660" y1="45" x2="790" y2="80"/>
+        <!-- Auth DNS 回到 Local DNS (弧線用直線簡化) -->
+        <line id="edge-auth-ldns" class="edge-line" x1="790" y1="100" x2="280" y2="100" stroke-dasharray="6,4"/>
+        <!-- 使用者 → ISP Router -->
+        <line id="edge-user-isp" class="edge-line" x1="80" y1="190" x2="250" y2="240"/>
+        <!-- ISP → IXP -->
+        <line id="edge-isp-ixp" class="edge-line" x1="310" y1="240" x2="450" y2="240"/>
+        <!-- IXP → 目標 ASN -->
+        <line id="edge-ixp-asn" class="edge-line" x1="510" y1="240" x2="650" y2="240"/>
+        <!-- 目標 ASN → 目標伺服器 -->
+        <line id="edge-asn-server" class="edge-line" x1="710" y1="240" x2="820" y2="190"/>
+
+        <!-- ===== 節點 (nodes) ===== -->
+        <!-- 使用者 -->
+        <g id="node-user" class="node-group">
+          <rect class="node-box" x="30" y="150" width="100" height="50" rx="10"
+                fill="var(--node-user)" opacity="0.15" stroke="var(--node-user)" stroke-width="2"/>
+          <text class="node-label" x="80" y="173" fill="var(--node-user)">你的電腦</text>
+          <text class="node-sublabel" x="80" y="190">192.168.1.10</text>
+        </g>
+
+        <!-- Local DNS Resolver -->
+        <g id="node-ldns" class="node-group">
+          <rect class="node-box" x="205" y="60" width="100" height="50" rx="10"
+                fill="var(--node-dns)" opacity="0.15" stroke="var(--node-dns)" stroke-width="2"/>
+          <text class="node-label" x="255" y="83" fill="var(--node-dns)">Local DNS</text>
+          <text class="node-sublabel" x="255" y="100">遞迴解析器</text>
+        </g>
+
+        <!-- Root DNS -->
+        <g id="node-root" class="node-group">
+          <rect class="node-box" x="395" y="25" width="110" height="50" rx="10"
+                fill="var(--node-dns)" opacity="0.15" stroke="var(--node-dns)" stroke-width="2"/>
+          <text class="node-label" x="450" y="48" fill="var(--node-dns)">Root DNS</text>
+          <text class="node-sublabel" x="450" y="65">根域名伺服器</text>
+        </g>
+
+        <!-- TLD DNS -->
+        <g id="node-tld" class="node-group">
+          <rect class="node-box" x="575" y="25" width="110" height="50" rx="10"
+                fill="var(--node-dns)" opacity="0.15" stroke="var(--node-dns)" stroke-width="2"/>
+          <text class="node-label" x="630" y="48" fill="var(--node-dns)">TLD DNS</text>
+          <text class="node-sublabel" x="630" y="65">.com / .org ...</text>
+        </g>
+
+        <!-- Authoritative DNS -->
+        <g id="node-auth" class="node-group">
+          <rect class="node-box" x="740" y="60" width="110" height="50" rx="10"
+                fill="var(--node-dns)" opacity="0.15" stroke="var(--node-dns)" stroke-width="2"/>
+          <text class="node-label" x="795" y="83" fill="var(--node-dns)">權威 DNS</text>
+          <text class="node-sublabel" x="795" y="100">最終答案</text>
+        </g>
+
+        <!-- ISP Router -->
+        <g id="node-isp" class="node-group">
+          <rect class="node-box" x="225" y="220" width="110" height="50" rx="10"
+                fill="var(--node-isp)" opacity="0.15" stroke="var(--node-isp)" stroke-width="2"/>
+          <text class="node-label" x="280" y="243" fill="var(--node-isp)">ISP 路由器</text>
+          <text class="node-sublabel" x="280" y="260">你的網路商</text>
+        </g>
+
+        <!-- IXP -->
+        <g id="node-ixp" class="node-group">
+          <rect class="node-box" x="425" y="220" width="110" height="50" rx="10"
+                fill="var(--node-ixp)" opacity="0.15" stroke="var(--node-ixp)" stroke-width="2"/>
+          <text class="node-label" x="480" y="243" fill="var(--node-ixp)">IXP</text>
+          <text class="node-sublabel" x="480" y="260">網路交換中心</text>
+        </g>
+
+        <!-- 目標 ASN -->
+        <g id="node-asn" class="node-group">
+          <rect class="node-box" x="625" y="220" width="110" height="50" rx="10"
+                fill="var(--node-asn)" opacity="0.15" stroke="var(--node-asn)" stroke-width="2"/>
+          <text class="node-label" x="680" y="243" fill="var(--node-asn)">目標 ASN</text>
+          <text class="node-sublabel" x="680" y="260">自治系統</text>
+        </g>
+
+        <!-- 目標伺服器 -->
+        <g id="node-server" class="node-group">
+          <rect class="node-box" x="795" y="160" width="100" height="50" rx="10"
+                fill="var(--node-server)" opacity="0.15" stroke="var(--node-server)" stroke-width="2"/>
+          <text class="node-label" x="845" y="183" fill="var(--node-server)">目標網站</text>
+          <text class="node-sublabel" x="845" y="200">93.184.216.34</text>
+        </g>
+      </svg>
+    </div>
+
+    <!-- 說明面板 -->
+    <div class="info-panel" id="infoPanel">
+      <h3 id="infoTitle">選擇一個步驟開始</h3>
+      <p id="infoBody">點擊上方的步驟按鈕，或按「下一步」，跟著封包走一趟從你的電腦到目標網站的旅程。</p>
+      <div class="key-point" id="infoKeyPoint" style="display:none;"></div>
+    </div>
+
+    <!-- 上一步 / 下一步 -->
+    <div class="step-nav">
+      <button id="btnPrev" disabled>← 上一步</button>
+      <button id="btnNext">開始 →</button>
+    </div>
+  </div>
+
+  <footer class="site-footer">HIW — How Internet Works</footer>
+
+  <script>
+  (function () {
+    // ===== 步驟資料 =====
+    const steps = [
+      {
+        label: '1. 輸入網址',
+        title: '你在瀏覽器輸入了 example.com',
+        body: '當你在瀏覽器的網址列輸入 <strong>example.com</strong> 並按下 Enter，瀏覽器需要知道這個名稱對應的 <strong>IP 位址</strong>是什麼。' +
+              '<br><br>網路上的設備是用 IP 位址來辨認彼此的，而不是人類可讀的域名。' +
+              '<details class="analogy-box"><summary>生活化比喻</summary><div class="analogy-content"><strong>域名</strong>就像朋友的名字，<strong>IP 位址</strong>就像他家的地址（例如「台北市信義區松仁路 100 號」）。你知道朋友的名字，但寄包裹時需要的是地址。<strong>DNS</strong> 就是幫你把名字翻譯成地址的那本通訊錄。</div></details>',
+        keyPoint: '域名 = 名字，IP = 地址，DNS = 通訊錄。你只要記名字，DNS 幫你查地址。',
+        highlightNodes: ['node-user'],
+        highlightEdges: [],
+      },
+      {
+        label: '2. 查詢 Local DNS',
+        title: 'Local DNS Resolver — 先問最近的人',
+        body: '你的電腦向 <strong>Local DNS Resolver</strong> 發出查詢：「example.com 的 IP 是什麼？」' +
+              '<br><br>這個 Local DNS 通常由你的 <strong>ISP（Internet Service Provider，網路服務供應商）</strong>提供——也就是你付錢買網路的那家公司，負責讓你的設備連上網際網路。' +
+              '<details class="analogy-box"><summary>台灣的例子</summary><div class="analogy-content">如果你家用的是<strong>中華電信</strong>的網路，那 Local DNS 預設就是中華電信的 DNS 伺服器。你也可以自己改用其他的，例如 Google 的 <strong>8.8.8.8</strong> 或 Cloudflare 的 <strong>1.1.1.1</strong>。</div></details>' +
+              '<br><br>Local DNS 會先檢查自己的<strong>快取（cache）</strong>——如果之前有人查過同一個域名，而且紀錄還沒過期，就能直接回答。如果沒有，它就要代替你向上級查詢。',
+        keyPoint: 'Local DNS 是「遞迴解析器」——就像一個跑腿的助理，你只要問它一次，它會幫你跑完所有查詢步驟，把答案帶回來。',
+        highlightNodes: ['node-user', 'node-ldns'],
+        highlightEdges: ['edge-user-ldns'],
+      },
+      {
+        label: '3. DNS 遞迴查詢',
+        title: 'Root → TLD → 權威 DNS：層層追問',
+        body: 'Local DNS 的查詢路徑是這樣的：<br><br>' +
+              '<strong>1) 問 Root DNS（根域名伺服器）：</strong>「我要找 example.com」<br>Root 回答：「.com 的事你去問 TLD DNS」<br><br>' +
+              '<strong>2) 問 TLD DNS（頂級域伺服器，管 .com）：</strong>「example.com 在哪？」<br>TLD 回答：「example.com 的權威 DNS 在 y.y.y.y」<br><br>' +
+              '<strong>3) 問權威 DNS（該域名的最終管理者）：</strong>「example.com 的 IP 是？」<br>權威 DNS 回答：「<strong>93.184.216.34</strong>」<br><br>' +
+              '這個 IP 位址會沿原路回傳給你的電腦。' +
+              '<details class="analogy-box"><summary>生活化比喻</summary><div class="analogy-content">就像問路一樣：你問路人「台積電怎麼走？」路人說「去新竹問」→ 到新竹問「台積電在哪條路？」有人說「去新竹科學園區問」→ 到園區門口問，警衛告訴你確切的門牌號碼。每一層只負責指引到下一層，最後一層才給你精確答案。</div></details>',
+        keyPoint: 'DNS 是階層式的樹狀結構。全球有 13 組 Root DNS 伺服器群，是整個名稱系統的起點。這個「層層追問」的設計讓任何一層都不需要知道全部的答案。',
+        highlightNodes: ['node-ldns', 'node-root', 'node-tld', 'node-auth'],
+        highlightEdges: ['edge-ldns-root', 'edge-root-tld', 'edge-tld-auth', 'edge-auth-ldns'],
+      },
+      {
+        label: '4. IP 路由',
+        title: '拿到 IP 位址，封包準備出發',
+        body: '現在你的電腦知道目標 IP 是 <strong>93.184.216.34</strong>。瀏覽器建立連線，把請求封裝成一個個<strong>封包（packet）</strong>，每個封包都標記了來源 IP 與目的地 IP。' +
+              '<br><br>封包首先送到你的 <strong>ISP 路由器</strong>。路由器查看目的地 IP，根據自己的<strong>路由表（routing table）</strong>決定「下一跳（next hop）」要把封包交給誰。' +
+              '<details class="analogy-box"><summary>生活化比喻</summary><div class="analogy-content">封包就像一封信，上面寫了寄件地址和收件地址。<strong>路由器</strong>就像郵局的分揀中心——它不需要知道收件地址的完整路線，只要知道「這封信下一站該丟到哪個郵袋」。一站接一站，信就到了。</div></details>',
+        keyPoint: '路由器只負責「下一步交給誰」，不需要知道完整路徑。就像問路時，每個路口的人只要指你到下一個路口就好。',
+        highlightNodes: ['node-user', 'node-isp'],
+        highlightEdges: ['edge-user-isp'],
+      },
+      {
+        label: '5. IXP 與 ASN',
+        title: '穿越自治系統的邊界',
+        body: '<strong>ASN（Autonomous System Number，自治系統編號）</strong>代表一組由同一個組織管理的網路。每個大型網路都有自己的 AS 編號。' +
+              '<details class="analogy-box"><summary>台灣的例子</summary><div class="analogy-content">你可以把 AS 想像成不同的<strong>物流公司</strong>：中華電信是一家、遠傳是一家、Google 是一家。每家公司管自己的運送網路，但包裹常常需要跨公司傳遞。<br><br>在台灣，中華電信的 ASN 是 <strong>AS3462</strong>，台灣大哥大是 <strong>AS9924</strong>，而 Google 是 <strong>AS15169</strong>。</div></details>' +
+              '<br><br>封包從你的 ISP 要到目標伺服器的 AS，中間可能經過 <strong>IXP（Internet Exchange Point，網路交換中心）</strong>——一個讓不同 AS 直接交換流量的實體地點。' +
+              '<details class="analogy-box"><summary>台灣的例子</summary><div class="analogy-content">台灣的 <strong>TWIX（台灣網際網路交換中心）</strong>就是一個 IXP，設在台北。有了 TWIX，中華電信和遠傳的封包可以在台北直接交換，不用繞到美國再回來。就像兩家物流公司在同一個轉運站直接換貨，省時省力。</div></details>' +
+              '<br><br>各個 AS 之間透過 <strong>BGP（Border Gateway Protocol）</strong> 通訊協定來互相告知「我能到達哪些 IP 範圍」，路由器據此決定最佳路徑。',
+        keyPoint: 'BGP 是讓整個網際網路連在一起的「膠水」——就像物流業的聯運協議，每家公司公告自己能送達的範圍，彼此根據這些資訊來轉交包裹。IXP 則是實體的轉運站，讓不同公司的貨物能就近交換。',
+        highlightNodes: ['node-isp', 'node-ixp', 'node-asn'],
+        highlightEdges: ['edge-isp-ixp', 'edge-ixp-asn'],
+      },
+      {
+        label: '6. 抵達目標',
+        title: '封包到達目標伺服器',
+        body: '封包進入目標的自治系統後，經過內部路由，最終抵達 <strong>93.184.216.34</strong> 這台伺服器。伺服器收到你的請求，把網頁內容封裝成回應封包，沿著網路反向傳回給你。' +
+              '<br><br>你的瀏覽器收到回應後，解析 HTML、載入 CSS 和 JavaScript，畫面就出現了。' +
+              '<br><br>這整個過程——從 DNS 查詢到收到回應——通常在<strong>幾十到幾百毫秒</strong>內完成。' +
+              '<details class="analogy-box"><summary>生活化比喻</summary><div class="analogy-content">回顧整趟旅程，就像寄一封信：你先<strong>查通訊錄</strong>找到地址（DNS），然後把信交給<strong>郵局</strong>（ISP），郵局送到<strong>轉運站</strong>（IXP），轉給對方的<strong>物流公司</strong>（目標 ASN），最後送到<strong>收件人手上</strong>（伺服器）。只不過這一切在毫秒之間就完成了。</div></details>',
+        keyPoint: '你看到的每一個網頁，背後都是這段旅程。DNS 負責「翻譯名字」，IP 負責「定址」，BGP/ASN 負責「找路」——它們共同組成了網際網路的基礎建設。',
+        highlightNodes: ['node-asn', 'node-server'],
+        highlightEdges: ['edge-asn-server'],
+      },
+    ];
+
+    let currentStep = -1; // -1 = 初始狀態
+
+    // DOM refs
+    const stepBar = document.getElementById('stepBar');
+    const infoTitle = document.getElementById('infoTitle');
+    const infoBody = document.getElementById('infoBody');
+    const infoKeyPoint = document.getElementById('infoKeyPoint');
+    const infoPanel = document.getElementById('infoPanel');
+    const btnPrev = document.getElementById('btnPrev');
+    const btnNext = document.getElementById('btnNext');
+
+    const allNodes = document.querySelectorAll('.node-group');
+    const allEdges = document.querySelectorAll('.edge-line');
+
+    // ===== 渲染步驟按鈕 =====
+    steps.forEach((s, i) => {
+      const btn = document.createElement('button');
+      btn.className = 'step-btn';
+      btn.textContent = s.label;
+      btn.addEventListener('click', () => goToStep(i));
+      stepBar.appendChild(btn);
+    });
+
+    // ===== 切換步驟 =====
+    function goToStep(index) {
+      currentStep = index;
+      const step = steps[index];
+
+      // 更新步驟按鈕
+      const btns = stepBar.querySelectorAll('.step-btn');
+      btns.forEach((b, i) => {
+        b.classList.remove('active', 'done');
+        if (i === index) b.classList.add('active');
+        else if (i < index) b.classList.add('done');
+      });
+
+      // 更新圖：先全部 dim，再 highlight 該步驟的節點和邊
+      allNodes.forEach(n => {
+        n.classList.remove('highlighted');
+        n.classList.add('dimmed');
+      });
+      allEdges.forEach(e => {
+        e.classList.remove('active');
+        e.classList.add('dimmed');
+      });
+
+      step.highlightNodes.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) { el.classList.remove('dimmed'); el.classList.add('highlighted'); }
+      });
+      step.highlightEdges.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) { el.classList.remove('dimmed'); el.classList.add('active'); }
+      });
+
+      // 更新說明面板
+      infoTitle.textContent = step.title;
+      infoBody.innerHTML = step.body;
+      if (step.keyPoint) {
+        infoKeyPoint.textContent = step.keyPoint;
+        infoKeyPoint.style.display = 'block';
+      } else {
+        infoKeyPoint.style.display = 'none';
+      }
+
+      // 面板 highlight 動畫
+      infoPanel.classList.remove('highlight');
+      void infoPanel.offsetWidth; // trigger reflow
+      infoPanel.classList.add('highlight');
+
+      // 更新按鈕
+      btnPrev.disabled = index === 0;
+      btnNext.textContent = index === steps.length - 1 ? '重新開始 ↺' : '下一步 →';
+    }
+
+    // ===== 導覽按鈕 =====
+    btnPrev.addEventListener('click', () => {
+      if (currentStep > 0) goToStep(currentStep - 1);
+    });
+
+    btnNext.addEventListener('click', () => {
+      if (currentStep === -1) {
+        goToStep(0);
+      } else if (currentStep === steps.length - 1) {
+        // 重新開始
+        currentStep = -1;
+        resetDiagram();
+      } else {
+        goToStep(currentStep + 1);
+      }
+    });
+
+    function resetDiagram() {
+      allNodes.forEach(n => { n.classList.remove('highlighted', 'dimmed'); });
+      allEdges.forEach(e => { e.classList.remove('active', 'dimmed'); });
+      stepBar.querySelectorAll('.step-btn').forEach(b => b.classList.remove('active', 'done'));
+      infoTitle.textContent = '選擇一個步驟開始';
+      infoBody.innerHTML = '點擊上方的步驟按鈕，或按「下一步」，跟著封包走一趟從你的電腦到目標網站的旅程。';
+      infoKeyPoint.style.display = 'none';
+      infoPanel.classList.remove('highlight');
+      btnPrev.disabled = true;
+      btnNext.textContent = '開始 →';
+    }
+
+    // 鍵盤支援：左右方向鍵
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+        e.preventDefault();
+        btnNext.click();
+      } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+        e.preventDefault();
+        btnPrev.click();
+      }
+    });
+  })();
+  </script>
+</body>
+</html>

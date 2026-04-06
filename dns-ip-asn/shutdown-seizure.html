@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>網路斷網與域名扣押 — HIW</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=Noto+Sans+TC:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../shared/style.css">
+</head>
+<body>
+  <nav class="site-nav">
+    <a href="../index.html" class="logo">HIW</a>
+    <ul class="nav-links">
+      <li><a href="../index.html">首頁</a></li>
+      <li><a href="index.html">DNS / IP / ASN</a></li>
+      <li><a href="shutdown-seizure.html" class="active">網路斷網與域名扣押</a></li>
+    </ul>
+  </nav>
+
+  <div class="page-container">
+    <h1 class="page-title">網路斷網與域名扣押</h1>
+    <p class="page-subtitle">政府如何關掉一個國家的網路？為什麼域名能被扣押？</p>
+
+    <div class="step-bar" id="stepBar"></div>
+
+    <div class="diagram-container">
+      <svg id="diagram" viewBox="0 0 900 320" xmlns="http://www.w3.org/2000/svg">
+        <!-- 國內區域 -->
+        <rect x="20" y="30" width="400" height="270" rx="12" fill="none" stroke="var(--node-server)" stroke-width="1.5" stroke-dasharray="6,4" opacity="0.3"/>
+        <text x="220" y="290" text-anchor="middle" fill="var(--node-server)" font-size="10" font-family="inherit" opacity="0.5">國內</text>
+
+        <!-- 國際區域 -->
+        <rect x="480" y="30" width="400" height="270" rx="12" fill="none" stroke="var(--step-done)" stroke-width="1.5" stroke-dasharray="6,4" opacity="0.3"/>
+        <text x="680" y="290" text-anchor="middle" fill="var(--step-done)" font-size="10" font-family="inherit" opacity="0.5">國際</text>
+
+        <!-- 連線 -->
+        <line id="edge-user-isp1" class="edge-line" x1="120" y1="120" x2="280" y2="80"/>
+        <line id="edge-user-isp2" class="edge-line" x1="120" y1="140" x2="280" y2="180"/>
+        <line id="edge-isp1-intl" class="edge-line" x1="370" y1="80" x2="540" y2="120"/>
+        <line id="edge-isp2-intl" class="edge-line" x1="370" y1="180" x2="540" y2="140"/>
+        <line id="edge-intl-world" class="edge-line" x1="640" y1="130" x2="770" y2="130"/>
+
+        <!-- DNS 階層連線 -->
+        <line id="edge-domain-tld" class="edge-line" x1="170" y1="240" x2="440" y2="240"/>
+        <line id="edge-tld-icann" class="edge-line" x1="540" y1="240" x2="700" y2="240"/>
+
+        <!-- 斷線標記 -->
+        <g id="cut-mark-1" style="display:none;">
+          <line x1="440" y1="65" x2="470" y2="95" stroke="var(--node-server)" stroke-width="3"/>
+          <line x1="470" y1="65" x2="440" y2="95" stroke="var(--node-server)" stroke-width="3"/>
+        </g>
+        <g id="cut-mark-2" style="display:none;">
+          <line x1="440" y1="165" x2="470" y2="195" stroke="var(--node-server)" stroke-width="3"/>
+          <line x1="470" y1="165" x2="440" y2="195" stroke="var(--node-server)" stroke-width="3"/>
+        </g>
+
+        <!-- 節點 -->
+        <g id="node-user" class="node-group">
+          <rect class="node-box" x="50" y="100" width="130" height="50" rx="10"
+                fill="var(--node-user)" opacity="0.15" stroke="var(--node-user)" stroke-width="2"/>
+          <text class="node-label" x="115" y="123" fill="var(--node-user)">國內使用者</text>
+          <text class="node-sublabel" x="115" y="140">上百萬人</text>
+        </g>
+
+        <g id="node-isp1" class="node-group">
+          <rect class="node-box" x="250" y="55" width="140" height="50" rx="10"
+                fill="var(--node-isp)" opacity="0.15" stroke="var(--node-isp)" stroke-width="2"/>
+          <text class="node-label" x="320" y="78" fill="var(--node-isp)">ISP-A</text>
+          <text class="node-sublabel" x="320" y="95">國營電信商</text>
+        </g>
+
+        <g id="node-isp2" class="node-group">
+          <rect class="node-box" x="250" y="155" width="140" height="50" rx="10"
+                fill="var(--node-isp)" opacity="0.15" stroke="var(--node-isp)" stroke-width="2"/>
+          <text class="node-label" x="320" y="178" fill="var(--node-isp)">ISP-B</text>
+          <text class="node-sublabel" x="320" y="195">民營電信商</text>
+        </g>
+
+        <g id="node-intl" class="node-group">
+          <rect class="node-box" x="510" y="105" width="150" height="50" rx="10"
+                fill="var(--node-ixp)" opacity="0.15" stroke="var(--node-ixp)" stroke-width="2"/>
+          <text class="node-label" x="585" y="128" fill="var(--node-ixp)">國際出口</text>
+          <text class="node-sublabel" x="585" y="145">海纜 / 陸纜</text>
+        </g>
+
+        <g id="node-world" class="node-group">
+          <rect class="node-box" x="740" y="105" width="120" height="50" rx="10"
+                fill="var(--step-done)" opacity="0.15" stroke="var(--step-done)" stroke-width="2"/>
+          <text class="node-label" x="800" y="128" fill="var(--step-done)">全球網路</text>
+          <text class="node-sublabel" x="800" y="145">Google, FB ...</text>
+        </g>
+
+        <g id="node-domain" class="node-group">
+          <rect class="node-box" x="70" y="215" width="200" height="50" rx="10"
+                fill="var(--node-dns)" opacity="0.15" stroke="var(--node-dns)" stroke-width="2"/>
+          <text class="node-label" x="170" y="238" fill="var(--node-dns)">你的域名</text>
+          <text class="node-sublabel" x="170" y="255">example.com</text>
+        </g>
+
+        <g id="node-tld" class="node-group">
+          <rect class="node-box" x="400" y="215" width="160" height="50" rx="10"
+                fill="var(--node-dns)" opacity="0.15" stroke="var(--node-dns)" stroke-width="2"/>
+          <text class="node-label" x="480" y="238" fill="var(--node-dns)">.com TLD (Verisign)</text>
+          <text class="node-sublabel" x="480" y="255">美國公司</text>
+        </g>
+
+        <g id="node-icann" class="node-group">
+          <rect class="node-box" x="670" y="215" width="150" height="50" rx="10"
+                fill="var(--node-asn)" opacity="0.15" stroke="var(--node-asn)" stroke-width="2"/>
+          <text class="node-label" x="745" y="238" fill="var(--node-asn)">ICANN</text>
+          <text class="node-sublabel" x="745" y="255">全球域名治理</text>
+        </g>
+      </svg>
+    </div>
+
+    <div class="info-panel" id="infoPanel">
+      <h3 id="infoTitle">選擇一個步驟開始</h3>
+      <p id="infoBody">這個主題分為兩部分：上半部講網路斷網——政府如何切斷整個國家的對外連線；下半部講域名扣押——DNS 階層中的權力結構。</p>
+      <div class="key-point" id="infoKeyPoint" style="display:none;"></div>
+    </div>
+
+    <div class="step-nav">
+      <button id="btnPrev" disabled>← 上一步</button>
+      <button id="btnNext">開始 →</button>
+    </div>
+  </div>
+
+  <footer class="site-footer">HIW — How Internet Works</footer>
+
+  <script>
+  (function () {
+    const cutMark1 = document.getElementById('cut-mark-1');
+    const cutMark2 = document.getElementById('cut-mark-2');
+
+    const steps = [
+      {
+        label: '1. 正常的連線',
+        title: '一個國家的網路是怎麼連上世界的？',
+        body: '一個國家的人要連上 Google、Facebook 這些國外服務，流量必須經過<strong>國內的 ISP</strong>，再透過<strong>國際出口</strong>（通常是海底電纜或陸上光纜）連到全球網路。' +
+              '<br><br>關鍵在於：大多數國家的國際出口數量是有限的，而國內的 ISP 數量也是有限的——有些國家甚至只有<strong>一家國營電信商</strong>。' +
+              '<details class="analogy-box"><summary>生活化比喻</summary><div class="analogy-content">想像一座島嶼只靠幾座橋與外界相連。平時車流正常通行，但如果有人控制了這幾座橋，就能決定誰能出島、誰能進島。</div></details>',
+        keyPoint: '一個國家的網路對外連線越集中（越少 ISP、越少國際出口），政府就越容易控制。',
+        highlightNodes: ['node-user', 'node-isp1', 'node-isp2', 'node-intl', 'node-world'],
+        highlightEdges: ['edge-user-isp1', 'edge-user-isp2', 'edge-isp1-intl', 'edge-isp2-intl', 'edge-intl-world'],
+        onEnter: () => { cutMark1.style.display = 'none'; cutMark2.style.display = 'none'; },
+      },
+      {
+        label: '2. 下令斷網',
+        title: '政府下令：關掉國際連線',
+        body: '當政府想要斷網時，它的做法出奇地簡單：<strong>命令國內的 ISP 停止向國際出口發送 BGP 公告</strong>。' +
+              '<br><br>一旦 BGP 路由被撤回，國際網路就不知道怎麼把流量送到這個國家，而這個國家的流量也出不去。雙向斷線。' +
+              '<br><br>在很多國家，ISP 必須持有政府發放的營業執照，政府一通電話就能下令。不服從的 ISP 可能被吊銷執照。',
+        keyPoint: '斷網不需要剪斷海底電纜——只要控制幾個 ISP 的 BGP 設定，就能讓一個國家從網路上「消失」。',
+        highlightNodes: ['node-user', 'node-isp1', 'node-isp2'],
+        highlightEdges: ['edge-user-isp1', 'edge-user-isp2'],
+        onEnter: () => { cutMark1.style.display = 'block'; cutMark2.style.display = 'block'; },
+      },
+      {
+        label: '3. 真實案例',
+        title: '發生過的斷網事件',
+        body: '<strong>埃及（2011）</strong>——阿拉伯之春期間，政府命令四家主要 ISP 在 5 天內撤回所有 BGP 路由，全國網路幾乎完全中斷。但有一家小 ISP（Noor Group）因為服務埃及證券交易所，晚了幾天才被要求斷線。' +
+              '<br><br><strong>緬甸（2021）</strong>——軍事政變後，軍政府反覆實施斷網，從每晚宵禁斷網到長期全面斷網，嚴重影響公民通訊和人權記錄。' +
+              '<br><br><strong>伊朗（2019）</strong>——反政府抗議期間，伊朗實施了近乎完全的斷網長達一週。國際人權組織無法即時收到來自伊朗的訊息。' +
+              '<details class="analogy-box"><summary>為什麼我們該關心</summary><div class="analogy-content">斷網期間，人權侵害的證據無法即時傳出，國際社會難以介入。<strong>Access Now</strong> 的 #KeepItOn 計畫持續追蹤全球斷網事件——2023 年全球記錄到超過 280 起斷網事件。了解斷網的技術原理，有助於預先規畫離線通訊和資料保存方案。</div></details>',
+        keyPoint: '斷網是最暴力的審查手段——切斷所有對外通訊。它的「成本」取決於國家的網路集中程度：ISP 越少、國際出口越少，斷網越容易。',
+        highlightNodes: ['node-user', 'node-isp1', 'node-isp2'],
+        highlightEdges: ['edge-user-isp1', 'edge-user-isp2'],
+        onEnter: () => { cutMark1.style.display = 'block'; cutMark2.style.display = 'block'; },
+      },
+      {
+        label: '4. DNS 的權力結構',
+        title: '域名扣押：誰控制你的域名？',
+        body: '接下來看另一種控制手段。回想 DNS 的階層結構：' +
+              '<br><br>你的域名 <strong>example.com</strong> 要能正常運作，需要：' +
+              '<br><strong>1)</strong> 你向<strong>域名註冊商</strong>（如 GoDaddy、Namecheap）註冊這個域名' +
+              '<br><strong>2)</strong> 註冊商向 <strong>.com 的 TLD 管理者 Verisign</strong>（美國公司）登記' +
+              '<br><strong>3)</strong> Verisign 受 <strong>ICANN</strong>（網際網路名稱與數字位址分配機構）管理' +
+              '<br><br>這條鏈上的每一個環節都有權力讓你的域名「消失」。',
+        keyPoint: '域名看起來是你的，但它其實是你在一套階層體系中「租用」的。這條鏈上的任何一環都能讓它停止運作。',
+        highlightNodes: ['node-domain', 'node-tld', 'node-icann'],
+        highlightEdges: ['edge-domain-tld', 'edge-tld-icann'],
+        onEnter: () => { cutMark1.style.display = 'none'; cutMark2.style.display = 'none'; },
+      },
+      {
+        label: '5. 扣押案例',
+        title: '真實案例：域名被扣押',
+        body: '<strong>美國扣押伊朗新聞網站（2021）</strong>——美國司法部以違反制裁法為由，扣押了數十個伊朗新聞網站的 <strong>.com</strong> 和 <strong>.net</strong> 域名。因為 .com/.net 的 TLD 由美國公司 Verisign 管理，美國政府有法律管轄權。' +
+              '<br><br><strong>為什麼能做到？</strong>因為 .com 是「通用頂級域」（gTLD），由在美國註冊的公司營運。美國法院的命令對 Verisign 有約束力。' +
+              '<br><br><strong>如果用國碼域名呢？</strong>例如 .ir（伊朗）、.tw（台灣）由各國自己管理的 ccTLD 管理機構負責，不受美國管轄。但也意味著受該國政府管轄。' +
+              '<details class="analogy-box"><summary>生活化比喻</summary><div class="analogy-content">域名就像商店的招牌。你可以經營這家店，但招牌是掛在別人的大樓上。大樓管理員（TLD 管理者）有權把你的招牌拆掉——不管你的店本身有沒有問題。而管理員要聽大樓所在國家的法律。</div></details>',
+        keyPoint: '選擇域名的 TLD 不只是偏好問題——它決定了哪個國家的法律對你的域名有管轄權。.com = 美國管轄，.tw = 台灣管轄，.org = 美國管轄。',
+        highlightNodes: ['node-domain', 'node-tld', 'node-icann'],
+        highlightEdges: ['edge-domain-tld', 'edge-tld-icann'],
+        onEnter: () => { cutMark1.style.display = 'none'; cutMark2.style.display = 'none'; },
+      },
+      {
+        label: '6. 啟示',
+        title: '這些對你的組織意味著什麼？',
+        body: '<strong>關於斷網：</strong>' +
+              '<br>- 預先建立<strong>離線通訊方案</strong>（如 Briar、mesh network）' +
+              '<br>- 重要資料保存在<strong>境外備份</strong>' +
+              '<br>- 關注 <strong>Access Now #KeepItOn</strong> 等追蹤計畫' +
+              '<br><br><strong>關於域名：</strong>' +
+              '<br>- 了解你的域名 TLD 受<strong>哪個國家管轄</strong>' +
+              '<br>- 考慮使用多個不同 TLD 的域名作為備援' +
+              '<br>- 註冊商的選擇也很重要——有些註冊商更願意抵抗政府壓力',
+        keyPoint: '理解網路基礎設施的權力結構，才能在風險發生前做好準備。斷網和域名扣押不是理論——它們正在世界各地發生。',
+        highlightNodes: ['node-user', 'node-isp1', 'node-isp2', 'node-intl', 'node-world', 'node-domain', 'node-tld', 'node-icann'],
+        highlightEdges: ['edge-user-isp1', 'edge-user-isp2', 'edge-isp1-intl', 'edge-isp2-intl', 'edge-intl-world', 'edge-domain-tld', 'edge-tld-icann'],
+        onEnter: () => { cutMark1.style.display = 'none'; cutMark2.style.display = 'none'; },
+      },
+    ];
+
+    let currentStep = -1;
+    const stepBar = document.getElementById('stepBar');
+    const infoTitle = document.getElementById('infoTitle');
+    const infoBody = document.getElementById('infoBody');
+    const infoKeyPoint = document.getElementById('infoKeyPoint');
+    const infoPanel = document.getElementById('infoPanel');
+    const btnPrev = document.getElementById('btnPrev');
+    const btnNext = document.getElementById('btnNext');
+    const allNodes = document.querySelectorAll('.node-group');
+    const allEdges = document.querySelectorAll('.edge-line');
+
+    steps.forEach((s, i) => {
+      const btn = document.createElement('button');
+      btn.className = 'step-btn';
+      btn.textContent = s.label;
+      btn.addEventListener('click', () => goToStep(i));
+      stepBar.appendChild(btn);
+    });
+
+    function goToStep(index) {
+      currentStep = index;
+      const step = steps[index];
+      const btns = stepBar.querySelectorAll('.step-btn');
+      btns.forEach((b, i) => {
+        b.classList.remove('active', 'done');
+        if (i === index) b.classList.add('active');
+        else if (i < index) b.classList.add('done');
+      });
+      allNodes.forEach(n => { n.classList.remove('highlighted'); n.classList.add('dimmed'); });
+      allEdges.forEach(e => { e.classList.remove('active'); e.classList.add('dimmed'); });
+      step.highlightNodes.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) { el.classList.remove('dimmed'); el.classList.add('highlighted'); }
+      });
+      step.highlightEdges.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) { el.classList.remove('dimmed'); el.classList.add('active'); }
+      });
+      infoTitle.textContent = step.title;
+      infoBody.innerHTML = step.body;
+      if (step.keyPoint) {
+        infoKeyPoint.textContent = step.keyPoint;
+        infoKeyPoint.style.display = 'block';
+      } else {
+        infoKeyPoint.style.display = 'none';
+      }
+      infoPanel.classList.remove('highlight');
+      void infoPanel.offsetWidth;
+      infoPanel.classList.add('highlight');
+      btnPrev.disabled = index === 0;
+      btnNext.textContent = index === steps.length - 1 ? '重新開始 ↺' : '下一步 →';
+      if (step.onEnter) step.onEnter();
+    }
+
+    btnPrev.addEventListener('click', () => { if (currentStep > 0) goToStep(currentStep - 1); });
+    btnNext.addEventListener('click', () => {
+      if (currentStep === -1) goToStep(0);
+      else if (currentStep === steps.length - 1) { currentStep = -1; resetDiagram(); }
+      else goToStep(currentStep + 1);
+    });
+
+    function resetDiagram() {
+      allNodes.forEach(n => { n.classList.remove('highlighted', 'dimmed'); });
+      allEdges.forEach(e => { e.classList.remove('active', 'dimmed'); });
+      stepBar.querySelectorAll('.step-btn').forEach(b => b.classList.remove('active', 'done'));
+      infoTitle.textContent = '選擇一個步驟開始';
+      infoBody.innerHTML = '這個主題分為兩部分：上半部講網路斷網——政府如何切斷整個國家的對外連線；下半部講域名扣押——DNS 階層中的權力結構。';
+      infoKeyPoint.style.display = 'none';
+      infoPanel.classList.remove('highlight');
+      btnPrev.disabled = true;
+      btnNext.textContent = '開始 →';
+      cutMark1.style.display = 'none';
+      cutMark2.style.display = 'none';
+    }
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowRight' || e.key === 'ArrowDown') { e.preventDefault(); btnNext.click(); }
+      else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') { e.preventDefault(); btnPrev.click(); }
+    });
+  })();
+  </script>
+</body>
+</html>

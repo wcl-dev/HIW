@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DNS 封鎖與審查 — HIW</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=Noto+Sans+TC:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../shared/style.css">
+</head>
+<body>
+  <nav class="site-nav">
+    <a href="../index.html" class="logo">HIW</a>
+    <ul class="nav-links">
+      <li><a href="../index.html">首頁</a></li>
+      <li><a href="index.html">DNS / IP / ASN</a></li>
+      <li><a href="dns-blocking.html" class="active">DNS 封鎖與審查</a></li>
+    </ul>
+  </nav>
+
+  <div class="page-container">
+    <h1 class="page-title">DNS 封鎖與審查</h1>
+    <p class="page-subtitle">政府怎麼透過 DNS 擋網站？為什麼換個 DNS 有時能繞過？</p>
+
+    <div class="step-bar" id="stepBar"></div>
+
+    <div class="diagram-container">
+      <svg id="diagram" viewBox="0 0 900 300" xmlns="http://www.w3.org/2000/svg">
+        <!-- 區域標示 -->
+        <text x="450" y="18" text-anchor="middle" fill="var(--text-dim)" font-size="11" font-family="inherit">— 政府控制範圍 —</text>
+        <rect x="140" y="25" width="350" height="260" rx="12" fill="none" stroke="var(--node-server)" stroke-width="1.5" stroke-dasharray="6,4" opacity="0.3"/>
+        <text x="315" y="275" text-anchor="middle" fill="var(--node-server)" font-size="10" font-family="inherit" opacity="0.5">境內</text>
+
+        <!-- 連線 -->
+        <line id="edge-user-ispdns" class="edge-line" x1="80" y1="140" x2="240" y2="90"/>
+        <line id="edge-ispdns-block" class="edge-line" x1="310" y1="80" x2="410" y2="80"/>
+        <line id="edge-user-pubdns" class="edge-line" x1="80" y1="160" x2="240" y2="210"/>
+        <line id="edge-pubdns-auth" class="edge-line" x1="360" y1="210" x2="560" y2="150"/>
+        <line id="edge-auth-result" class="edge-line" x1="660" y1="140" x2="790" y2="140"/>
+        <!-- ISP DNS 正常回應路線 -->
+        <line id="edge-ispdns-auth" class="edge-line" x1="310" y1="90" x2="560" y2="130"/>
+
+        <!-- 節點 -->
+        <g id="node-user" class="node-group">
+          <rect class="node-box" x="30" y="120" width="100" height="50" rx="10"
+                fill="var(--node-user)" opacity="0.15" stroke="var(--node-user)" stroke-width="2"/>
+          <text class="node-label" x="80" y="143" fill="var(--node-user)">你的電腦</text>
+          <text class="node-sublabel" x="80" y="160">查詢 example.com</text>
+        </g>
+
+        <g id="node-ispdns" class="node-group">
+          <rect class="node-box" x="200" y="55" width="130" height="50" rx="10"
+                fill="var(--node-dns)" opacity="0.15" stroke="var(--node-dns)" stroke-width="2"/>
+          <text class="node-label" x="265" y="78" fill="var(--node-dns)">ISP 的 DNS</text>
+          <text class="node-sublabel" x="265" y="95">受政府管控</text>
+        </g>
+
+        <g id="node-block" class="node-group">
+          <rect class="node-box" x="380" y="55" width="110" height="50" rx="10"
+                fill="var(--node-server)" opacity="0.15" stroke="var(--node-server)" stroke-width="2"/>
+          <text class="node-label" x="435" y="78" fill="var(--node-server)">封鎖回應</text>
+          <text class="node-sublabel" x="435" y="95">NXDOMAIN / 假 IP</text>
+        </g>
+
+        <g id="node-pubdns" class="node-group">
+          <rect class="node-box" x="200" y="185" width="170" height="50" rx="10"
+                fill="var(--node-isp)" opacity="0.15" stroke="var(--node-isp)" stroke-width="2"/>
+          <text class="node-label" x="285" y="208" fill="var(--node-isp)">公共 DNS (8.8.8.8)</text>
+          <text class="node-sublabel" x="285" y="225">不受該國政府管控</text>
+        </g>
+
+        <g id="node-auth" class="node-group">
+          <rect class="node-box" x="540" y="110" width="130" height="50" rx="10"
+                fill="var(--node-dns)" opacity="0.15" stroke="var(--node-dns)" stroke-width="2"/>
+          <text class="node-label" x="605" y="133" fill="var(--node-dns)">權威 DNS</text>
+          <text class="node-sublabel" x="605" y="150">真正的答案</text>
+        </g>
+
+        <g id="node-result" class="node-group">
+          <rect class="node-box" x="760" y="115" width="120" height="50" rx="10"
+                fill="var(--step-done)" opacity="0.15" stroke="var(--step-done)" stroke-width="2"/>
+          <text class="node-label" x="820" y="138" fill="var(--step-done)">正確 IP</text>
+          <text class="node-sublabel" x="820" y="155">93.184.216.34</text>
+        </g>
+      </svg>
+    </div>
+
+    <div class="info-panel" id="infoPanel">
+      <h3 id="infoTitle">選擇一個步驟開始</h3>
+      <p id="infoBody">了解政府如何利用 DNS 進行網路審查，以及為什麼這種封鎖有時能被繞過。</p>
+      <div class="key-point" id="infoKeyPoint" style="display:none;"></div>
+    </div>
+
+    <div class="step-nav">
+      <button id="btnPrev" disabled>← 上一步</button>
+      <button id="btnNext">開始 →</button>
+    </div>
+  </div>
+
+  <footer class="site-footer">HIW — How Internet Works</footer>
+
+  <script>
+  (function () {
+    const steps = [
+      {
+        label: '1. 正常的 DNS 查詢',
+        title: '回顧：DNS 查詢的正常流程',
+        body: '在正常情況下，你的電腦向 <strong>ISP 提供的 DNS</strong> 查詢域名，DNS 伺服器會去找到權威 DNS，拿到正確的 IP 位址回傳給你。' +
+              '<br><br>但如果政府想要封鎖某個網站呢？DNS 是最容易下手的環節。',
+        keyPoint: 'DNS 查詢通常是明文傳輸的，而且 ISP 的 DNS 伺服器在政府的管轄範圍內——這讓它成為審查的理想切入點。',
+        highlightNodes: ['node-user', 'node-ispdns', 'node-auth', 'node-result'],
+        highlightEdges: ['edge-user-ispdns', 'edge-ispdns-auth', 'edge-auth-result'],
+      },
+      {
+        label: '2. 政府介入',
+        title: '政府命令 ISP 的 DNS 說謊',
+        body: '政府下令給 ISP：「當有人查詢 example.com 時，不要回傳正確的 IP。」' +
+              '<br><br>ISP 的 DNS 伺服器可以用幾種方式執行：' +
+              '<br><strong>1) 回傳 NXDOMAIN</strong>（告訴你「這個域名不存在」）' +
+              '<br><strong>2) 回傳假的 IP</strong>（把你導到政府的警告頁面）' +
+              '<br><strong>3) 直接不回應</strong>（讓你的請求超時）' +
+              '<details class="analogy-box"><summary>生活化比喻</summary><div class="analogy-content">就像你打電話給 104 查號台問某家店的電話，但查號台被政府下令：「如果有人問這家店，就說查無此號。」你不知道查號台在說謊，只會以為那家店真的不存在。</div></details>',
+        keyPoint: '這就是 DNS 封鎖——政府不需要真的把網站關掉，只要讓你「查不到地址」就夠了。網站本身還好好地運作著。',
+        highlightNodes: ['node-user', 'node-ispdns', 'node-block'],
+        highlightEdges: ['edge-user-ispdns', 'edge-ispdns-block'],
+      },
+      {
+        label: '3. 換 DNS 繞過',
+        title: '繞過方法：改用公共 DNS',
+        body: '既然 ISP 的 DNS 在說謊，那就<strong>不要用它</strong>。你可以把電腦的 DNS 設定改成：' +
+              '<br><br><strong>Google Public DNS：</strong>8.8.8.8' +
+              '<br><strong>Cloudflare DNS：</strong>1.1.1.1' +
+              '<br><strong>Quad9：</strong>9.9.9.9' +
+              '<br><br>這些公共 DNS 不受該國政府管控，會正常回傳正確的 IP 位址。' +
+              '<details class="analogy-box"><summary>生活化比喻</summary><div class="analogy-content">就像 104 查號台被政府控制了，但你還可以打給國外的查號台問。國外的查號台沒有被下令說謊，所以會告訴你正確的號碼。</div></details>',
+        keyPoint: '換 DNS 是最簡單的繞過方式，一般人只要改一個設定就能做到。這也是為什麼很多網路自由指南的第一步就是「換 DNS」。',
+        highlightNodes: ['node-user', 'node-pubdns', 'node-auth', 'node-result'],
+        highlightEdges: ['edge-user-pubdns', 'edge-pubdns-auth', 'edge-auth-result'],
+      },
+      {
+        label: '4. 更深層的封鎖',
+        title: '但政府可以做得更多',
+        body: '如果政府只做 DNS 封鎖，換 DNS 就能繞過，太容易了。所以更嚴格的審查會加上更多手段：' +
+              '<br><br><strong>1) 封鎖公共 DNS 的 IP</strong>——直接讓你連不上 8.8.8.8' +
+              '<br><strong>2) DNS 查詢攔截</strong>——不管你用哪個 DNS，ISP 都攔截 53 埠的流量，強制用自己的 DNS 回應' +
+              '<br><strong>3) SNI 過濾</strong>——就算你拿到了正確 IP，ISP 在你建立 HTTPS 連線時仍可以看到你要訪問的域名（SNI 欄位），然後阻斷連線' +
+              '<br><strong>4) IP 封鎖</strong>——直接封鎖目標伺服器的 IP 位址',
+        keyPoint: '這就是為什麼在中國等地，光換 DNS 是不夠的——需要 VPN 或其他工具來繞過多層封鎖。DNS 封鎖只是審查的第一層。',
+        highlightNodes: ['node-user', 'node-ispdns', 'node-block'],
+        highlightEdges: ['edge-user-ispdns', 'edge-ispdns-block'],
+      },
+      {
+        label: '5. 加密 DNS',
+        title: '防禦：DoH 與 DoT',
+        body: '為了對抗 DNS 查詢被攔截和竄改，出現了加密 DNS 協定：' +
+              '<br><br><strong>DoH（DNS over HTTPS）</strong>——把 DNS 查詢包在 HTTPS 裡面，ISP 看不到你在查什麼域名，也無法竄改回應。' +
+              '<br><strong>DoT（DNS over TLS）</strong>——用 TLS 加密 DNS 查詢，效果類似。' +
+              '<br><br>現代瀏覽器（Chrome、Firefox）已經內建 DoH 支援。開啟後，你的 DNS 查詢會被加密，ISP 無法輕易攔截或竄改。' +
+              '<details class="analogy-box"><summary>生活化比喻</summary><div class="analogy-content">原本你打電話給查號台時，電話線上的任何人都能偷聽。DoH 就像改用加密通話——竊聽者只知道你打了一通電話，但聽不到你問了什麼、查號台回答了什麼。</div></details>',
+        keyPoint: 'DoH/DoT 讓 DNS 查詢不再是明文。但它只保護查詢本身，如果政府直接封 IP 或用 SNI 過濾，單靠加密 DNS 仍不足以繞過。',
+        highlightNodes: ['node-user', 'node-pubdns', 'node-auth', 'node-result'],
+        highlightEdges: ['edge-user-pubdns', 'edge-pubdns-auth', 'edge-auth-result'],
+      },
+    ];
+
+    let currentStep = -1;
+    const stepBar = document.getElementById('stepBar');
+    const infoTitle = document.getElementById('infoTitle');
+    const infoBody = document.getElementById('infoBody');
+    const infoKeyPoint = document.getElementById('infoKeyPoint');
+    const infoPanel = document.getElementById('infoPanel');
+    const btnPrev = document.getElementById('btnPrev');
+    const btnNext = document.getElementById('btnNext');
+    const allNodes = document.querySelectorAll('.node-group');
+    const allEdges = document.querySelectorAll('.edge-line');
+
+    steps.forEach((s, i) => {
+      const btn = document.createElement('button');
+      btn.className = 'step-btn';
+      btn.textContent = s.label;
+      btn.addEventListener('click', () => goToStep(i));
+      stepBar.appendChild(btn);
+    });
+
+    function goToStep(index) {
+      currentStep = index;
+      const step = steps[index];
+      const btns = stepBar.querySelectorAll('.step-btn');
+      btns.forEach((b, i) => {
+        b.classList.remove('active', 'done');
+        if (i === index) b.classList.add('active');
+        else if (i < index) b.classList.add('done');
+      });
+      allNodes.forEach(n => { n.classList.remove('highlighted'); n.classList.add('dimmed'); });
+      allEdges.forEach(e => { e.classList.remove('active'); e.classList.add('dimmed'); });
+      step.highlightNodes.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) { el.classList.remove('dimmed'); el.classList.add('highlighted'); }
+      });
+      step.highlightEdges.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) { el.classList.remove('dimmed'); el.classList.add('active'); }
+      });
+      infoTitle.textContent = step.title;
+      infoBody.innerHTML = step.body;
+      if (step.keyPoint) {
+        infoKeyPoint.textContent = step.keyPoint;
+        infoKeyPoint.style.display = 'block';
+      } else {
+        infoKeyPoint.style.display = 'none';
+      }
+      infoPanel.classList.remove('highlight');
+      void infoPanel.offsetWidth;
+      infoPanel.classList.add('highlight');
+      btnPrev.disabled = index === 0;
+      btnNext.textContent = index === steps.length - 1 ? '重新開始 ↺' : '下一步 →';
+    }
+
+    btnPrev.addEventListener('click', () => { if (currentStep > 0) goToStep(currentStep - 1); });
+    btnNext.addEventListener('click', () => {
+      if (currentStep === -1) goToStep(0);
+      else if (currentStep === steps.length - 1) { currentStep = -1; resetDiagram(); }
+      else goToStep(currentStep + 1);
+    });
+
+    function resetDiagram() {
+      allNodes.forEach(n => { n.classList.remove('highlighted', 'dimmed'); });
+      allEdges.forEach(e => { e.classList.remove('active', 'dimmed'); });
+      stepBar.querySelectorAll('.step-btn').forEach(b => b.classList.remove('active', 'done'));
+      infoTitle.textContent = '選擇一個步驟開始';
+      infoBody.innerHTML = '了解政府如何利用 DNS 進行網路審查，以及為什麼這種封鎖有時能被繞過。';
+      infoKeyPoint.style.display = 'none';
+      infoPanel.classList.remove('highlight');
+      btnPrev.disabled = true;
+      btnNext.textContent = '開始 →';
+    }
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowRight' || e.key === 'ArrowDown') { e.preventDefault(); btnNext.click(); }
+      else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') { e.preventDefault(); btnPrev.click(); }
+    });
+  })();
+  </script>
+</body>
+</html>

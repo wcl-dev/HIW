@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BGP 劫持 — HIW</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=Noto+Sans+TC:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../shared/style.css">
+</head>
+<body>
+  <nav class="site-nav">
+    <a href="../index.html" class="logo">HIW</a>
+    <ul class="nav-links">
+      <li><a href="../index.html">首頁</a></li>
+      <li><a href="index.html">DNS / IP / ASN</a></li>
+      <li><a href="bgp-hijack.html" class="active">BGP 劫持</a></li>
+    </ul>
+  </nav>
+
+  <div class="page-container">
+    <h1 class="page-title">BGP 劫持</h1>
+    <p class="page-subtitle">一個自治系統的錯誤公告，如何讓全球流量走錯路？</p>
+
+    <div class="step-bar" id="stepBar"></div>
+
+    <div class="diagram-container">
+      <svg id="diagram" viewBox="0 0 900 320" xmlns="http://www.w3.org/2000/svg">
+        <!-- 連線 -->
+        <!-- 正常路徑 -->
+        <line id="edge-user-ispa" class="edge-line" x1="80" y1="160" x2="230" y2="110"/>
+        <line id="edge-ispa-ixp" class="edge-line" x1="310" y1="110" x2="440" y2="160"/>
+        <line id="edge-ixp-youtube" class="edge-line" x1="520" y1="160" x2="700" y2="100"/>
+        <!-- 劫持路徑 -->
+        <line id="edge-ixp-pakistan" class="edge-line" x1="520" y1="170" x2="700" y2="240"/>
+        <!-- Pakistan 公告擴散 -->
+        <line id="edge-pakistan-ixp" class="edge-line" x1="700" y1="230" x2="520" y2="175" stroke-dasharray="6,4"/>
+        <!-- 使用者到 Pakistan (被劫持) -->
+        <line id="edge-user-pakistan" class="edge-line" x1="80" y1="170" x2="700" y2="240" stroke-dasharray="6,4"/>
+
+        <!-- 節點 -->
+        <g id="node-user" class="node-group">
+          <rect class="node-box" x="30" y="130" width="100" height="50" rx="10"
+                fill="var(--node-user)" opacity="0.15" stroke="var(--node-user)" stroke-width="2"/>
+          <text class="node-label" x="80" y="153" fill="var(--node-user)">全球使用者</text>
+          <text class="node-sublabel" x="80" y="170">想看 YouTube</text>
+        </g>
+
+        <g id="node-ispa" class="node-group">
+          <rect class="node-box" x="205" y="85" width="130" height="50" rx="10"
+                fill="var(--node-isp)" opacity="0.15" stroke="var(--node-isp)" stroke-width="2"/>
+          <text class="node-label" x="270" y="108" fill="var(--node-isp)">各地 ISP</text>
+          <text class="node-sublabel" x="270" y="125">根據 BGP 選路</text>
+        </g>
+
+        <g id="node-ixp" class="node-group">
+          <rect class="node-box" x="415" y="140" width="130" height="50" rx="10"
+                fill="var(--node-ixp)" opacity="0.15" stroke="var(--node-ixp)" stroke-width="2"/>
+          <text class="node-label" x="480" y="163" fill="var(--node-ixp)">全球路由表</text>
+          <text class="node-sublabel" x="480" y="180">BGP 路由決策</text>
+        </g>
+
+        <g id="node-youtube" class="node-group">
+          <rect class="node-box" x="670" y="70" width="140" height="50" rx="10"
+                fill="var(--step-done)" opacity="0.15" stroke="var(--step-done)" stroke-width="2"/>
+          <text class="node-label" x="740" y="93" fill="var(--step-done)">YouTube (Google)</text>
+          <text class="node-sublabel" x="740" y="110">AS15169</text>
+        </g>
+
+        <g id="node-pakistan" class="node-group">
+          <rect class="node-box" x="670" y="210" width="160" height="50" rx="10"
+                fill="var(--node-server)" opacity="0.15" stroke="var(--node-server)" stroke-width="2"/>
+          <text class="node-label" x="750" y="233" fill="var(--node-server)">Pakistan Telecom</text>
+          <text class="node-sublabel" x="750" y="250">AS17557</text>
+        </g>
+      </svg>
+    </div>
+
+    <div class="info-panel" id="infoPanel">
+      <h3 id="infoTitle">選擇一個步驟開始</h3>
+      <p id="infoBody">2008 年，巴基斯坦電信的一個操作失誤，意外讓全球 YouTube 斷線近兩小時。這是怎麼發生的？</p>
+      <div class="key-point" id="infoKeyPoint" style="display:none;"></div>
+    </div>
+
+    <div class="step-nav">
+      <button id="btnPrev" disabled>← 上一步</button>
+      <button id="btnNext">開始 →</button>
+    </div>
+  </div>
+
+  <footer class="site-footer">HIW — How Internet Works</footer>
+
+  <script>
+  (function () {
+    const steps = [
+      {
+        label: '1. 正常情況',
+        title: 'YouTube 的正常路由',
+        body: '在正常情況下，YouTube 的 IP 位址段（例如 <strong>208.65.153.0/24</strong>）由 Google 的自治系統 <strong>AS15169</strong> 透過 BGP 公告給全世界。' +
+              '<br><br>全球的路由器收到這個公告後，都知道：「要到 208.65.153.0/24，就往 AS15169 的方向送。」流量正常地到達 YouTube。' +
+              '<details class="analogy-box"><summary>生活化比喻</summary><div class="analogy-content">就像物流業的聯運協議：Google 這家物流公司公告「208.65.153.0/24 這個區域我負責配送」，所有其他物流公司都記下了這個資訊，包裹就能正確送達。</div></details>',
+        keyPoint: 'BGP 是基於信任的協定——每個 AS 公告自己負責的 IP 範圍，其他 AS 預設相信這個公告是真的。',
+        highlightNodes: ['node-user', 'node-ispa', 'node-ixp', 'node-youtube'],
+        highlightEdges: ['edge-user-ispa', 'edge-ispa-ixp', 'edge-ixp-youtube'],
+      },
+      {
+        label: '2. 巴基斯坦要封 YouTube',
+        title: '2008 年：巴基斯坦政府下令封鎖 YouTube',
+        body: '2008 年 2 月，巴基斯坦政府因為一部被認為褻瀆宗教的影片，下令 <strong>Pakistan Telecom（AS17557）</strong>封鎖 YouTube。' +
+              '<br><br>Pakistan Telecom 的做法是在國內路由器上加入一條更精確的路由：把 YouTube 的流量導向黑洞（black hole），這樣巴基斯坦國內的人就連不上 YouTube 了。' +
+              '<br><br>到這裡為止，這只是一個國內的封鎖——跟其他國家無關。',
+        keyPoint: '問題出在下一步：這條本該只在國內生效的路由，被「不小心」公告到了全世界。',
+        highlightNodes: ['node-pakistan'],
+        highlightEdges: [],
+      },
+      {
+        label: '3. 錯誤公告擴散',
+        title: '事故：封鎖路由洩漏到全球',
+        body: 'Pakistan Telecom 把 <strong>208.65.153.0/24</strong> 這條路由透過 BGP 公告給了上游 ISP <strong>PCCW</strong>，PCCW 沒有過濾，直接把它傳播到全世界。' +
+              '<br><br>關鍵在於：Pakistan Telecom 公告的路由比 Google 的<strong>更精確</strong>（更小的子網段）。在 BGP 的規則中，<strong>更精確的路由優先</strong>。' +
+              '<br><br>於是，全球的路由器紛紛更新路由表：「要到 YouTube？往巴基斯坦的方向送。」' +
+              '<details class="analogy-box"><summary>生活化比喻</summary><div class="analogy-content">就像有家冒牌物流公司突然公告「208.65.153.0 這個社區我來送」，而且它說的範圍比正牌公司更精確。其他物流公司按照「越精確越優先」的規則，就把包裹全轉給了冒牌公司——但冒牌公司根本送不了貨。</div></details>',
+        keyPoint: 'BGP 的「最長前綴匹配」(longest prefix match) 規則是劫持能成功的關鍵：只要你公告一個更精確的子網段，就能搶走原本屬於別人的流量。',
+        highlightNodes: ['node-pakistan', 'node-ixp', 'node-ispa'],
+        highlightEdges: ['edge-pakistan-ixp', 'edge-ispa-ixp', 'edge-ixp-pakistan'],
+      },
+      {
+        label: '4. 全球 YouTube 斷線',
+        title: '結果：全球 YouTube 無法存取',
+        body: '幾分鐘之內，全球大部分的 YouTube 流量都被導向了巴基斯坦——一個根本沒有 YouTube 伺服器的地方。流量進去後就消失了。' +
+              '<br><br>對全世界的使用者來說，YouTube 就是<strong>「斷線了」</strong>。' +
+              '<br><br>這個狀況持續了將近 <strong>2 小時</strong>，直到問題被發現並修復。',
+        keyPoint: '一個國家的內部操作失誤，透過 BGP 的信任機制擴散，影響了全球數億使用者。這暴露了 BGP 設計上的根本弱點：它預設信任所有公告。',
+        highlightNodes: ['node-user', 'node-ispa', 'node-ixp', 'node-pakistan'],
+        highlightEdges: ['edge-user-ispa', 'edge-ispa-ixp', 'edge-ixp-pakistan'],
+      },
+      {
+        label: '5. 修復與教訓',
+        title: '怎麼修復？怎麼防範？',
+        body: '<strong>修復：</strong>PCCW 撤回了來自 Pakistan Telecom 的錯誤路由公告，全球路由表逐漸恢復正常，流量重新導回 Google。' +
+              '<br><br><strong>防範機制：</strong>' +
+              '<br><strong>1) RPKI（Resource Public Key Infrastructure）</strong>——用數位簽章驗證 BGP 公告，確認「這個 AS 真的有權公告這段 IP」' +
+              '<br><strong>2) BGP Route Filtering</strong>——ISP 應該過濾上游收到的路由，不盲目接受所有公告' +
+              '<br><strong>3) IRR（Internet Routing Registry）</strong>——公開登記每個 AS 擁有的 IP 範圍，供其他 AS 驗證' +
+              '<br><br>但直到今天，<strong>RPKI 的部署率仍不到一半</strong>，BGP 劫持事件仍時有所聞。' +
+              '<details class="analogy-box"><summary>為什麼我們該關心</summary><div class="analogy-content">BGP 劫持不只是意外——它也可以被<strong>故意利用</strong>。政府或駭客可以透過 BGP 劫持把特定網站的流量導向自己控制的伺服器，進行監控或中間人攻擊。2018 年就有針對加密貨幣網站的 BGP 劫持事件。了解這個機制，能幫助你評估網路基礎設施的風險。</div></details>',
+        keyPoint: 'BGP 在 1989 年設計時，網路上的組織彼此認識、互相信任。如今網路規模擴大了萬倍，但這個信任模型幾乎沒變。RPKI 是補救方案，但部署緩慢。',
+        highlightNodes: ['node-user', 'node-ispa', 'node-ixp', 'node-youtube'],
+        highlightEdges: ['edge-user-ispa', 'edge-ispa-ixp', 'edge-ixp-youtube'],
+      },
+    ];
+
+    let currentStep = -1;
+    const stepBar = document.getElementById('stepBar');
+    const infoTitle = document.getElementById('infoTitle');
+    const infoBody = document.getElementById('infoBody');
+    const infoKeyPoint = document.getElementById('infoKeyPoint');
+    const infoPanel = document.getElementById('infoPanel');
+    const btnPrev = document.getElementById('btnPrev');
+    const btnNext = document.getElementById('btnNext');
+    const allNodes = document.querySelectorAll('.node-group');
+    const allEdges = document.querySelectorAll('.edge-line');
+
+    steps.forEach((s, i) => {
+      const btn = document.createElement('button');
+      btn.className = 'step-btn';
+      btn.textContent = s.label;
+      btn.addEventListener('click', () => goToStep(i));
+      stepBar.appendChild(btn);
+    });
+
+    function goToStep(index) {
+      currentStep = index;
+      const step = steps[index];
+      const btns = stepBar.querySelectorAll('.step-btn');
+      btns.forEach((b, i) => {
+        b.classList.remove('active', 'done');
+        if (i === index) b.classList.add('active');
+        else if (i < index) b.classList.add('done');
+      });
+      allNodes.forEach(n => { n.classList.remove('highlighted'); n.classList.add('dimmed'); });
+      allEdges.forEach(e => { e.classList.remove('active'); e.classList.add('dimmed'); });
+      step.highlightNodes.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) { el.classList.remove('dimmed'); el.classList.add('highlighted'); }
+      });
+      step.highlightEdges.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) { el.classList.remove('dimmed'); el.classList.add('active'); }
+      });
+      infoTitle.textContent = step.title;
+      infoBody.innerHTML = step.body;
+      if (step.keyPoint) {
+        infoKeyPoint.textContent = step.keyPoint;
+        infoKeyPoint.style.display = 'block';
+      } else {
+        infoKeyPoint.style.display = 'none';
+      }
+      infoPanel.classList.remove('highlight');
+      void infoPanel.offsetWidth;
+      infoPanel.classList.add('highlight');
+      btnPrev.disabled = index === 0;
+      btnNext.textContent = index === steps.length - 1 ? '重新開始 ↺' : '下一步 →';
+    }
+
+    btnPrev.addEventListener('click', () => { if (currentStep > 0) goToStep(currentStep - 1); });
+    btnNext.addEventListener('click', () => {
+      if (currentStep === -1) goToStep(0);
+      else if (currentStep === steps.length - 1) { currentStep = -1; resetDiagram(); }
+      else goToStep(currentStep + 1);
+    });
+
+    function resetDiagram() {
+      allNodes.forEach(n => { n.classList.remove('highlighted', 'dimmed'); });
+      allEdges.forEach(e => { e.classList.remove('active', 'dimmed'); });
+      stepBar.querySelectorAll('.step-btn').forEach(b => b.classList.remove('active', 'done'));
+      infoTitle.textContent = '選擇一個步驟開始';
+      infoBody.innerHTML = '2008 年，巴基斯坦電信的一個操作失誤，意外讓全球 YouTube 斷線近兩小時。這是怎麼發生的？';
+      infoKeyPoint.style.display = 'none';
+      infoPanel.classList.remove('highlight');
+      btnPrev.disabled = true;
+      btnNext.textContent = '開始 →';
+    }
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowRight' || e.key === 'ArrowDown') { e.preventDefault(); btnNext.click(); }
+      else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') { e.preventDefault(); btnPrev.click(); }
+    });
+  })();
+  </script>
+</body>
+</html>
