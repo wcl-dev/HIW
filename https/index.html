@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>DNS / IP / ASN — HIW</title>
+  <title>HTTPS — HIW</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=Noto+Sans+TC:wght@400;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="../shared/style.css">
@@ -13,44 +13,36 @@
     <a href="../index.html" class="logo">HIW</a>
     <ul class="nav-links">
       <li><a href="../index.html">首頁</a></li>
-      <li><a href="index.html" class="active">DNS / IP / ASN</a></li>
+      <li><a href="index.html" class="active">HTTPS</a></li>
     </ul>
   </nav>
 
   <div class="page-container">
-    <h1 class="page-title">DNS / IP / ASN</h1>
-    <p class="page-subtitle">從基礎原理到真實世界的案例，了解網路如何運作、如何被操控。</p>
+    <h1 class="page-title">HTTPS</h1>
+    <p class="page-subtitle">你的通訊內容如何被加密保護？加密又有哪些保護不到的地方？</p>
 
     <div class="topic-grid">
       <a href="basic.html" style="text-decoration:none;">
         <div class="topic-card">
           <span class="card-tag">可互動</span>
-          <h3>基礎：封包的旅程</h3>
-          <p>從你按下 Enter 開始，DNS 查詢、IP 路由、ASN 跳轉——封包如何一步步到達目的地？</p>
+          <h3>基礎：加密如何保護你</h3>
+          <p>沒有加密時 ISP 能看到什麼？HTTPS 的 TLS 握手怎麼運作？加密後保護了哪些東西？</p>
         </div>
       </a>
 
-      <a href="dns-blocking.html" style="text-decoration:none;">
+      <a href="sni-leak.html" style="text-decoration:none;">
         <div class="topic-card">
           <span class="card-tag">可互動</span>
-          <h3>DNS 封鎖與審查</h3>
-          <p>政府怎麼透過 DNS 擋網站？為什麼換個 DNS 就能繞過？哪些情況換了也沒用？</p>
+          <h3>SNI 洩漏</h3>
+          <p>即使有 HTTPS，你正在訪問「哪個網站」仍然可見。這個盲點怎麼來的？怎麼解決？</p>
         </div>
       </a>
 
-      <a href="bgp-hijack.html" style="text-decoration:none;">
+      <a href="mitm.html" style="text-decoration:none;">
         <div class="topic-card">
           <span class="card-tag">可互動</span>
-          <h3>BGP 劫持</h3>
-          <p>一個自治系統的錯誤公告，如何讓全球的流量走錯路？巴基斯坦意外癱瘓 YouTube 的故事。</p>
-        </div>
-      </a>
-
-      <a href="shutdown-seizure.html" style="text-decoration:none;">
-        <div class="topic-card">
-          <span class="card-tag">可互動</span>
-          <h3>網路斷網與域名扣押</h3>
-          <p>政府如何關掉整個國家的網路？為什麼 .com 域名能被美國扣押？DNS 階層的權力結構。</p>
+          <h3>中間人攻擊</h3>
+          <p>憑證信任鏈怎麼運作？當政府強裝根憑證，HTTPS 的保護如何被瓦解？</p>
         </div>
       </a>
     </div>

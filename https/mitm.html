@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>中間人攻擊 — HIW</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=Noto+Sans+TC:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../shared/style.css">
+</head>
+<body>
+  <nav class="site-nav">
+    <a href="../index.html" class="logo">HIW</a>
+    <ul class="nav-links">
+      <li><a href="../index.html">首頁</a></li>
+      <li><a href="index.html">HTTPS</a></li>
+      <li><a href="mitm.html" class="active">中間人攻擊</a></li>
+    </ul>
+  </nav>
+
+  <div class="page-container">
+    <h1 class="page-title">中間人攻擊</h1>
+    <p class="page-subtitle">當憑證信任鏈被破壞，HTTPS 的保護如何被瓦解？</p>
+
+    <div class="step-bar" id="stepBar"></div>
+
+    <div class="diagram-container">
+      <svg id="diagram" viewBox="0 0 900 320" xmlns="http://www.w3.org/2000/svg">
+        <!-- 正常連線 -->
+        <line id="edge-user-server" class="edge-line" x1="110" y1="80" x2="710" y2="80"/>
+
+        <!-- 被攔截的連線 -->
+        <line id="edge-user-mitm" class="edge-line" x1="110" y1="220" x2="370" y2="220"/>
+        <line id="edge-mitm-server" class="edge-line" x1="530" y1="220" x2="710" y2="220"/>
+
+        <!-- 憑證信任鏈 -->
+        <line id="edge-ca-cert" class="edge-line" x1="450" y1="55" x2="570" y2="55"/>
+        <line id="edge-root-ca" class="edge-line" x1="270" y1="55" x2="400" y2="55"/>
+
+        <!-- 假憑證鏈 -->
+        <line id="edge-govca-fakecert" class="edge-line" x1="450" y1="290" x2="530" y2="250"/>
+        <line id="edge-govroot-govca" class="edge-line" x1="270" y1="290" x2="400" y2="290"/>
+
+        <!-- 節點 - 正常情境 -->
+        <g id="node-user-normal" class="node-group">
+          <rect class="node-box" x="40" y="55" width="120" height="50" rx="10"
+                fill="var(--node-user)" opacity="0.15" stroke="var(--node-user)" stroke-width="2"/>
+          <text class="node-label" x="100" y="78" fill="var(--node-user)">你的瀏覽器</text>
+          <text class="node-sublabel" x="100" y="95">驗證憑證</text>
+        </g>
+
+        <g id="node-root-ca" class="node-group">
+          <rect class="node-box" x="220" y="30" width="130" height="50" rx="10"
+                fill="var(--node-asn)" opacity="0.15" stroke="var(--node-asn)" stroke-width="2"/>
+          <text class="node-label" x="285" y="53" fill="var(--node-asn)">根 CA</text>
+          <text class="node-sublabel" x="285" y="70">DigiCert, Let's Encrypt</text>
+        </g>
+
+        <g id="node-ca" class="node-group">
+          <rect class="node-box" x="390" y="30" width="110" height="50" rx="10"
+                fill="var(--node-asn)" opacity="0.15" stroke="var(--node-asn)" stroke-width="2"/>
+          <text class="node-label" x="445" y="53" fill="var(--node-asn)">中繼 CA</text>
+          <text class="node-sublabel" x="445" y="70">簽發憑證</text>
+        </g>
+
+        <g id="node-cert" class="node-group">
+          <rect class="node-box" x="540" y="30" width="140" height="50" rx="10"
+                fill="var(--step-done)" opacity="0.15" stroke="var(--step-done)" stroke-width="2"/>
+          <text class="node-label" x="610" y="53" fill="var(--step-done)">網站憑證</text>
+          <text class="node-sublabel" x="610" y="70">example.com ✓</text>
+        </g>
+
+        <g id="node-server-normal" class="node-group">
+          <rect class="node-box" x="720" y="55" width="130" height="50" rx="10"
+                fill="var(--step-done)" opacity="0.15" stroke="var(--step-done)" stroke-width="2"/>
+          <text class="node-label" x="785" y="78" fill="var(--step-done)">目標網站</text>
+          <text class="node-sublabel" x="785" y="95">example.com</text>
+        </g>
+
+        <!-- 節點 - MITM 情境 -->
+        <g id="node-user-mitm" class="node-group">
+          <rect class="node-box" x="40" y="195" width="120" height="50" rx="10"
+                fill="var(--node-user)" opacity="0.15" stroke="var(--node-user)" stroke-width="2"/>
+          <text class="node-label" x="100" y="218" fill="var(--node-user)">你的瀏覽器</text>
+          <text class="node-sublabel" x="100" y="235">被欺騙</text>
+        </g>
+
+        <g id="node-mitm" class="node-group">
+          <rect class="node-box" x="360" y="195" width="180" height="50" rx="10"
+                fill="var(--node-server)" opacity="0.15" stroke="var(--node-server)" stroke-width="2"/>
+          <text class="node-label" x="450" y="218" fill="var(--node-server)">中間人（攔截設備）</text>
+          <text class="node-sublabel" x="450" y="235">解密 → 讀取 → 重新加密</text>
+        </g>
+
+        <g id="node-server-mitm" class="node-group">
+          <rect class="node-box" x="720" y="195" width="130" height="50" rx="10"
+                fill="var(--step-done)" opacity="0.15" stroke="var(--step-done)" stroke-width="2"/>
+          <text class="node-label" x="785" y="218" fill="var(--step-done)">目標網站</text>
+          <text class="node-sublabel" x="785" y="235">不知情</text>
+        </g>
+
+        <!-- 政府根憑證 -->
+        <g id="node-gov-root" class="node-group">
+          <rect class="node-box" x="220" y="265" width="140" height="50" rx="10"
+                fill="var(--node-server)" opacity="0.15" stroke="var(--node-server)" stroke-width="2"/>
+          <text class="node-label" x="290" y="288" fill="var(--node-server)">政府根憑證</text>
+          <text class="node-sublabel" x="290" y="305">強制安裝</text>
+        </g>
+
+        <g id="node-gov-ca" class="node-group">
+          <rect class="node-box" x="400" y="265" width="120" height="50" rx="10"
+                fill="var(--node-server)" opacity="0.15" stroke="var(--node-server)" stroke-width="2"/>
+          <text class="node-label" x="460" y="288" fill="var(--node-server)">假憑證</text>
+          <text class="node-sublabel" x="460" y="305">example.com ✗</text>
+        </g>
+      </svg>
+    </div>
+
+    <div class="info-panel" id="infoPanel">
+      <h3 id="infoTitle">選擇一個步驟開始</h3>
+      <p id="infoBody">HTTPS 的安全建立在「憑證信任鏈」之上。如果這條信任鏈被破壞，加密就形同虛設。</p>
+      <div class="key-point" id="infoKeyPoint" style="display:none;"></div>
+    </div>
+
+    <div class="step-nav">
+      <button id="btnPrev" disabled>← 上一步</button>
+      <button id="btnNext">開始 →</button>
+    </div>
+  </div>
+
+  <footer class="site-footer">HIW — How Internet Works · 以 <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">CC BY 4.0</a> 授權釋出</footer>
+
+  <script>
+  (function () {
+    const steps = [
+      {
+        label: '1. 憑證信任鏈',
+        title: '正常情況：憑證信任鏈怎麼運作',
+        body: '你的瀏覽器怎麼知道它連到的真的是 example.com，而不是冒充的？靠的是<strong>憑證信任鏈</strong>：' +
+              '<br><br><strong>1) 根 CA（Certificate Authority）</strong>——你的作業系統和瀏覽器內建了一份「受信任的根 CA 清單」（如 DigiCert、Let\'s Encrypt）' +
+              '<br><strong>2) 中繼 CA</strong>——根 CA 授權給中繼 CA 去簽發憑證' +
+              '<br><strong>3) 網站憑證</strong>——example.com 向 CA 申請憑證，CA 驗證你確實擁有這個域名後，簽發憑證' +
+              '<br><br>瀏覽器收到網站的憑證後，會沿著這條鏈往上驗證，直到找到一個它信任的根 CA。如果驗證成功，連線安全；如果失敗，瀏覽器會顯示警告。' +
+              '<details class="analogy-box"><summary>生活化比喻</summary><div class="analogy-content">憑證就像<strong>身分證</strong>：身分證由政府（根 CA）發放，上面有防偽標記。你看到對方出示身分證，確認是政府發的、照片對得上，就相信他是本人。整個系統建立在「你信任政府不會亂發身分證」的前提上。</div></details>',
+        keyPoint: 'HTTPS 的安全不只靠加密演算法——它靠的是整條信任鏈。如果鏈上的任何一環出問題，加密就可能被破解。',
+        highlightNodes: ['node-user-normal', 'node-root-ca', 'node-ca', 'node-cert', 'node-server-normal'],
+        highlightEdges: ['edge-user-server', 'edge-root-ca', 'edge-ca-cert'],
+      },
+      {
+        label: '2. 中間人攻擊',
+        title: 'MITM：有人在中間偷聽',
+        body: '<strong>中間人攻擊（Man-in-the-Middle, MITM）</strong>的原理是：攻擊者插入你和網站之間，分別和雙方建立加密連線。' +
+              '<br><br><strong>1)</strong> 你以為你在跟 example.com 通訊，其實你連到了中間人' +
+              '<br><strong>2)</strong> 中間人解密你的請求，讀取內容' +
+              '<br><strong>3)</strong> 中間人再把請求轉給真正的 example.com' +
+              '<br><strong>4)</strong> 收到回應後，中間人再轉給你' +
+              '<br><br>你和網站都不知道中間有人在偷看。' +
+              '<br><br>但正常情況下，這種攻擊會<strong>被憑證信任鏈擋下來</strong>——中間人無法出示一張被你的瀏覽器信任的 example.com 憑證，瀏覽器會顯示憑證錯誤警告。',
+        keyPoint: '憑證信任鏈是防禦 MITM 的關鍵。只要信任鏈完整，中間人就無法冒充網站。但如果信任鏈被破壞了呢？',
+        highlightNodes: ['node-user-mitm', 'node-mitm', 'node-server-mitm'],
+        highlightEdges: ['edge-user-mitm', 'edge-mitm-server'],
+      },
+      {
+        label: '3. 政府強裝根憑證',
+        title: '哈薩克案例：強制安裝政府根憑證',
+        body: '2019 年，哈薩克政府要求所有國民在手機和電腦上安裝一個<strong>政府簽發的根憑證</strong>。' +
+              '<br><br>一旦安裝了這個根憑證，政府就能：' +
+              '<br><strong>1)</strong> 用這個根憑證為<strong>任何域名</strong>簽發假憑證' +
+              '<br><strong>2)</strong> 在 ISP 層面部署攔截設備' +
+              '<br><strong>3)</strong> 攔截設備出示假憑證，你的瀏覽器因為信任了政府的根憑證，不會顯示警告' +
+              '<br><strong>4)</strong> 所有 HTTPS 流量被解密、讀取、再重新加密轉發' +
+              '<br><br>HTTPS 的加密完全失效——因為信任鏈的根基被污染了。' +
+              '<details class="analogy-box"><summary>生活化比喻</summary><div class="analogy-content">就像政府強迫你把一個「假的政府印章」加入你的信任清單。之後任何人拿著這個假印章蓋的身分證來找你，你的系統都會認為是合法的——即使那張身分證是偽造的。</div></details>',
+        keyPoint: '安裝根憑證 = 把信任鏈的最高權力交給了憑證持有者。這就是為什麼你不應該隨意安裝來路不明的根憑證。',
+        highlightNodes: ['node-user-mitm', 'node-mitm', 'node-server-mitm', 'node-gov-root', 'node-gov-ca'],
+        highlightEdges: ['edge-user-mitm', 'edge-mitm-server', 'edge-govroot-govca', 'edge-govca-fakecert'],
+      },
+      {
+        label: '4. 瀏覽器的反擊',
+        title: '科技公司和社群的回應',
+        body: '哈薩克事件引發了強烈反彈，瀏覽器廠商迅速回應：' +
+              '<br><br><strong>Google Chrome、Mozilla Firefox、Apple Safari</strong> 聯手將哈薩克政府的根憑證列入<strong>黑名單</strong>——即使使用者安裝了它，瀏覽器也會拒絕信任。' +
+              '<br><br>此外還有其他防禦機制：' +
+              '<br><strong>Certificate Transparency (CT)</strong>——所有簽發的憑證都必須公開記錄在透明日誌中，任何人都能檢查是否有異常的憑證被簽發' +
+              '<br><strong>HSTS（HTTP Strict Transport Security）</strong>——網站可以告訴瀏覽器「永遠只用 HTTPS 連我」，防止被降級到 HTTP' +
+              '<br><strong>Certificate Pinning</strong>——某些 App 會把預期的憑證指紋寫死在程式裡，只接受特定的憑證',
+        keyPoint: '這是一場信任的攻防戰。政府試圖滲透信任鏈，瀏覽器廠商則加強驗證機制。但最終的戰場在你的設備上——誰控制了你的根憑證清單，誰就能解密你的 HTTPS。',
+        highlightNodes: ['node-user-normal', 'node-root-ca', 'node-ca', 'node-cert', 'node-server-normal'],
+        highlightEdges: ['edge-user-server', 'edge-root-ca', 'edge-ca-cert'],
+      },
+      {
+        label: '5. 自我保護',
+        title: '你可以做什麼？',
+        body: '<strong>1) 不要安裝來路不明的根憑證</strong>' +
+              '<br>如果有人（公司 IT、網咖、政府）要求你安裝根憑證，要知道這意味著他們可以攔截你所有的 HTTPS 流量。' +
+              '<br><br><strong>2) 注意瀏覽器的憑證警告</strong>' +
+              '<br>當瀏覽器顯示「你的連線不安全」時，不要隨意點擊「繼續前往」。' +
+              '<br><br><strong>3) 檢查你的根憑證清單</strong>' +
+              '<br>定期檢查作業系統中安裝了哪些根憑證，移除你不認識的。' +
+              '<br><br><strong>4) 在高風險環境中使用額外保護</strong>' +
+              '<br>VPN 或 Tor 可以在 TLS 之外再加一層加密通道，即使 TLS 被攔截，外層仍然安全。' +
+              '<details class="analogy-box"><summary>為什麼我們該關心</summary><div class="analogy-content">企業環境中，公司 IT 部門在員工電腦上安裝根憑證進行流量檢測是常見做法。如果你的組織處理敏感資訊，要注意使用的設備是否被安裝了額外的根憑證。公用電腦和借用的設備尤其要小心。</div></details>',
+        keyPoint: 'HTTPS 很強，但它的安全取決於信任鏈的完整性。保護好你的根憑證清單，就是保護你的 HTTPS。',
+        highlightNodes: ['node-user-normal', 'node-root-ca', 'node-ca', 'node-cert', 'node-server-normal'],
+        highlightEdges: ['edge-user-server', 'edge-root-ca', 'edge-ca-cert'],
+      },
+    ];
+
+    let currentStep = -1;
+    const stepBar = document.getElementById('stepBar');
+    const infoTitle = document.getElementById('infoTitle');
+    const infoBody = document.getElementById('infoBody');
+    const infoKeyPoint = document.getElementById('infoKeyPoint');
+    const infoPanel = document.getElementById('infoPanel');
+    const btnPrev = document.getElementById('btnPrev');
+    const btnNext = document.getElementById('btnNext');
+    const allNodes = document.querySelectorAll('.node-group');
+    const allEdges = document.querySelectorAll('.edge-line');
+
+    steps.forEach((s, i) => {
+      const btn = document.createElement('button');
+      btn.className = 'step-btn';
+      btn.textContent = s.label;
+      btn.addEventListener('click', () => goToStep(i));
+      stepBar.appendChild(btn);
+    });
+
+    function goToStep(index) {
+      currentStep = index;
+      const step = steps[index];
+      const btns = stepBar.querySelectorAll('.step-btn');
+      btns.forEach((b, i) => {
+        b.classList.remove('active', 'done');
+        if (i === index) b.classList.add('active');
+        else if (i < index) b.classList.add('done');
+      });
+      allNodes.forEach(n => { n.classList.remove('highlighted'); n.classList.add('dimmed'); });
+      allEdges.forEach(e => { e.classList.remove('active'); e.classList.add('dimmed'); });
+      step.highlightNodes.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) { el.classList.remove('dimmed'); el.classList.add('highlighted'); }
+      });
+      step.highlightEdges.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) { el.classList.remove('dimmed'); el.classList.add('active'); }
+      });
+      infoTitle.textContent = step.title;
+      infoBody.innerHTML = step.body;
+      if (step.keyPoint) {
+        infoKeyPoint.textContent = step.keyPoint;
+        infoKeyPoint.style.display = 'block';
+      } else {
+        infoKeyPoint.style.display = 'none';
+      }
+      infoPanel.classList.remove('highlight');
+      void infoPanel.offsetWidth;
+      infoPanel.classList.add('highlight');
+      btnPrev.disabled = index === 0;
+      btnNext.textContent = index === steps.length - 1 ? '重新開始 ↺' : '下一步 →';
+    }
+
+    btnPrev.addEventListener('click', () => { if (currentStep > 0) goToStep(currentStep - 1); });
+    btnNext.addEventListener('click', () => {
+      if (currentStep === -1) goToStep(0);
+      else if (currentStep === steps.length - 1) { currentStep = -1; resetDiagram(); }
+      else goToStep(currentStep + 1);
+    });
+
+    function resetDiagram() {
+      allNodes.forEach(n => { n.classList.remove('highlighted', 'dimmed'); });
+      allEdges.forEach(e => { e.classList.remove('active', 'dimmed'); });
+      stepBar.querySelectorAll('.step-btn').forEach(b => b.classList.remove('active', 'done'));
+      infoTitle.textContent = '選擇一個步驟開始';
+      infoBody.innerHTML = 'HTTPS 的安全建立在「憑證信任鏈」之上。如果這條信任鏈被破壞，加密就形同虛設。';
+      infoKeyPoint.style.display = 'none';
+      infoPanel.classList.remove('highlight');
+      btnPrev.disabled = true;
+      btnNext.textContent = '開始 →';
+    }
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowRight' || e.key === 'ArrowDown') { e.preventDefault(); btnNext.click(); }
+      else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') { e.preventDefault(); btnPrev.click(); }
+    });
+  })();
+  </script>
+</body>
+</html>

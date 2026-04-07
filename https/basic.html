@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HTTPS 基礎 — HIW</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=Noto+Sans+TC:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../shared/style.css">
+</head>
+<body>
+  <nav class="site-nav">
+    <a href="../index.html" class="logo">HIW</a>
+    <ul class="nav-links">
+      <li><a href="../index.html">首頁</a></li>
+      <li><a href="index.html">HTTPS</a></li>
+      <li><a href="basic.html" class="active">基礎</a></li>
+    </ul>
+  </nav>
+
+  <div class="page-container">
+    <h1 class="page-title">HTTPS 基礎</h1>
+    <p class="page-subtitle">沒有加密時你的通訊像在裸奔，HTTPS 如何幫你穿上衣服？</p>
+
+    <div class="step-bar" id="stepBar"></div>
+
+    <div class="diagram-container">
+      <svg id="diagram" viewBox="0 0 900 280" xmlns="http://www.w3.org/2000/svg">
+        <!-- 連線 -->
+        <line id="edge-user-isp" class="edge-line" x1="110" y1="140" x2="270" y2="140"/>
+        <line id="edge-isp-internet" class="edge-line" x1="390" y1="140" x2="510" y2="140"/>
+        <line id="edge-internet-server" class="edge-line" x1="630" y1="140" x2="770" y2="140"/>
+
+        <!-- 加密通道 (TLS tunnel) -->
+        <rect id="tls-tunnel" x="100" y="105" width="720" height="70" rx="35"
+              fill="none" stroke="var(--step-done)" stroke-width="2" stroke-dasharray="8,4" opacity="0" />
+        <text id="tls-label" x="460" y="98" text-anchor="middle" fill="var(--step-done)" font-size="11" font-family="inherit" opacity="0">TLS 加密通道</text>
+
+        <!-- 竊聽者標示 -->
+        <g id="node-spy" class="node-group" style="display:none;">
+          <rect class="node-box" x="280" y="200" width="100" height="50" rx="10"
+                fill="var(--node-server)" opacity="0.15" stroke="var(--node-server)" stroke-width="2"/>
+          <text class="node-label" x="330" y="223" fill="var(--node-server)">竊聽者</text>
+          <text class="node-sublabel" x="330" y="240">ISP / 駭客</text>
+        </g>
+        <line id="edge-spy" class="edge-line" x1="330" y1="200" x2="330" y2="155" style="display:none;" stroke-dasharray="4,3"/>
+
+        <!-- 可見資訊氣泡 -->
+        <g id="bubble-visible" style="display:none;">
+          <rect x="420" y="195" width="200" height="65" rx="8"
+                fill="var(--node-server)" opacity="0.12" stroke="var(--node-server)" stroke-width="1"/>
+          <text x="520" y="215" text-anchor="middle" fill="var(--node-server)" font-size="11" font-family="inherit" font-weight="600">竊聽者能看到：</text>
+          <text id="bubble-text1" x="520" y="232" text-anchor="middle" fill="var(--text-dim)" font-size="10" font-family="inherit"></text>
+          <text id="bubble-text2" x="520" y="247" text-anchor="middle" fill="var(--text-dim)" font-size="10" font-family="inherit"></text>
+        </g>
+
+        <!-- 節點 -->
+        <g id="node-user" class="node-group">
+          <rect class="node-box" x="40" y="115" width="120" height="50" rx="10"
+                fill="var(--node-user)" opacity="0.15" stroke="var(--node-user)" stroke-width="2"/>
+          <text class="node-label" x="100" y="138" fill="var(--node-user)">你的瀏覽器</text>
+          <text class="node-sublabel" x="100" y="155">發送請求</text>
+        </g>
+
+        <g id="node-isp" class="node-group">
+          <rect class="node-box" x="260" y="115" width="140" height="50" rx="10"
+                fill="var(--node-isp)" opacity="0.15" stroke="var(--node-isp)" stroke-width="2"/>
+          <text class="node-label" x="330" y="138" fill="var(--node-isp)">ISP / 中間節點</text>
+          <text class="node-sublabel" x="330" y="155">轉送封包</text>
+        </g>
+
+        <g id="node-internet" class="node-group">
+          <rect class="node-box" x="500" y="115" width="140" height="50" rx="10"
+                fill="var(--node-ixp)" opacity="0.15" stroke="var(--node-ixp)" stroke-width="2"/>
+          <text class="node-label" x="570" y="138" fill="var(--node-ixp)">網際網路</text>
+          <text class="node-sublabel" x="570" y="155">多個中間節點</text>
+        </g>
+
+        <g id="node-server" class="node-group">
+          <rect class="node-box" x="740" y="115" width="130" height="50" rx="10"
+                fill="var(--step-done)" opacity="0.15" stroke="var(--step-done)" stroke-width="2"/>
+          <text class="node-label" x="805" y="138" fill="var(--step-done)">目標網站</text>
+          <text class="node-sublabel" x="805" y="155">example.com</text>
+        </g>
+      </svg>
+    </div>
+
+    <div class="info-panel" id="infoPanel">
+      <h3 id="infoTitle">選擇一個步驟開始</h3>
+      <p id="infoBody">了解 HTTP 與 HTTPS 的差異、TLS 握手的過程，以及加密到底保護了什麼。</p>
+      <div class="key-point" id="infoKeyPoint" style="display:none;"></div>
+    </div>
+
+    <div class="step-nav">
+      <button id="btnPrev" disabled>← 上一步</button>
+      <button id="btnNext">開始 →</button>
+    </div>
+  </div>
+
+  <footer class="site-footer">HIW — How Internet Works · 以 <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">CC BY 4.0</a> 授權釋出</footer>
+
+  <script>
+  (function () {
+    const tlsTunnel = document.getElementById('tls-tunnel');
+    const tlsLabel = document.getElementById('tls-label');
+    const nodeSpy = document.getElementById('node-spy');
+    const edgeSpy = document.getElementById('edge-spy');
+    const bubbleVisible = document.getElementById('bubble-visible');
+    const bubbleText1 = document.getElementById('bubble-text1');
+    const bubbleText2 = document.getElementById('bubble-text2');
+
+    function showSpy(visible, line1, line2) {
+      nodeSpy.style.display = visible ? 'block' : 'none';
+      edgeSpy.style.display = visible ? 'block' : 'none';
+      if (visible && line1) {
+        bubbleVisible.style.display = 'block';
+        bubbleText1.textContent = line1;
+        bubbleText2.textContent = line2 || '';
+      } else {
+        bubbleVisible.style.display = 'none';
+      }
+    }
+
+    function showTunnel(visible) {
+      tlsTunnel.style.opacity = visible ? '1' : '0';
+      tlsLabel.style.opacity = visible ? '1' : '0';
+    }
+
+    const steps = [
+      {
+        label: '1. 沒有加密的 HTTP',
+        title: '裸奔的 HTTP：所有人都能看到你的內容',
+        body: '在早期的網路中，瀏覽器和伺服器之間用的是 <strong>HTTP</strong>（HyperText Transfer Protocol）。HTTP 的所有內容都是<strong>明文傳輸</strong>的。' +
+              '<br><br>這意味著你和網站之間的每一個中間節點——ISP、路由器、公共 Wi-Fi 的管理者——都能看到：' +
+              '<br>- 你訪問的網址（完整 URL）' +
+              '<br>- 你送出的表單內容（帳號、密碼）' +
+              '<br>- 網站回傳的所有內容' +
+              '<details class="analogy-box"><summary>生活化比喻</summary><div class="analogy-content">HTTP 就像用<strong>明信片</strong>寄信。郵差、分揀中心的人、任何經手的人都能直接讀到內容。你寫了什麼、寄給誰、對方回了什麼，全部一覽無遺。</div></details>',
+        keyPoint: '早期的網路預設沒有加密。直到 2015 年前後，大部分網站仍然使用 HTTP。這意味著任何中間人都能讀取你的所有通訊。',
+        highlightNodes: ['node-user', 'node-isp', 'node-internet', 'node-server'],
+        highlightEdges: ['edge-user-isp', 'edge-isp-internet', 'edge-internet-server'],
+        onEnter: () => { showSpy(true, '完整 URL、帳密、內容', '所有東西一覽無遺'); showTunnel(false); },
+      },
+      {
+        label: '2. HTTPS 的目標',
+        title: 'HTTPS = HTTP + TLS 加密',
+        body: 'HTTPS 在 HTTP 的基礎上加了一層 <strong>TLS（Transport Layer Security）</strong>加密。' +
+              '<br><br>HTTPS 要解決三個問題：' +
+              '<br><strong>1) 機密性</strong>——中間人無法讀取通訊內容' +
+              '<br><strong>2) 完整性</strong>——內容無法被竄改（例如 ISP 注入廣告）' +
+              '<br><strong>3) 身份驗證</strong>——確認你連到的真的是那個網站，不是冒充的' +
+              '<details class="analogy-box"><summary>生活化比喻</summary><div class="analogy-content">HTTPS 就像把明信片換成<strong>密封信件</strong>：外面只看得到寄件地址和收件地址，但信裡面寫了什麼，只有寄件人和收件人知道。而且信封上有<strong>防拆封的封蠟</strong>，如果有人拆開再封回去，收件人會知道。</div></details>',
+        keyPoint: '網址欄的那把鎖頭標示，代表你和這個網站之間的通訊是經過 TLS 加密的。',
+        highlightNodes: ['node-user', 'node-server'],
+        highlightEdges: [],
+        onEnter: () => { showSpy(false); showTunnel(false); },
+      },
+      {
+        label: '3. TLS 握手',
+        title: 'TLS 握手：雙方如何建立加密通道',
+        body: '在傳輸任何資料之前，瀏覽器和伺服器要先完成 <strong>TLS 握手</strong>，步驟大致是：' +
+              '<br><br><strong>1) Client Hello</strong>——瀏覽器告訴伺服器「我支援哪些加密方式」' +
+              '<br><strong>2) Server Hello + 憑證</strong>——伺服器選定加密方式，並出示自己的<strong>數位憑證</strong>（由受信任的 CA 簽發）' +
+              '<br><strong>3) 驗證憑證</strong>——瀏覽器檢查這張憑證是不是由可信任的 <strong>CA（Certificate Authority，憑證授權中心）</strong>簽發的' +
+              '<br><strong>4) 金鑰交換</strong>——雙方用非對稱加密交換一組臨時的對稱加密金鑰' +
+              '<br><strong>5) 加密通道建立</strong>——之後的所有通訊都用這組金鑰加密' +
+              '<details class="analogy-box"><summary>生活化比喻</summary><div class="analogy-content">TLS 握手就像兩個人要互傳機密訊息前，先<strong>當面交換密碼本</strong>。之後所有的信件都用這本密碼本編碼，就算信被攔截，沒有密碼本也讀不懂。而「憑證」就像對方拿出一張有公證人蓋章的身分證，證明他真的是他自稱的那個人。</div></details>',
+        keyPoint: 'TLS 握手只在連線建立時發生一次，之後的所有通訊都用交換好的對稱金鑰加密，效能影響很小。',
+        highlightNodes: ['node-user', 'node-server'],
+        highlightEdges: ['edge-user-isp', 'edge-isp-internet', 'edge-internet-server'],
+        onEnter: () => { showSpy(false); showTunnel(false); },
+      },
+      {
+        label: '4. 加密後的世界',
+        title: '有了 HTTPS，中間人看到什麼？',
+        body: 'TLS 通道建立後，ISP 和其他中間節點仍然能看到：' +
+              '<br>- 你連到的 <strong>IP 位址</strong>（畢竟封包要知道往哪送）' +
+              '<br>- <strong>連線的時間和流量大小</strong>' +
+              '<br><br>但他們<strong>看不到</strong>：' +
+              '<br>- 完整的 URL（只知道你連到 example.com，不知道你在看 /secret-page）' +
+              '<br>- 你送出的任何表單內容' +
+              '<br>- 網站回傳的內容' +
+              '<br>- Cookie、登入狀態等',
+        keyPoint: 'HTTPS 保護的是「內容」，不是「你在跟誰通訊」這個事實。IP 位址和連線行為仍然可見——這就是為什麼有些場景需要 VPN 或 Tor 來補強。',
+        highlightNodes: ['node-user', 'node-isp', 'node-internet', 'node-server'],
+        highlightEdges: ['edge-user-isp', 'edge-isp-internet', 'edge-internet-server'],
+        onEnter: () => { showSpy(true, '目標 IP、連線時間、流量大小', '但看不到內容、URL 路徑、帳密'); showTunnel(true); },
+      },
+      {
+        label: '5. 為什麼重要',
+        title: '在威權國家，沒有 HTTPS = 被監控',
+        body: '在很多國家，ISP 是國營或受政府嚴密管控的。這意味著：' +
+              '<br><br><strong>沒有 HTTPS 時：</strong>政府透過 ISP 能看到你在讀什麼新聞、在論壇發了什麼文、跟誰聯絡了什麼內容。' +
+              '<br><br><strong>有 HTTPS 時：</strong>政府只能知道你連上了某個網站，但不知道你在上面做什麼。' +
+              '<br><br>這就是為什麼推動全面 HTTPS 不只是技術議題——它是<strong>基本的通訊隱私保障</strong>。' +
+              '<details class="analogy-box"><summary>為什麼我們該關心</summary><div class="analogy-content">如果你的組織網站還在用 HTTP，訪客的每一次瀏覽都是明文的。在某些國家，這可能讓訪客面臨風險。<strong>Let\'s Encrypt</strong> 提供免費的 TLS 憑證，現在部署 HTTPS 幾乎零成本。截至 2024 年，全球約 95% 的網頁瀏覽已經使用 HTTPS。</div></details>',
+        keyPoint: 'HTTPS 是目前網路隱私的基本底線。但它不是萬能的——下一個主題「SNI 洩漏」會告訴你，即使有 HTTPS，你訪問了哪個網站仍然可能被看到。',
+        highlightNodes: ['node-user', 'node-isp', 'node-internet', 'node-server'],
+        highlightEdges: ['edge-user-isp', 'edge-isp-internet', 'edge-internet-server'],
+        onEnter: () => { showSpy(true, '知道你連上 example.com', '但不知道你在上面做什麼'); showTunnel(true); },
+      },
+    ];
+
+    let currentStep = -1;
+    const stepBar = document.getElementById('stepBar');
+    const infoTitle = document.getElementById('infoTitle');
+    const infoBody = document.getElementById('infoBody');
+    const infoKeyPoint = document.getElementById('infoKeyPoint');
+    const infoPanel = document.getElementById('infoPanel');
+    const btnPrev = document.getElementById('btnPrev');
+    const btnNext = document.getElementById('btnNext');
+    const allNodes = document.querySelectorAll('.node-group');
+    const allEdges = document.querySelectorAll('.edge-line');
+
+    steps.forEach((s, i) => {
+      const btn = document.createElement('button');
+      btn.className = 'step-btn';
+      btn.textContent = s.label;
+      btn.addEventListener('click', () => goToStep(i));
+      stepBar.appendChild(btn);
+    });
+
+    function goToStep(index) {
+      currentStep = index;
+      const step = steps[index];
+      const btns = stepBar.querySelectorAll('.step-btn');
+      btns.forEach((b, i) => {
+        b.classList.remove('active', 'done');
+        if (i === index) b.classList.add('active');
+        else if (i < index) b.classList.add('done');
+      });
+      allNodes.forEach(n => { n.classList.remove('highlighted'); n.classList.add('dimmed'); });
+      allEdges.forEach(e => { e.classList.remove('active'); e.classList.add('dimmed'); });
+      step.highlightNodes.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) { el.classList.remove('dimmed'); el.classList.add('highlighted'); }
+      });
+      step.highlightEdges.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) { el.classList.remove('dimmed'); el.classList.add('active'); }
+      });
+      infoTitle.textContent = step.title;
+      infoBody.innerHTML = step.body;
+      if (step.keyPoint) {
+        infoKeyPoint.textContent = step.keyPoint;
+        infoKeyPoint.style.display = 'block';
+      } else {
+        infoKeyPoint.style.display = 'none';
+      }
+      infoPanel.classList.remove('highlight');
+      void infoPanel.offsetWidth;
+      infoPanel.classList.add('highlight');
+      btnPrev.disabled = index === 0;
+      btnNext.textContent = index === steps.length - 1 ? '重新開始 ↺' : '下一步 →';
+      if (step.onEnter) step.onEnter();
+    }
+
+    btnPrev.addEventListener('click', () => { if (currentStep > 0) goToStep(currentStep - 1); });
+    btnNext.addEventListener('click', () => {
+      if (currentStep === -1) goToStep(0);
+      else if (currentStep === steps.length - 1) { currentStep = -1; resetDiagram(); }
+      else goToStep(currentStep + 1);
+    });
+
+    function resetDiagram() {
+      allNodes.forEach(n => { n.classList.remove('highlighted', 'dimmed'); });
+      allEdges.forEach(e => { e.classList.remove('active', 'dimmed'); });
+      stepBar.querySelectorAll('.step-btn').forEach(b => b.classList.remove('active', 'done'));
+      infoTitle.textContent = '選擇一個步驟開始';
+      infoBody.innerHTML = '了解 HTTP 與 HTTPS 的差異、TLS 握手的過程，以及加密到底保護了什麼。';
+      infoKeyPoint.style.display = 'none';
+      infoPanel.classList.remove('highlight');
+      btnPrev.disabled = true;
+      btnNext.textContent = '開始 →';
+      showSpy(false);
+      showTunnel(false);
+    }
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowRight' || e.key === 'ArrowDown') { e.preventDefault(); btnNext.click(); }
+      else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') { e.preventDefault(); btnPrev.click(); }
+    });
+  })();
+  </script>
+</body>
+</html>

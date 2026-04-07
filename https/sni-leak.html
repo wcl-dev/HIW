@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SNI 洩漏 — HIW</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=Noto+Sans+TC:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../shared/style.css">
+</head>
+<body>
+  <nav class="site-nav">
+    <a href="../index.html" class="logo">HIW</a>
+    <ul class="nav-links">
+      <li><a href="../index.html">首頁</a></li>
+      <li><a href="index.html">HTTPS</a></li>
+      <li><a href="sni-leak.html" class="active">SNI 洩漏</a></li>
+    </ul>
+  </nav>
+
+  <div class="page-container">
+    <h1 class="page-title">SNI 洩漏</h1>
+    <p class="page-subtitle">即使有 HTTPS，你正在訪問「哪個網站」仍然可能被看到。</p>
+
+    <div class="step-bar" id="stepBar"></div>
+
+    <div class="diagram-container">
+      <svg id="diagram" viewBox="0 0 900 300" xmlns="http://www.w3.org/2000/svg">
+        <!-- 連線 -->
+        <line id="edge-user-isp" class="edge-line" x1="110" y1="120" x2="300" y2="120"/>
+        <line id="edge-isp-server" class="edge-line" x1="430" y1="120" x2="600" y2="80"/>
+        <line id="edge-isp-server2" class="edge-line" x1="430" y1="130" x2="600" y2="160"/>
+        <line id="edge-isp-server3" class="edge-line" x1="430" y1="140" x2="600" y2="240"/>
+
+        <!-- SNI 明文氣泡 -->
+        <g id="sni-bubble" style="display:none;">
+          <rect x="175" y="160" width="220" height="55" rx="8"
+                fill="var(--node-server)" opacity="0.12" stroke="var(--node-server)" stroke-width="1"/>
+          <text x="285" y="180" text-anchor="middle" fill="var(--node-server)" font-size="11" font-family="inherit" font-weight="600">Client Hello（明文）</text>
+          <text x="285" y="198" text-anchor="middle" fill="var(--text-dim)" font-size="10" font-family="inherit">SNI: news.example.com</text>
+        </g>
+
+        <!-- ECH 加密氣泡 -->
+        <g id="ech-bubble" style="display:none;">
+          <rect x="175" y="160" width="220" height="55" rx="8"
+                fill="var(--step-done)" opacity="0.12" stroke="var(--step-done)" stroke-width="1"/>
+          <text x="285" y="180" text-anchor="middle" fill="var(--step-done)" font-size="11" font-family="inherit" font-weight="600">Client Hello（加密）</text>
+          <text x="285" y="198" text-anchor="middle" fill="var(--text-dim)" font-size="10" font-family="inherit">SNI: ****（已加密）</text>
+        </g>
+
+        <!-- 節點 -->
+        <g id="node-user" class="node-group">
+          <rect class="node-box" x="40" y="95" width="120" height="50" rx="10"
+                fill="var(--node-user)" opacity="0.15" stroke="var(--node-user)" stroke-width="2"/>
+          <text class="node-label" x="100" y="118" fill="var(--node-user)">你的瀏覽器</text>
+          <text class="node-sublabel" x="100" y="135">TLS Client Hello</text>
+        </g>
+
+        <g id="node-isp" class="node-group">
+          <rect class="node-box" x="290" y="95" width="150" height="55" rx="10"
+                fill="var(--node-isp)" opacity="0.15" stroke="var(--node-isp)" stroke-width="2"/>
+          <text class="node-label" x="365" y="118" fill="var(--node-isp)">ISP / 審查者</text>
+          <text class="node-sublabel" x="365" y="138">能讀取 SNI 欄位</text>
+        </g>
+
+        <g id="node-server1" class="node-group">
+          <rect class="node-box" x="590" y="55" width="180" height="50" rx="10"
+                fill="var(--step-done)" opacity="0.15" stroke="var(--step-done)" stroke-width="2"/>
+          <text class="node-label" x="680" y="78" fill="var(--step-done)">news.example.com</text>
+          <text class="node-sublabel" x="680" y="95">新聞網站</text>
+        </g>
+
+        <g id="node-server2" class="node-group">
+          <rect class="node-box" x="590" y="135" width="180" height="50" rx="10"
+                fill="var(--node-dns)" opacity="0.15" stroke="var(--node-dns)" stroke-width="2"/>
+          <text class="node-label" x="680" y="158" fill="var(--node-dns)">shop.example.com</text>
+          <text class="node-sublabel" x="680" y="175">購物網站</text>
+        </g>
+
+        <g id="node-server3" class="node-group">
+          <rect class="node-box" x="590" y="215" width="180" height="50" rx="10"
+                fill="var(--node-asn)" opacity="0.15" stroke="var(--node-asn)" stroke-width="2"/>
+          <text class="node-label" x="680" y="238" fill="var(--node-asn)">blog.example.com</text>
+          <text class="node-sublabel" x="680" y="255">部落格</text>
+        </g>
+
+        <!-- 共享 IP 標示 -->
+        <text x="790" y="160" text-anchor="start" fill="var(--text-dim)" font-size="10" font-family="inherit" transform="rotate(90, 790, 160)">同一個 IP</text>
+        <line x1="783" y1="80" x2="783" y2="250" stroke="var(--text-dim)" stroke-width="1" stroke-dasharray="3,3" opacity="0.4"/>
+      </svg>
+    </div>
+
+    <div class="info-panel" id="infoPanel">
+      <h3 id="infoTitle">選擇一個步驟開始</h3>
+      <p id="infoBody">HTTPS 加密了通訊內容，但 TLS 握手的第一步卻是明文的——這個設計上的限制讓你訪問的網站名稱可能被看到。</p>
+      <div class="key-point" id="infoKeyPoint" style="display:none;"></div>
+    </div>
+
+    <div class="step-nav">
+      <button id="btnPrev" disabled>← 上一步</button>
+      <button id="btnNext">開始 →</button>
+    </div>
+  </div>
+
+  <footer class="site-footer">HIW — How Internet Works · 以 <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">CC BY 4.0</a> 授權釋出</footer>
+
+  <script>
+  (function () {
+    const sniBubble = document.getElementById('sni-bubble');
+    const echBubble = document.getElementById('ech-bubble');
+
+    const steps = [
+      {
+        label: '1. 為什麼需要 SNI',
+        title: '一個 IP 上有很多網站',
+        body: '現代網路上，很多網站<strong>共用同一個 IP 位址</strong>。一台伺服器（或一個 CDN 節點）可能同時託管數百個不同的網站。' +
+              '<br><br>當你的瀏覽器連上這個 IP 時，伺服器需要知道：「你要找的是我上面的哪一個網站？」才能出示正確的 TLS 憑證。' +
+              '<br><br>這就是 <strong>SNI（Server Name Indication）</strong>的用途——瀏覽器在 TLS 握手的第一步（Client Hello）中，用明文告訴伺服器自己要連的域名。' +
+              '<details class="analogy-box"><summary>生活化比喻</summary><div class="analogy-content">想像一棟大樓裡有很多家公司。你走進大廳，必須告訴櫃台「我要找 A 公司」，櫃台才知道帶你去哪層樓。但問題是，大廳裡的所有人都聽到你說了要找誰。</div></details>',
+        keyPoint: 'SNI 在 TLS 加密建立「之前」就被送出，所以它是明文的。這是一個設計上的先有雞還是先有蛋的問題——加密需要憑證，而選憑證需要知道域名。',
+        highlightNodes: ['node-user', 'node-server1', 'node-server2', 'node-server3'],
+        highlightEdges: ['edge-isp-server', 'edge-isp-server2', 'edge-isp-server3'],
+        onEnter: () => { sniBubble.style.display = 'none'; echBubble.style.display = 'none'; },
+      },
+      {
+        label: '2. SNI 洩漏了什麼',
+        title: '誰能看到你的 SNI？',
+        body: '因為 SNI 是明文的，任何能觀察你網路流量的人都能看到你<strong>正在訪問哪個網站</strong>：' +
+              '<br><br>- 你的 <strong>ISP</strong>' +
+              '<br>- 公共 Wi-Fi 的管理者' +
+              '<br>- 網路上的任何中間節點' +
+              '<br>- 政府的監控設備' +
+              '<br><br>即使你已經使用 HTTPS，即使通訊內容是加密的，<strong>你在訪問哪個網站</strong>這個事實仍然暴露了。',
+        keyPoint: 'HTTPS 保護了「你在網站上做什麼」，但 SNI 洩漏了「你在訪問哪個網站」。對記者、行動者、或身處高風險地區的人來說，光是「訪問了某個網站」本身就可能帶來危險。',
+        highlightNodes: ['node-user', 'node-isp', 'node-server1'],
+        highlightEdges: ['edge-user-isp', 'edge-isp-server'],
+        onEnter: () => { sniBubble.style.display = 'block'; echBubble.style.display = 'none'; },
+      },
+      {
+        label: '3. 被用於審查',
+        title: 'SNI 過濾：精準封鎖特定網站',
+        body: '政府可以利用 SNI 來<strong>精準封鎖</strong>特定網站，而不影響同一個 IP 上的其他網站。' +
+              '<br><br>做法是：檢查每一個 TLS 連線的 Client Hello，如果 SNI 欄位包含被封鎖的域名，就<strong>阻斷這個連線</strong>（通常是送一個 TCP RST 封包）。' +
+              '<br><br>這比封鎖 IP 更精準——封 IP 會連帶影響同一台伺服器上的所有網站，但 SNI 過濾可以只擋一個。' +
+              '<details class="analogy-box"><summary>台灣的例子</summary><div class="analogy-content">中國的防火長城（GFW）就大量使用 SNI 過濾。當你在中國嘗試連線到 Google 時，GFW 會檢查 TLS 握手中的 SNI，發現是 google.com 就立刻切斷連線。這也是為什麼 a2 提到的「換 DNS」在中國通常沒用——即使你拿到了正確的 IP，SNI 過濾仍然會擋住你。</div></details>',
+        keyPoint: 'SNI 過濾是比 DNS 封鎖更深層的審查手段。它發生在 TLS 層，比 DNS 更難繞過。',
+        highlightNodes: ['node-user', 'node-isp'],
+        highlightEdges: ['edge-user-isp'],
+        onEnter: () => { sniBubble.style.display = 'block'; echBubble.style.display = 'none'; },
+      },
+      {
+        label: '4. 解法：ECH',
+        title: 'ECH：把 SNI 也加密起來',
+        body: '<strong>ECH（Encrypted Client Hello）</strong>是目前解決 SNI 洩漏的方案。它的原理是：' +
+              '<br><br><strong>1)</strong> 伺服器事先把一組公鑰發布在 DNS 紀錄中' +
+              '<br><strong>2)</strong> 瀏覽器在發送 Client Hello 時，用這組公鑰加密 SNI 欄位' +
+              '<br><strong>3)</strong> 中間人只能看到一個加密過的 SNI，無法得知你要連的是哪個網站' +
+              '<br><br>Cloudflare 已經在其所有客戶的網站上支援 ECH，Firefox 也已內建支援。' +
+              '<details class="analogy-box"><summary>生活化比喻</summary><div class="analogy-content">回到大樓的比喻：ECH 就像你走進大廳時，把要找的公司名稱寫在一張<strong>只有櫃台能打開的加密紙條</strong>上。旁邊的人只看到你遞了一張紙條，但不知道你要找誰。</div></details>',
+        keyPoint: 'ECH 需要搭配 DoH（加密 DNS）一起使用才有效——否則 DNS 查詢本身就會洩漏你要訪問的域名。',
+        highlightNodes: ['node-user', 'node-isp', 'node-server1'],
+        highlightEdges: ['edge-user-isp', 'edge-isp-server'],
+        onEnter: () => { sniBubble.style.display = 'none'; echBubble.style.display = 'block'; },
+      },
+      {
+        label: '5. 現況與限制',
+        title: '目前的部署狀況',
+        body: '<strong>好消息：</strong>' +
+              '<br>- Cloudflare 已全面支援 ECH' +
+              '<br>- Firefox 已內建 ECH 支援' +
+              '<br>- Chrome 正在推進中' +
+              '<br><br><strong>挑戰：</strong>' +
+              '<br>- ECH 必須搭配 <strong>DoH/DoT</strong>（加密 DNS），否則 DNS 查詢會洩漏域名' +
+              '<br>- 有些國家（如中國）已經開始<strong>封鎖使用 ECH 的連線</strong>——他們的策略是：如果偵測到 Client Hello 被加密了，就直接阻斷連線' +
+              '<br>- 網站必須主動部署 ECH，使用者端無法單方面啟用' +
+              '<details class="analogy-box"><summary>為什麼我們該關心</summary><div class="analogy-content">SNI 洩漏讓「你訪問了哪個人權網站」這個事實暴露在所有中間人面前。在某些國家，這本身就足以帶來風險。了解 SNI 的存在和 ECH 的進展，有助於評估你的通訊安全水準——HTTPS 的鎖頭標示不代表你的訪問行為完全隱密。</div></details>',
+        keyPoint: '隱私保護是一場持續的攻防。SNI 洩漏存在了二十多年，ECH 是技術社群的回應，但部署需要時間，而審查者也在適應。',
+        highlightNodes: ['node-user', 'node-isp', 'node-server1', 'node-server2', 'node-server3'],
+        highlightEdges: ['edge-user-isp', 'edge-isp-server', 'edge-isp-server2', 'edge-isp-server3'],
+        onEnter: () => { sniBubble.style.display = 'none'; echBubble.style.display = 'block'; },
+      },
+    ];
+
+    let currentStep = -1;
+    const stepBar = document.getElementById('stepBar');
+    const infoTitle = document.getElementById('infoTitle');
+    const infoBody = document.getElementById('infoBody');
+    const infoKeyPoint = document.getElementById('infoKeyPoint');
+    const infoPanel = document.getElementById('infoPanel');
+    const btnPrev = document.getElementById('btnPrev');
+    const btnNext = document.getElementById('btnNext');
+    const allNodes = document.querySelectorAll('.node-group');
+    const allEdges = document.querySelectorAll('.edge-line');
+
+    steps.forEach((s, i) => {
+      const btn = document.createElement('button');
+      btn.className = 'step-btn';
+      btn.textContent = s.label;
+      btn.addEventListener('click', () => goToStep(i));
+      stepBar.appendChild(btn);
+    });
+
+    function goToStep(index) {
+      currentStep = index;
+      const step = steps[index];
+      const btns = stepBar.querySelectorAll('.step-btn');
+      btns.forEach((b, i) => {
+        b.classList.remove('active', 'done');
+        if (i === index) b.classList.add('active');
+        else if (i < index) b.classList.add('done');
+      });
+      allNodes.forEach(n => { n.classList.remove('highlighted'); n.classList.add('dimmed'); });
+      allEdges.forEach(e => { e.classList.remove('active'); e.classList.add('dimmed'); });
+      step.highlightNodes.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) { el.classList.remove('dimmed'); el.classList.add('highlighted'); }
+      });
+      step.highlightEdges.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) { el.classList.remove('dimmed'); el.classList.add('active'); }
+      });
+      infoTitle.textContent = step.title;
+      infoBody.innerHTML = step.body;
+      if (step.keyPoint) {
+        infoKeyPoint.textContent = step.keyPoint;
+        infoKeyPoint.style.display = 'block';
+      } else {
+        infoKeyPoint.style.display = 'none';
+      }
+      infoPanel.classList.remove('highlight');
+      void infoPanel.offsetWidth;
+      infoPanel.classList.add('highlight');
+      btnPrev.disabled = index === 0;
+      btnNext.textContent = index === steps.length - 1 ? '重新開始 ↺' : '下一步 →';
+      if (step.onEnter) step.onEnter();
+    }
+
+    btnPrev.addEventListener('click', () => { if (currentStep > 0) goToStep(currentStep - 1); });
+    btnNext.addEventListener('click', () => {
+      if (currentStep === -1) goToStep(0);
+      else if (currentStep === steps.length - 1) { currentStep = -1; resetDiagram(); }
+      else goToStep(currentStep + 1);
+    });
+
+    function resetDiagram() {
+      allNodes.forEach(n => { n.classList.remove('highlighted', 'dimmed'); });
+      allEdges.forEach(e => { e.classList.remove('active', 'dimmed'); });
+      stepBar.querySelectorAll('.step-btn').forEach(b => b.classList.remove('active', 'done'));
+      infoTitle.textContent = '選擇一個步驟開始';
+      infoBody.innerHTML = 'HTTPS 加密了通訊內容，但 TLS 握手的第一步卻是明文的——這個設計上的限制讓你訪問的網站名稱可能被看到。';
+      infoKeyPoint.style.display = 'none';
+      infoPanel.classList.remove('highlight');
+      btnPrev.disabled = true;
+      btnNext.textContent = '開始 →';
+      sniBubble.style.display = 'none';
+      echBubble.style.display = 'none';
+    }
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowRight' || e.key === 'ArrowDown') { e.preventDefault(); btnNext.click(); }
+      else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') { e.preventDefault(); btnPrev.click(); }
+    });
+  })();
+  </script>
+</body>
+</html>
