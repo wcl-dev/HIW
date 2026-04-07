@@ -37,6 +37,8 @@ body {
   background: var(--bg);
   color: var(--text);
   line-height: 1.7;
+  word-break: keep-all;
+  overflow-wrap: break-word;
   min-height: 100vh;
 }
 
