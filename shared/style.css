@@ -381,6 +381,7 @@ a:hover {
   color: var(--text-dim);
   font-size: 0.9rem;
   flex-grow: 1;
+  text-wrap: balance;
 }
 
 .topic-card .card-tag {
