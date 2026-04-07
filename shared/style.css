@@ -185,7 +185,7 @@ a:hover {
 
 .node-label {
   fill: var(--text);
-  font-size: 19px;
+  font-size: 16px;
   font-weight: 600;
   font-family: inherit;
   text-anchor: middle;
@@ -193,7 +193,7 @@ a:hover {
 
 .node-sublabel {
   fill: var(--text-dim);
-  font-size: 14px;
+  font-size: 12px;
   font-family: inherit;
   text-anchor: middle;
 }
