@@ -6,25 +6,25 @@
 }
 
 :root {
-  --bg: #0c0d10;
-  --bg-card: #16181f;
-  --bg-card-hover: #1e2029;
-  --text: #eaeaed;
-  --text-dim: #9ca3af;
-  --accent: #60a5fa;
-  --accent-soft: rgba(96, 165, 250, 0.10);
-  --border: rgba(255, 255, 255, 0.06);
-  --ring: rgba(255, 255, 255, 0.08);
-  --step-active: #60a5fa;
-  --step-done: #34d399;
-  --step-pending: #4b5563;
-  --node-user: #818cf8;
-  --node-dns: #f59e0b;
-  --node-isp: #10b981;
-  --node-ixp: #ec4899;
-  --node-asn: #8b5cf6;
-  --node-server: #ef4444;
-  --accent-glow: rgba(96, 165, 250, 0.25);
+  --bg: #f5f5f0;
+  --bg-card: #ffffff;
+  --bg-card-hover: #f0f1ec;
+  --text: #0e0f0c;
+  --text-dim: #454745;
+  --accent: #2e7d32;
+  --accent-soft: rgba(159, 232, 112, 0.12);
+  --border: rgba(14, 15, 12, 0.08);
+  --ring: rgba(14, 15, 12, 0.10);
+  --step-active: #9fe870;
+  --step-done: #054d28;
+  --step-pending: #868685;
+  --node-user: #5b5fc7;
+  --node-dns: #b45309;
+  --node-isp: #047857;
+  --node-ixp: #be185d;
+  --node-asn: #6d28d9;
+  --node-server: #dc2626;
+  --accent-glow: rgba(159, 232, 112, 0.35);
   --radius: 16px;
   --radius-lg: 24px;
   --transition: 0.2s ease;
@@ -64,7 +64,7 @@ a:hover {
   justify-content: space-between;
   padding: 1rem 2rem;
   border-bottom: 1px solid var(--border);
-  background: rgba(12, 13, 16, 0.85);
+  background: rgba(245, 245, 240, 0.85);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   position: sticky;
@@ -152,7 +152,7 @@ a:hover {
 
 .step-btn.active {
   background: var(--step-active);
-  color: #fff;
+  color: #163300;
   border-color: var(--step-active);
   font-weight: 600;
 }
@@ -192,11 +192,11 @@ a:hover {
 }
 
 .node-group.dimmed {
-  opacity: 0.2;
+  opacity: 0.35;
 }
 
 .node-group.dimmed:hover {
-  opacity: 0.2;
+  opacity: 0.35;
 }
 
 .node-group.highlighted .node-box {
@@ -257,7 +257,7 @@ a:hover {
 }
 
 .analogy-box summary:hover {
-  background: rgba(96, 165, 250, 0.08);
+  background: rgba(159, 232, 112, 0.12);
 }
 
 .analogy-box summary::before {
@@ -368,7 +368,7 @@ a:hover {
 
 .topic-card:hover {
   transform: scale(1.02);
-  box-shadow: 0 0 0 1px rgba(96, 165, 250, 0.2), 0 12px 32px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 0 0 1px rgba(46, 125, 50, 0.2), 0 12px 32px rgba(0, 0, 0, 0.08);
 }
 
 .topic-card h3 {
