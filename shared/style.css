@@ -209,6 +209,10 @@ a:hover {
   font-weight: 600;
   font-family: inherit;
   text-anchor: middle;
+  paint-order: stroke fill;
+  stroke: var(--bg-card);
+  stroke-width: 5px;
+  stroke-linejoin: round;
 }
 
 .node-sublabel {
@@ -216,6 +220,10 @@ a:hover {
   font-size: 12px;
   font-family: inherit;
   text-anchor: middle;
+  paint-order: stroke fill;
+  stroke: var(--bg-card);
+  stroke-width: 4px;
+  stroke-linejoin: round;
 }
 
 .edge-line {
