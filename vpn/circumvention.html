@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VPN 翻牆 — HIW</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=Noto+Sans+TC:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../shared/style.css">
+</head>
+<body>
+  <nav class="site-nav">
+    <a href="../index.html" class="logo">HIW</a>
+    <ul class="nav-links">
+      <li><a href="../index.html">首頁</a></li>
+      <li><a href="index.html">VPN</a></li>
+      <li><a href="circumvention.html" class="active">VPN 翻牆</a></li>
+    </ul>
+  </nav>
+
+  <div class="page-container">
+    <h1 class="page-title">VPN 翻牆</h1>
+    <p class="page-subtitle">當政府封鎖境外網站，VPN 如何繞過？為什麼有些國家連 VPN 也擋得住？</p>
+
+    <div class="step-bar" id="stepBar"></div>
+
+    <div class="diagram-container">
+      <svg id="diagram" viewBox="0 0 900 320" xmlns="http://www.w3.org/2000/svg">
+        <!-- 國境分界 -->
+        <line x1="450" y1="20" x2="450" y2="300" stroke="var(--node-server)" stroke-width="1.5" stroke-dasharray="6,4" opacity="0.4"/>
+        <text x="220" y="30" text-anchor="middle" fill="var(--node-server)" font-size="12" font-family="inherit" opacity="0.6">境內（受審查）</text>
+        <text x="680" y="30" text-anchor="middle" fill="var(--step-done)" font-size="12" font-family="inherit" opacity="0.6">境外（自由）</text>
+
+        <!-- 直接被封鎖路徑 -->
+        <line id="edge-direct" class="edge-line" x1="120" y1="100" x2="730" y2="100"/>
+        <g id="block-direct" style="display:none;">
+          <line x1="430" y1="85" x2="470" y2="115" stroke="var(--node-server)" stroke-width="3"/>
+          <line x1="470" y1="85" x2="430" y2="115" stroke="var(--node-server)" stroke-width="3"/>
+        </g>
+
+        <!-- VPN 路徑 -->
+        <line id="edge-user-vpn" class="edge-line" x1="120" y1="200" x2="540" y2="200"/>
+        <line id="edge-vpn-target" class="edge-line" x1="660" y1="200" x2="730" y2="200"/>
+
+        <!-- VPN 加密通道 -->
+        <rect id="vpn-tunnel" x="100" y="175" width="460" height="50" rx="25"
+              fill="none" stroke="var(--step-done)" stroke-width="2.5" stroke-dasharray="8,4" opacity="0"/>
+
+        <!-- DPI 偵測 -->
+        <g id="dpi-detection" style="display:none;">
+          <rect x="380" y="245" width="140" height="50" rx="10"
+                fill="var(--node-server)" opacity="0.15" stroke="var(--node-server)" stroke-width="2"/>
+          <text class="node-label" x="450" y="268" fill="var(--node-server)">DPI 偵測</text>
+          <text class="node-sublabel" x="450" y="285">識別 VPN 流量</text>
+        </g>
+
+        <!-- 節點 -->
+        <g id="node-user" class="node-group">
+          <rect class="node-box" x="40" y="80" width="120" height="50" rx="10"
+                fill="var(--node-user)" opacity="0.15" stroke="var(--node-user)" stroke-width="2"/>
+          <text class="node-label" x="100" y="103" fill="var(--node-user)">境內使用者</text>
+          <text class="node-sublabel" x="100" y="120">想看被封網站</text>
+        </g>
+
+        <g id="node-target" class="node-group">
+          <rect class="node-box" x="720" y="80" width="120" height="50" rx="10"
+                fill="var(--node-asn)" opacity="0.15" stroke="var(--node-asn)" stroke-width="2"/>
+          <text class="node-label" x="780" y="103" fill="var(--node-asn)">被封網站</text>
+          <text class="node-sublabel" x="780" y="120">YouTube...</text>
+        </g>
+
+        <g id="node-user2" class="node-group">
+          <rect class="node-box" x="40" y="180" width="120" height="50" rx="10"
+                fill="var(--node-user)" opacity="0.15" stroke="var(--node-user)" stroke-width="2"/>
+          <text class="node-label" x="100" y="203" fill="var(--node-user)">境內使用者</text>
+          <text class="node-sublabel" x="100" y="220">啟動 VPN</text>
+        </g>
+
+        <g id="node-vpn" class="node-group">
+          <rect class="node-box" x="540" y="180" width="130" height="50" rx="10"
+                fill="var(--node-ixp)" opacity="0.15" stroke="var(--node-ixp)" stroke-width="2"/>
+          <text class="node-label" x="605" y="203" fill="var(--node-ixp)">境外 VPN</text>
+          <text class="node-sublabel" x="605" y="220">跳板伺服器</text>
+        </g>
+
+        <g id="node-target2" class="node-group">
+          <rect class="node-box" x="720" y="180" width="120" height="50" rx="10"
+                fill="var(--node-asn)" opacity="0.15" stroke="var(--node-asn)" stroke-width="2"/>
+          <text class="node-label" x="780" y="203" fill="var(--node-asn)">目標網站</text>
+          <text class="node-sublabel" x="780" y="220">繞過封鎖</text>
+        </g>
+      </svg>
+    </div>
+
+    <div class="info-panel" id="infoPanel">
+      <h3 id="infoTitle">選擇一個步驟開始</h3>
+      <p id="infoBody">在威權國家，政府會封鎖大量境外網站。VPN 是最常見的翻牆工具——但這場貓捉老鼠的遊戲沒這麼簡單。</p>
+      <div class="key-point" id="infoKeyPoint" style="display:none;"></div>
+    </div>
+
+    <div class="step-nav">
+      <button id="btnPrev" disabled>← 上一步</button>
+      <button id="btnNext">開始 →</button>
+    </div>
+  </div>
+
+  <footer class="site-footer">HIW — How Internet Works · © weichen · 以 <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">CC BY 4.0</a> 授權釋出</footer>
+
+  <script>
+  (function () {
+    const blockDirect = document.getElementById('block-direct');
+    const vpnTunnel = document.getElementById('vpn-tunnel');
+    const dpiDetection = document.getElementById('dpi-detection');
+
+    const steps = [
+      {
+        label: '1. 直接被封鎖',
+        title: '在威權國家，連線直接被擋下',
+        body: '很多國家會大規模封鎖境外網站。中國的「防火長城（GFW）」是規模最大、最複雜的一套系統，封鎖了 Google、Facebook、YouTube、Twitter、許多新聞網站和維基百科部分內容。' +
+              '<br><br>當你嘗試直接連這些網站時，封鎖會在多個層面發生：' +
+              '<br>- <strong>DNS 封鎖</strong>' +
+              '<br>- <strong>SNI 過濾</strong>' +
+              '<br>- <strong>IP 封鎖</strong>' +
+              '<br>- <strong>TCP RST 注入</strong>（直接切斷連線）' +
+              '<details class="analogy-box"><summary>生活化比喻</summary><div class="analogy-content">就像你想去某家境外的書店，但國境的關卡攔住你，說「這家店不准你去」。你連門都進不去。</div></details>',
+        keyPoint: '單純的 HTTPS 不夠用——HTTPS 解決不了「我訪問的是哪個網站」這個問題。當審查者已經知道你想去某個被封的網站，他可以直接擋下整個連線。',
+        highlightNodes: ['node-user', 'node-target'],
+        highlightEdges: ['edge-direct'],
+        onEnter: () => {
+          blockDirect.style.display = 'block';
+          vpnTunnel.style.opacity = '0';
+          dpiDetection.style.display = 'none';
+        },
+      },
+      {
+        label: '2. 用 VPN 繞過',
+        title: 'VPN：把流量包進加密通道',
+        body: '使用 VPN 後，你的設備不再直接連到被封的網站。它連到的是<strong>境外的 VPN 伺服器</strong>。' +
+              '<br><br>對審查者來說，他們只看到：' +
+              '<br>- 你連到了一台境外的伺服器' +
+              '<br>- 流量是加密的，看不到內容' +
+              '<br>- 看不到你在連哪個被封的網站' +
+              '<br><br>VPN 伺服器收到加密流量後，解密、轉發到目標網站，再把回應帶回給你。一切都繞過了境內的封鎖機制。' +
+              '<details class="analogy-box"><summary>生活化比喻</summary><div class="analogy-content">就像你雇了一個<strong>境外的代購</strong>，並且兩人之間用密封信件溝通。國境關卡只看到你在跟境外的某個人通信，但不知道你委託他做什麼，也不知道你最終要買的是哪家被禁的店的東西。</div></details>',
+        keyPoint: '對審查者來說，VPN 流量看起來只是「一個境內使用者連到一個境外伺服器」——這在商業活動中非常普遍，難以一刀切地封掉。',
+        highlightNodes: ['node-user2', 'node-vpn', 'node-target2'],
+        highlightEdges: ['edge-user-vpn', 'edge-vpn-target'],
+        onEnter: () => {
+          blockDirect.style.display = 'none';
+          vpnTunnel.style.opacity = '1';
+          dpiDetection.style.display = 'none';
+        },
+      },
+      {
+        label: '3. 審查者反擊',
+        title: 'DPI：偵測 VPN 流量本身',
+        body: '審查者也不傻。當 VPN 變得普及，他們開始用<strong>深度封包檢測（DPI, Deep Packet Inspection）</strong>來識別 VPN 流量。' +
+              '<br><br>常見的 VPN 協定（OpenVPN、WireGuard、IPSec）都有自己的「指紋」——封包的結構、握手模式、加密特徵。DPI 設備能識別這些特徵，然後：' +
+              '<br>- 阻斷該連線' +
+              '<br>- 限速到無法使用' +
+              '<br>- 把該 VPN 伺服器的 IP 加入黑名單' +
+              '<br><br>中國的 GFW 和伊朗的審查系統都大量使用 DPI 技術。' +
+              '<details class="analogy-box"><summary>生活化比喻</summary><div class="analogy-content">關卡開始檢查信件的「外觀」。即使他們看不到信件內容，但他們認得「這種紙、這種封蠟、這種字跡」就是某種代購用的，於是把這類信件全部攔下。</div></details>',
+        keyPoint: 'VPN 翻牆是一場持續的攻防戰。審查者不只擋網站，也擋翻牆工具本身。',
+        highlightNodes: ['node-user2', 'node-vpn'],
+        highlightEdges: ['edge-user-vpn'],
+        onEnter: () => {
+          blockDirect.style.display = 'none';
+          vpnTunnel.style.opacity = '1';
+          dpiDetection.style.display = 'block';
+        },
+      },
+      {
+        label: '4. 偽裝技術',
+        title: '反偵測：把 VPN 偽裝成正常流量',
+        body: '為了對抗 DPI，新的協定開始把 VPN 流量<strong>偽裝</strong>成看起來像正常的網路活動：' +
+              '<br><br><strong>Shadowsocks</strong>——華人社群開發的協定，把流量看起來像普通的 HTTPS 連線' +
+              '<br><strong>V2Ray / VMess / VLESS</strong>——更進階的偽裝協定，加上多種混淆方式' +
+              '<br><strong>Trojan</strong>——直接把流量偽裝成普通的 TLS 流量，讓 DPI 無從區分' +
+              '<br><strong>obfs4 / meek（Tor 用）</strong>——把 Tor 流量偽裝成普通網頁瀏覽' +
+              '<br><br>核心原理都是：<strong>讓你的翻牆流量看起來和一般使用者瀏覽網站沒兩樣</strong>，DPI 就無法精準封鎖。',
+        keyPoint: '偽裝協定是當代翻牆工具的核心技術。它們不只加密內容，更要讓「翻牆」這件事本身在網路上看起來像正常流量。',
+        highlightNodes: ['node-user2', 'node-vpn', 'node-target2'],
+        highlightEdges: ['edge-user-vpn', 'edge-vpn-target'],
+        onEnter: () => {
+          blockDirect.style.display = 'none';
+          vpnTunnel.style.opacity = '1';
+          dpiDetection.style.display = 'none';
+        },
+      },
+      {
+        label: '5. 終局與限制',
+        title: '貓捉老鼠：永無止境的攻防',
+        body: '審查者也在進化：' +
+              '<br><br><strong>1) 主動探測</strong>——中國 GFW 會主動連到可疑的境外 IP，測試是否回應翻牆協定的握手' +
+              '<br><strong>2) AI 流量分析</strong>——用機器學習分析流量模式，識別異常' +
+              '<br><strong>3) 大規模 IP 封鎖</strong>——直接封鎖 AWS、Google Cloud 的 IP 段，讓自架 VPN 變難' +
+              '<br><strong>4) 全面斷網</strong>——例如伊朗在抗議期間直接斷網，所有翻牆工具都失效' +
+              '<details class="analogy-box"><summary>為什麼我們該關心</summary><div class="analogy-content">在台灣我們不需要翻牆，但要理解：<strong>翻牆是公民社會在威權國家的生命線</strong>。記者、行動者、流亡者都依賴這些工具來取得真實資訊、與外界聯絡。<br><br>台灣的開源社群長年協助開發翻牆工具，包括 Outline、Lantern 等專案。當你支持網路自由議題時，背後是這套技術在運作。</div></details>',
+        keyPoint: '翻牆不是「裝個軟體就解決」的事。它是一場永無止境的技術攻防，需要工具開發者、伺服器運營者和使用者持續投入。',
+        highlightNodes: ['node-user2', 'node-vpn', 'node-target2'],
+        highlightEdges: ['edge-user-vpn', 'edge-vpn-target'],
+        onEnter: () => {
+          blockDirect.style.display = 'none';
+          vpnTunnel.style.opacity = '1';
+          dpiDetection.style.display = 'none';
+        },
+      },
+    ];
+
+    let currentStep = -1;
+    const stepBar = document.getElementById('stepBar');
+    const infoTitle = document.getElementById('infoTitle');
+    const infoBody = document.getElementById('infoBody');
+    const infoKeyPoint = document.getElementById('infoKeyPoint');
+    const infoPanel = document.getElementById('infoPanel');
+    const btnPrev = document.getElementById('btnPrev');
+    const btnNext = document.getElementById('btnNext');
+    const allNodes = document.querySelectorAll('.node-group');
+    const allEdges = document.querySelectorAll('.edge-line');
+
+    steps.forEach((s, i) => {
+      const btn = document.createElement('button');
+      btn.className = 'step-btn';
+      btn.textContent = s.label;
+      btn.addEventListener('click', () => goToStep(i));
+      stepBar.appendChild(btn);
+    });
+
+    function goToStep(index) {
+      currentStep = index;
+      const step = steps[index];
+      const btns = stepBar.querySelectorAll('.step-btn');
+      btns.forEach((b, i) => {
+        b.classList.remove('active', 'done');
+        if (i === index) b.classList.add('active');
+        else if (i < index) b.classList.add('done');
+      });
+      allNodes.forEach(n => { n.classList.remove('highlighted'); n.classList.add('dimmed'); });
+      allEdges.forEach(e => { e.classList.remove('active'); e.classList.add('dimmed'); });
+      step.highlightNodes.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) { el.classList.remove('dimmed'); el.classList.add('highlighted'); }
+      });
+      step.highlightEdges.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) { el.classList.remove('dimmed'); el.classList.add('active'); }
+      });
+      infoTitle.textContent = step.title;
+      infoBody.innerHTML = step.body;
+      if (step.keyPoint) {
+        infoKeyPoint.textContent = step.keyPoint;
+        infoKeyPoint.style.display = 'block';
+      } else {
+        infoKeyPoint.style.display = 'none';
+      }
+      infoPanel.classList.remove('highlight');
+      void infoPanel.offsetWidth;
+      infoPanel.classList.add('highlight');
+      btnPrev.disabled = index === 0;
+      btnNext.textContent = index === steps.length - 1 ? '重新開始 ↺' : '下一步 →';
+      if (step.onEnter) step.onEnter();
+    }
+
+    btnPrev.addEventListener('click', () => { if (currentStep > 0) goToStep(currentStep - 1); });
+    btnNext.addEventListener('click', () => {
+      if (currentStep === -1) goToStep(0);
+      else if (currentStep === steps.length - 1) { currentStep = -1; resetDiagram(); }
+      else goToStep(currentStep + 1);
+    });
+
+    function resetDiagram() {
+      allNodes.forEach(n => { n.classList.remove('highlighted', 'dimmed'); });
+      allEdges.forEach(e => { e.classList.remove('active', 'dimmed'); });
+      stepBar.querySelectorAll('.step-btn').forEach(b => b.classList.remove('active', 'done'));
+      infoTitle.textContent = '選擇一個步驟開始';
+      infoBody.innerHTML = '在威權國家，政府會封鎖大量境外網站。VPN 是最常見的翻牆工具——但這場貓捉老鼠的遊戲沒這麼簡單。';
+      infoKeyPoint.style.display = 'none';
+      infoPanel.classList.remove('highlight');
+      btnPrev.disabled = true;
+      btnNext.textContent = '開始 →';
+      blockDirect.style.display = 'none';
+      vpnTunnel.style.opacity = '0';
+      dpiDetection.style.display = 'none';
+    }
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowRight' || e.key === 'ArrowDown') { e.preventDefault(); btnNext.click(); }
+      else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') { e.preventDefault(); btnPrev.click(); }
+    });
+  })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VPN 的信任問題 — HIW</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=Noto+Sans+TC:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../shared/style.css">
+</head>
+<body>
+  <nav class="site-nav">
+    <a href="../index.html" class="logo">HIW</a>
+    <ul class="nav-links">
+      <li><a href="../index.html">首頁</a></li>
+      <li><a href="index.html">VPN</a></li>
+      <li><a href="trust.html" class="active">VPN 的信任問題</a></li>
+    </ul>
+  </nav>
+
+  <div class="page-container">
+    <h1 class="page-title">VPN 的信任問題</h1>
+    <p class="page-subtitle">VPN 不消除信任，它把信任從 ISP 轉移到 VPN 商。你的 VPN 真的值得信任嗎？</p>
+
+    <div class="step-bar" id="stepBar"></div>
+
+    <div class="diagram-container">
+      <svg id="diagram" viewBox="0 0 900 320" xmlns="http://www.w3.org/2000/svg">
+        <!-- 連線 -->
+        <line id="edge-user-isp" class="edge-line" x1="120" y1="160" x2="270" y2="160"/>
+        <line id="edge-isp-vpn" class="edge-line" x1="380" y1="160" x2="540" y2="160"/>
+        <line id="edge-vpn-server" class="edge-line" x1="660" y1="160" x2="770" y2="160"/>
+
+        <!-- VPN 伺服器的「眼睛」 -->
+        <g id="vpn-eye" style="display:none;">
+          <circle cx="595" cy="220" r="22" fill="var(--node-server)" opacity="0.15" stroke="var(--node-server)" stroke-width="2"/>
+          <text x="595" y="226" text-anchor="middle" font-size="20" fill="var(--node-server)">👁</text>
+          <text x="595" y="265" text-anchor="middle" fill="var(--node-server)" font-size="12" font-family="inherit" font-weight="600">能看到一切</text>
+        </g>
+
+        <!-- VPN 商的真實面貌氣泡 -->
+        <g id="vpn-truth" style="display:none;">
+          <rect x="450" y="60" width="290" height="60" rx="8"
+                fill="var(--node-server)" opacity="0.10" stroke="var(--node-server)" stroke-width="1"/>
+          <text x="595" y="80" text-anchor="middle" fill="var(--node-server)" font-size="12" font-family="inherit" font-weight="600">VPN 商能看到：</text>
+          <text x="595" y="97" text-anchor="middle" fill="var(--text-dim)" font-size="12" font-family="inherit">你的真實 IP、訪問了哪些網站</text>
+          <text x="595" y="112" text-anchor="middle" fill="var(--text-dim)" font-size="12" font-family="inherit">明文內容（若目標網站非 HTTPS）</text>
+        </g>
+
+        <!-- 節點 -->
+        <g id="node-user" class="node-group">
+          <rect class="node-box" x="40" y="135" width="120" height="50" rx="10"
+                fill="var(--node-user)" opacity="0.15" stroke="var(--node-user)" stroke-width="2"/>
+          <text class="node-label" x="100" y="158" fill="var(--node-user)">你</text>
+          <text class="node-sublabel" x="100" y="175">信任 VPN 商</text>
+        </g>
+
+        <g id="node-isp" class="node-group">
+          <rect class="node-box" x="260" y="135" width="120" height="50" rx="10"
+                fill="var(--node-isp)" opacity="0.15" stroke="var(--node-isp)" stroke-width="2"/>
+          <text class="node-label" x="320" y="158" fill="var(--node-isp)">ISP</text>
+          <text class="node-sublabel" x="320" y="175">看不到內容</text>
+        </g>
+
+        <g id="node-vpn" class="node-group">
+          <rect class="node-box" x="530" y="135" width="130" height="50" rx="10"
+                fill="var(--node-ixp)" opacity="0.15" stroke="var(--node-ixp)" stroke-width="2"/>
+          <text class="node-label" x="595" y="158" fill="var(--node-ixp)">VPN 商</text>
+          <text class="node-sublabel" x="595" y="175">看到一切</text>
+        </g>
+
+        <g id="node-server" class="node-group">
+          <rect class="node-box" x="760" y="135" width="120" height="50" rx="10"
+                fill="var(--node-asn)" opacity="0.15" stroke="var(--node-asn)" stroke-width="2"/>
+          <text class="node-label" x="820" y="158" fill="var(--node-asn)">目標網站</text>
+          <text class="node-sublabel" x="820" y="175">看到 VPN IP</text>
+        </g>
+      </svg>
+    </div>
+
+    <div class="info-panel" id="infoPanel">
+      <h3 id="infoTitle">選擇一個步驟開始</h3>
+      <p id="infoBody">VPN 廣告常宣稱「保護你的隱私」、「100% 匿名」。但實際上，VPN 不消除信任，它只是把信任轉移到一個新的對象——VPN 商本身。</p>
+      <div class="key-point" id="infoKeyPoint" style="display:none;"></div>
+    </div>
+
+    <div class="step-nav">
+      <button id="btnPrev" disabled>← 上一步</button>
+      <button id="btnNext">開始 →</button>
+    </div>
+  </div>
+
+  <footer class="site-footer">HIW — How Internet Works · © weichen · 以 <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">CC BY 4.0</a> 授權釋出</footer>
+
+  <script>
+  (function () {
+    const vpnEye = document.getElementById('vpn-eye');
+    const vpnTruth = document.getElementById('vpn-truth');
+
+    const steps = [
+      {
+        label: '1. 信任的轉移',
+        title: 'VPN 不消除信任，只是轉移它',
+        body: '在沒有 VPN 時，你信任的是 <strong>ISP</strong>——你預設它會誠實地把你的封包送到目的地，不會偷看內容（雖然事實上他常常看）。' +
+              '<br><br>用了 VPN 之後，你的<strong>信任對象變成了 VPN 商</strong>。所有通過 VPN 的流量，VPN 商都看得到：' +
+              '<br>- 你的真實 IP 和地理位置' +
+              '<br>- 你連到了哪些網站' +
+              '<br>- 連線時間和流量大小' +
+              '<br>- 如果目標網站沒用 HTTPS，連內容都能看' +
+              '<details class="analogy-box"><summary>生活化比喻</summary><div class="analogy-content">原本你不信任郵差（ISP），所以雇了一個代購（VPN）幫你寄信。但現在<strong>所有信件內容都經過代購的手</strong>。如果這個代購不可信，他可以記錄你寄了什麼信、給誰、賣給其他人，甚至改寫你的信。</div></details>',
+        keyPoint: '「我用 VPN 所以很安全」是常見的誤解。VPN 沒有讓資料消失——它只是把資料的「可見者」從 ISP 換成 VPN 商。',
+        highlightNodes: ['node-user', 'node-isp', 'node-vpn', 'node-server'],
+        highlightEdges: ['edge-user-isp', 'edge-isp-vpn', 'edge-vpn-server'],
+        onEnter: () => {
+          vpnEye.style.display = 'block';
+          vpnTruth.style.display = 'block';
+        },
+      },
+      {
+        label: '2. 免費 VPN 的代價',
+        title: '免費 VPN：你不是顧客，你是商品',
+        body: '免費 VPN 怎麼賺錢？營運伺服器要花錢，總要有人付。常見的商業模式：' +
+              '<br><br><strong>1) 賣使用者資料</strong>——記錄你的瀏覽紀錄，賣給廣告商或資料仲介' +
+              '<br><strong>2) 注入廣告</strong>——在你瀏覽的網頁中植入廣告' +
+              '<br><strong>3) 賣頻寬</strong>——把你的網路連線賣給其他人使用（你的 IP 變成別人的代理）' +
+              '<br><strong>4) 內含惡意軟體</strong>——某些免費 VPN App 直接夾帶廣告軟體或木馬' +
+              '<br><br><strong>真實案例：</strong>2018 年研究發現，前 10 名免費 Android VPN App 中，多數含有追蹤器和個資洩漏漏洞。Hola VPN 曾被爆料把使用者的網路頻寬賣給殭屍網路。' +
+              '<details class="analogy-box"><summary>為什麼我們該關心</summary><div class="analogy-content">當你免費使用一個服務，<strong>你不是顧客，你是產品</strong>。用免費 VPN 來保護隱私，常常是把隱私問題加倍——原本只有 ISP 看你的流量，現在多了一個動機更可疑的 VPN 商也在看，而且還會主動賣出去。</div></details>',
+        keyPoint: '免費 VPN 通常比不用 VPN 更糟糕。如果你需要 VPN 來保護隱私，請選擇付費的、有信譽的服務商。',
+        highlightNodes: ['node-vpn'],
+        highlightEdges: [],
+        onEnter: () => {
+          vpnEye.style.display = 'block';
+          vpnTruth.style.display = 'block';
+        },
+      },
+      {
+        label: '3. 「不留 log」的迷思',
+        title: '所有 VPN 都宣稱「No-log」，但...',
+        body: '幾乎所有 VPN 商都在廣告中強調「無日誌政策（No-log policy）」——他們不記錄你的活動。' +
+              '<br><br>但問題是：' +
+              '<br><strong>1) 你無法驗證</strong>——VPN 內部到底有沒有記錄，你看不到。' +
+              '<br><strong>2) 法律壓力</strong>——當執法機關上門，VPN 商可能必須交出資料，即使原本沒記錄也可能被要求開始記錄。' +
+              '<br><strong>3) 司法管轄</strong>——VPN 商所在的國家決定它要遵守誰的法律。' +
+              '<br><br><strong>真實案例：</strong>' +
+              '<br>- <strong>HideMyAss</strong>（英國）2011 年向 FBI 提供使用者資料，協助逮捕某駭客，儘管它宣稱「無日誌」' +
+              '<br>- <strong>PureVPN</strong>（香港）2017 年向 FBI 提供使用者活動紀錄，違背自己的「無日誌」承諾' +
+              '<br><br>真正能驗證「無日誌」的方法只有兩種：第三方獨立稽核（少數 VPN 商有做）和開放原始碼。',
+        keyPoint: '「無日誌」是行銷話術，不是事實。能真正驗證的方式很少，使用者只能選擇相信。',
+        highlightNodes: ['node-vpn'],
+        highlightEdges: [],
+        onEnter: () => {
+          vpnEye.style.display = 'block';
+          vpnTruth.style.display = 'block';
+        },
+      },
+      {
+        label: '4. 怎麼選擇',
+        title: '評估 VPN 商的幾個關鍵問題',
+        body: '如果你需要使用 VPN（不論是翻牆還是隱私保護），這幾個問題能幫你篩選：' +
+              '<br><br><strong>1) 它在哪個國家註冊？</strong>避開「五眼聯盟」國家（美、英、加、澳、紐）。' +
+              '<br><strong>2) 它有第三方稽核報告嗎？</strong>例如 PwC、Deloitte 等獨立稽核「無日誌政策」。' +
+              '<br><strong>3) 它的支付方式是否匿名？</strong>支援加密貨幣或現金代碼的較好。' +
+              '<br><strong>4) 客戶端是否開源？</strong>開源能讓社群檢視程式碼有沒有後門。' +
+              '<br><strong>5) 過去有沒有資料外洩或法律事件？</strong>查它的歷史。' +
+              '<br><strong>6) 費用合理嗎？</strong>太便宜或免費的要警覺。' +
+              '<br><br>常被推薦的選擇：<strong>Mullvad</strong>（瑞典，匿名註冊）、<strong>ProtonVPN</strong>（瑞士，開源客戶端）、<strong>IVPN</strong>（直布羅陀）。但情況會變，建議參考最新的獨立評測。',
+        keyPoint: '選擇 VPN 不是看廣告詞，而是看它的營運所在國、是否有獨立稽核、過去的事件紀錄。',
+        highlightNodes: ['node-user', 'node-vpn'],
+        highlightEdges: ['edge-user-isp', 'edge-isp-vpn'],
+        onEnter: () => {
+          vpnEye.style.display = 'none';
+          vpnTruth.style.display = 'none';
+        },
+      },
+      {
+        label: '5. 真正匿名要更多',
+        title: 'VPN 不是萬能：什麼時候不夠用？',
+        body: '如果你需要的不只是「換個 IP」，而是真正的匿名性（例如記者保護消息來源、行動者規避追蹤），<strong>VPN 不夠</strong>。' +
+              '<br><br><strong>VPN 的根本限制：</strong>' +
+              '<br>- 仍有單一信任點（VPN 商）' +
+              '<br>- 如果 VPN 商被入侵或被法律施壓，你會被識別' +
+              '<br>- 流量分析（traffic correlation）攻擊：監控者同時看 VPN 入口和出口，能對應出使用者' +
+              '<br><br><strong>更強的匿名工具：</strong>' +
+              '<br><strong>Tor</strong>——把流量分散經過三個志願者節點，沒有單一節點知道完整資訊' +
+              '<br><strong>Tails OS</strong>——專為匿名設計的作業系統，所有流量強制走 Tor' +
+              '<br><br>但這些工具也有自己的代價：速度慢、有些網站封鎖 Tor 出口節點、學習成本高。' +
+              '<details class="analogy-box"><summary>為什麼我們該關心</summary><div class="analogy-content">沒有一個工具能解決所有隱私需求。VPN 適合「日常隱私 + 換國家」的場景。如果你的使用情境涉及人身安全（記者、行動者、舉報人），需要的是更專業的工具組合，並且應該諮詢專業的數位安全資源（如 Access Now Helpline、EFF Surveillance Self-Defense）。</div></details>',
+        keyPoint: '工具的選擇要對應威脅模型。VPN 不是隱私的萬靈丹——它解決某些問題，但也帶來新的信任問題。',
+        highlightNodes: ['node-user', 'node-vpn'],
+        highlightEdges: [],
+        onEnter: () => {
+          vpnEye.style.display = 'block';
+          vpnTruth.style.display = 'block';
+        },
+      },
+    ];
+
+    let currentStep = -1;
+    const stepBar = document.getElementById('stepBar');
+    const infoTitle = document.getElementById('infoTitle');
+    const infoBody = document.getElementById('infoBody');
+    const infoKeyPoint = document.getElementById('infoKeyPoint');
+    const infoPanel = document.getElementById('infoPanel');
+    const btnPrev = document.getElementById('btnPrev');
+    const btnNext = document.getElementById('btnNext');
+    const allNodes = document.querySelectorAll('.node-group');
+    const allEdges = document.querySelectorAll('.edge-line');
+
+    steps.forEach((s, i) => {
+      const btn = document.createElement('button');
+      btn.className = 'step-btn';
+      btn.textContent = s.label;
+      btn.addEventListener('click', () => goToStep(i));
+      stepBar.appendChild(btn);
+    });
+
+    function goToStep(index) {
+      currentStep = index;
+      const step = steps[index];
+      const btns = stepBar.querySelectorAll('.step-btn');
+      btns.forEach((b, i) => {
+        b.classList.remove('active', 'done');
+        if (i === index) b.classList.add('active');
+        else if (i < index) b.classList.add('done');
+      });
+      allNodes.forEach(n => { n.classList.remove('highlighted'); n.classList.add('dimmed'); });
+      allEdges.forEach(e => { e.classList.remove('active'); e.classList.add('dimmed'); });
+      step.highlightNodes.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) { el.classList.remove('dimmed'); el.classList.add('highlighted'); }
+      });
+      step.highlightEdges.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) { el.classList.remove('dimmed'); el.classList.add('active'); }
+      });
+      infoTitle.textContent = step.title;
+      infoBody.innerHTML = step.body;
+      if (step.keyPoint) {
+        infoKeyPoint.textContent = step.keyPoint;
+        infoKeyPoint.style.display = 'block';
+      } else {
+        infoKeyPoint.style.display = 'none';
+      }
+      infoPanel.classList.remove('highlight');
+      void infoPanel.offsetWidth;
+      infoPanel.classList.add('highlight');
+      btnPrev.disabled = index === 0;
+      btnNext.textContent = index === steps.length - 1 ? '重新開始 ↺' : '下一步 →';
+      if (step.onEnter) step.onEnter();
+    }
+
+    btnPrev.addEventListener('click', () => { if (currentStep > 0) goToStep(currentStep - 1); });
+    btnNext.addEventListener('click', () => {
+      if (currentStep === -1) goToStep(0);
+      else if (currentStep === steps.length - 1) { currentStep = -1; resetDiagram(); }
+      else goToStep(currentStep + 1);
+    });
+
+    function resetDiagram() {
+      allNodes.forEach(n => { n.classList.remove('highlighted', 'dimmed'); });
+      allEdges.forEach(e => { e.classList.remove('active', 'dimmed'); });
+      stepBar.querySelectorAll('.step-btn').forEach(b => b.classList.remove('active', 'done'));
+      infoTitle.textContent = '選擇一個步驟開始';
+      infoBody.innerHTML = 'VPN 廣告常宣稱「保護你的隱私」、「100% 匿名」。但實際上，VPN 不消除信任，它只是把信任轉移到一個新的對象——VPN 商本身。';
+      infoKeyPoint.style.display = 'none';
+      infoPanel.classList.remove('highlight');
+      btnPrev.disabled = true;
+      btnNext.textContent = '開始 →';
+      vpnEye.style.display = 'none';
+      vpnTruth.style.display = 'none';
+    }
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowRight' || e.key === 'ArrowDown') { e.preventDefault(); btnNext.click(); }
+      else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') { e.preventDefault(); btnPrev.click(); }
+    });
+  })();
+  </script>
+</body>
+</html>

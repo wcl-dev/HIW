@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VPN 基礎 — HIW</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=Noto+Sans+TC:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../shared/style.css">
+</head>
+<body>
+  <nav class="site-nav">
+    <a href="../index.html" class="logo">HIW</a>
+    <ul class="nav-links">
+      <li><a href="../index.html">首頁</a></li>
+      <li><a href="index.html">VPN</a></li>
+      <li><a href="basic.html" class="active">基礎</a></li>
+    </ul>
+  </nav>
+
+  <div class="page-container">
+    <h1 class="page-title">VPN 基礎</h1>
+    <p class="page-subtitle">VPN 怎麼把你的封包包進加密通道？對外世界看到的「你」變成了誰？</p>
+
+    <div class="step-bar" id="stepBar"></div>
+
+    <div class="diagram-container">
+      <svg id="diagram" viewBox="0 0 900 320" xmlns="http://www.w3.org/2000/svg">
+        <!-- VPN 加密通道 -->
+        <rect id="vpn-tunnel" x="100" y="115" width="500" height="60" rx="30"
+              fill="none" stroke="var(--step-done)" stroke-width="2.5" stroke-dasharray="8,4" opacity="0"/>
+        <text id="vpn-tunnel-label" x="350" y="105" text-anchor="middle" fill="var(--step-done)" font-size="12" font-family="inherit" opacity="0">VPN 加密通道</text>
+
+        <!-- 連線 -->
+        <line id="edge-user-isp" class="edge-line" x1="120" y1="145" x2="270" y2="145"/>
+        <line id="edge-isp-vpn" class="edge-line" x1="380" y1="145" x2="540" y2="145"/>
+        <line id="edge-vpn-server" class="edge-line" x1="650" y1="145" x2="770" y2="145"/>
+
+        <!-- ISP 看到的內容氣泡 -->
+        <g id="bubble-isp" style="display:none;">
+          <rect x="220" y="220" width="220" height="65" rx="8"
+                fill="var(--node-isp)" opacity="0.10" stroke="var(--node-isp)" stroke-width="1"/>
+          <text x="330" y="240" text-anchor="middle" fill="var(--node-isp)" font-size="12" font-family="inherit" font-weight="600">ISP 看到：</text>
+          <text id="bubble-isp-line1" x="330" y="257" text-anchor="middle" fill="var(--text-dim)" font-size="12" font-family="inherit"></text>
+          <text id="bubble-isp-line2" x="330" y="272" text-anchor="middle" fill="var(--text-dim)" font-size="12" font-family="inherit"></text>
+        </g>
+
+        <!-- 目標網站看到的內容氣泡 -->
+        <g id="bubble-server" style="display:none;">
+          <rect x="600" y="220" width="220" height="65" rx="8"
+                fill="var(--node-asn)" opacity="0.10" stroke="var(--node-asn)" stroke-width="1"/>
+          <text x="710" y="240" text-anchor="middle" fill="var(--node-asn)" font-size="12" font-family="inherit" font-weight="600">目標網站看到：</text>
+          <text id="bubble-server-line1" x="710" y="257" text-anchor="middle" fill="var(--text-dim)" font-size="12" font-family="inherit"></text>
+          <text id="bubble-server-line2" x="710" y="272" text-anchor="middle" fill="var(--text-dim)" font-size="12" font-family="inherit"></text>
+        </g>
+
+        <!-- 節點 -->
+        <g id="node-user" class="node-group">
+          <rect class="node-box" x="40" y="120" width="120" height="50" rx="10"
+                fill="var(--node-user)" opacity="0.15" stroke="var(--node-user)" stroke-width="2"/>
+          <text class="node-label" x="100" y="143" fill="var(--node-user)">你的電腦</text>
+          <text class="node-sublabel" x="100" y="160">真實 IP</text>
+        </g>
+
+        <g id="node-isp" class="node-group">
+          <rect class="node-box" x="260" y="120" width="120" height="50" rx="10"
+                fill="var(--node-isp)" opacity="0.15" stroke="var(--node-isp)" stroke-width="2"/>
+          <text class="node-label" x="320" y="143" fill="var(--node-isp)">ISP</text>
+          <text class="node-sublabel" x="320" y="160">中華電信...</text>
+        </g>
+
+        <g id="node-vpn" class="node-group">
+          <rect class="node-box" x="530" y="120" width="130" height="50" rx="10"
+                fill="var(--node-ixp)" opacity="0.15" stroke="var(--node-ixp)" stroke-width="2"/>
+          <text class="node-label" x="595" y="143" fill="var(--node-ixp)">VPN 伺服器</text>
+          <text class="node-sublabel" x="595" y="160">解密轉發</text>
+        </g>
+
+        <g id="node-server" class="node-group">
+          <rect class="node-box" x="760" y="120" width="120" height="50" rx="10"
+                fill="var(--node-asn)" opacity="0.15" stroke="var(--node-asn)" stroke-width="2"/>
+          <text class="node-label" x="820" y="143" fill="var(--node-asn)">目標網站</text>
+          <text class="node-sublabel" x="820" y="160">example.com</text>
+        </g>
+      </svg>
+    </div>
+
+    <div class="info-panel" id="infoPanel">
+      <h3 id="infoTitle">選擇一個步驟開始</h3>
+      <p id="infoBody">VPN 是「Virtual Private Network」的縮寫。它的核心做法是：在你和一台「VPN 伺服器」之間建立一條加密通道，所有的網路流量都先送進這條通道。</p>
+      <div class="key-point" id="infoKeyPoint" style="display:none;"></div>
+    </div>
+
+    <div class="step-nav">
+      <button id="btnPrev" disabled>← 上一步</button>
+      <button id="btnNext">開始 →</button>
+    </div>
+  </div>
+
+  <footer class="site-footer">HIW — How Internet Works · © weichen · 以 <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">CC BY 4.0</a> 授權釋出</footer>
+
+  <script>
+  (function () {
+    const vpnTunnel = document.getElementById('vpn-tunnel');
+    const vpnTunnelLabel = document.getElementById('vpn-tunnel-label');
+    const bubbleIsp = document.getElementById('bubble-isp');
+    const bubbleServer = document.getElementById('bubble-server');
+    const bubbleIspLine1 = document.getElementById('bubble-isp-line1');
+    const bubbleIspLine2 = document.getElementById('bubble-isp-line2');
+    const bubbleServerLine1 = document.getElementById('bubble-server-line1');
+    const bubbleServerLine2 = document.getElementById('bubble-server-line2');
+
+    function showTunnel(visible) {
+      vpnTunnel.style.opacity = visible ? '1' : '0';
+      vpnTunnelLabel.style.opacity = visible ? '1' : '0';
+    }
+
+    function showBubbles(ispLines, serverLines) {
+      if (ispLines) {
+        bubbleIsp.style.display = 'block';
+        bubbleIspLine1.textContent = ispLines[0] || '';
+        bubbleIspLine2.textContent = ispLines[1] || '';
+      } else {
+        bubbleIsp.style.display = 'none';
+      }
+      if (serverLines) {
+        bubbleServer.style.display = 'block';
+        bubbleServerLine1.textContent = serverLines[0] || '';
+        bubbleServerLine2.textContent = serverLines[1] || '';
+      } else {
+        bubbleServer.style.display = 'none';
+      }
+    }
+
+    const steps = [
+      {
+        label: '1. 沒用 VPN',
+        title: '一般情況：你直接連到目標網站',
+        body: '在沒有 VPN 的情況下，你的封包經過 ISP 直接送到目標網站。' +
+              '<br><br>這意味著：' +
+              '<br>- <strong>你的 ISP</strong> 知道你連到了哪個網站（看 IP 和 SNI）' +
+              '<br>- <strong>目標網站</strong> 知道你的真實 IP 位址（從哪個國家、哪個 ISP 連來的）' +
+              '<details class="analogy-box"><summary>生活化比喻</summary><div class="analogy-content">就像你親自去一家店買東西，店家會看到你本人，旁邊的人也看到你走進那家店。誰看了你的行為一目了然。</div></details>',
+        keyPoint: '在沒有 VPN 的世界裡，你的網路活動對 ISP 和目標網站都是透明的。',
+        highlightNodes: ['node-user', 'node-isp', 'node-server'],
+        highlightEdges: ['edge-user-isp', 'edge-isp-vpn', 'edge-vpn-server'],
+        onEnter: () => {
+          showTunnel(false);
+          showBubbles(['看到你連 example.com', '看到 IP、SNI'], ['看到你的真實 IP', '台灣 / 中華電信']);
+        },
+      },
+      {
+        label: '2. 加入 VPN',
+        title: '安裝 VPN 客戶端，建立加密通道',
+        body: '當你啟用 VPN 後，發生這些事：' +
+              '<br><br><strong>1)</strong> 你的設備和一台遠端的 <strong>VPN 伺服器</strong>建立一條加密通道（用 OpenVPN、WireGuard、IPSec 等協定）' +
+              '<br><strong>2)</strong> 之後你發出的所有網路流量，都先包進這條加密通道' +
+              '<br><strong>3)</strong> 流量到達 VPN 伺服器後，被解密，再以 VPN 伺服器的身份送到真正的目標網站' +
+              '<details class="analogy-box"><summary>生活化比喻</summary><div class="analogy-content">就像你不再親自去店家，而是透過一個<strong>代購</strong>。你把你要買的東西寫在一張<strong>密封信</strong>裡交給代購，代購到店家替你買，再把東西帶回給你。店家只看到代購，不知道真正的買家是誰。</div></details>',
+        keyPoint: 'VPN 創造了一個「中間人」——一個你信任的中間人。所有封包都先繞道經過 VPN 伺服器，再送到目標。',
+        highlightNodes: ['node-user', 'node-isp', 'node-vpn'],
+        highlightEdges: ['edge-user-isp', 'edge-isp-vpn'],
+        onEnter: () => {
+          showTunnel(true);
+          showBubbles(null, null);
+        },
+      },
+      {
+        label: '3. ISP 看不到內容',
+        title: '加密通道：ISP 失去視野',
+        body: 'ISP 仍然能看到你的封包流量，但這些封包現在都是<strong>加密</strong>的。' +
+              '<br><br>ISP 能看到：' +
+              '<br>- 你連到了一台 VPN 伺服器（IP 位址）' +
+              '<br>- 加密流量的時間和大小' +
+              '<br><br>ISP 看不到：' +
+              '<br>- 你在連哪個真正的網站' +
+              '<br>- 你傳送或接收的內容' +
+              '<br>- 連 SNI 和 DNS 查詢都被包在通道裡' +
+              '<details class="analogy-box"><summary>生活化比喻</summary><div class="analogy-content">郵差（ISP）只看到你寄了一封信給代購，雖然看得到代購購物袋鼓鼓的，但不知道你委託代購買什麼。所有的細節都封在信裡，郵差摸不著。</div></details>',
+        keyPoint: 'VPN 把 DNS 封鎖、SNI 洩漏等問題一次解決——因為這些都是「在 ISP 端可見」的問題，而 VPN 讓 ISP 完全看不到通訊內容。',
+        highlightNodes: ['node-user', 'node-isp', 'node-vpn'],
+        highlightEdges: ['edge-user-isp', 'edge-isp-vpn'],
+        onEnter: () => {
+          showTunnel(true);
+          showBubbles(['只看到你連到 VPN', '看不到內容'], null);
+        },
+      },
+      {
+        label: '4. 目標看到 VPN',
+        title: '目標網站：以為你是 VPN 伺服器',
+        body: 'VPN 伺服器解密你的請求後，以<strong>它自己的 IP 位址</strong>送出請求給目標網站。' +
+              '<br><br>對目標網站來說，它看到的是：' +
+              '<br>- 一個來自 <strong>VPN 伺服器所在地</strong>的請求' +
+              '<br>- 來源 IP 是 VPN 伺服器的 IP，不是你的真實 IP' +
+              '<br><br>所以如果你的 VPN 伺服器在日本，目標網站會以為你人在日本——這就是為什麼 VPN 常被用來「換國家」。' +
+              '<details class="analogy-box"><summary>台灣的例子</summary><div class="analogy-content">很多人用 VPN 看 Netflix 上其他國家才有的影片。例如把 VPN 切到美國，就能看到 Netflix 美國的片庫。Netflix 看到的是美國 IP，於是出示美國的內容。</div></details>',
+        keyPoint: '對目標網站來說，「使用者」變成了 VPN 伺服器。你的真實位置和真實 IP 被隱藏了。',
+        highlightNodes: ['node-vpn', 'node-server'],
+        highlightEdges: ['edge-vpn-server'],
+        onEnter: () => {
+          showTunnel(true);
+          showBubbles(null, ['看到 VPN 伺服器 IP', '以為你在日本']);
+        },
+      },
+      {
+        label: '5. 整體效果',
+        title: '誰看到什麼？一張表搞懂',
+        body: '<strong>你的 ISP（中華電信等）：</strong>' +
+              '<br>知道你連到了一台 VPN，但不知道你在這條通道裡做什麼。' +
+              '<br><br><strong>VPN 伺服器（你選的 VPN 商）：</strong>' +
+              '<br>知道一切。它能看到你的真實 IP，也能看到你要連的目標網站和內容（如果目標網站本身沒用 HTTPS）。' +
+              '<br><br><strong>目標網站：</strong>' +
+              '<br>以為你是 VPN 伺服器。看到 VPN 的 IP 和位置。' +
+              '<br><br>注意這裡的關鍵：<strong>你並沒有「消除信任」，你只是把信任從 ISP 轉移到 VPN 商</strong>。下一個主題「VPN 的信任問題」會深入這個議題。',
+        keyPoint: 'VPN 不是隱形斗篷——它是把你的網路活動的「可見者」從 ISP 換成了 VPN 商。選 VPN 就是選你願意信任誰。',
+        highlightNodes: ['node-user', 'node-isp', 'node-vpn', 'node-server'],
+        highlightEdges: ['edge-user-isp', 'edge-isp-vpn', 'edge-vpn-server'],
+        onEnter: () => {
+          showTunnel(true);
+          showBubbles(['只看到你連到 VPN', '看不到內容'], ['看到 VPN 伺服器', '不知道真正的你']);
+        },
+      },
+    ];
+
+    let currentStep = -1;
+    const stepBar = document.getElementById('stepBar');
+    const infoTitle = document.getElementById('infoTitle');
+    const infoBody = document.getElementById('infoBody');
+    const infoKeyPoint = document.getElementById('infoKeyPoint');
+    const infoPanel = document.getElementById('infoPanel');
+    const btnPrev = document.getElementById('btnPrev');
+    const btnNext = document.getElementById('btnNext');
+    const allNodes = document.querySelectorAll('.node-group');
+    const allEdges = document.querySelectorAll('.edge-line');
+
+    steps.forEach((s, i) => {
+      const btn = document.createElement('button');
+      btn.className = 'step-btn';
+      btn.textContent = s.label;
+      btn.addEventListener('click', () => goToStep(i));
+      stepBar.appendChild(btn);
+    });
+
+    function goToStep(index) {
+      currentStep = index;
+      const step = steps[index];
+      const btns = stepBar.querySelectorAll('.step-btn');
+      btns.forEach((b, i) => {
+        b.classList.remove('active', 'done');
+        if (i === index) b.classList.add('active');
+        else if (i < index) b.classList.add('done');
+      });
+      allNodes.forEach(n => { n.classList.remove('highlighted'); n.classList.add('dimmed'); });
+      allEdges.forEach(e => { e.classList.remove('active'); e.classList.add('dimmed'); });
+      step.highlightNodes.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) { el.classList.remove('dimmed'); el.classList.add('highlighted'); }
+      });
+      step.highlightEdges.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) { el.classList.remove('dimmed'); el.classList.add('active'); }
+      });
+      infoTitle.textContent = step.title;
+      infoBody.innerHTML = step.body;
+      if (step.keyPoint) {
+        infoKeyPoint.textContent = step.keyPoint;
+        infoKeyPoint.style.display = 'block';
+      } else {
+        infoKeyPoint.style.display = 'none';
+      }
+      infoPanel.classList.remove('highlight');
+      void infoPanel.offsetWidth;
+      infoPanel.classList.add('highlight');
+      btnPrev.disabled = index === 0;
+      btnNext.textContent = index === steps.length - 1 ? '重新開始 ↺' : '下一步 →';
+      if (step.onEnter) step.onEnter();
+    }
+
+    btnPrev.addEventListener('click', () => { if (currentStep > 0) goToStep(currentStep - 1); });
+    btnNext.addEventListener('click', () => {
+      if (currentStep === -1) goToStep(0);
+      else if (currentStep === steps.length - 1) { currentStep = -1; resetDiagram(); }
+      else goToStep(currentStep + 1);
+    });
+
+    function resetDiagram() {
+      allNodes.forEach(n => { n.classList.remove('highlighted', 'dimmed'); });
+      allEdges.forEach(e => { e.classList.remove('active', 'dimmed'); });
+      stepBar.querySelectorAll('.step-btn').forEach(b => b.classList.remove('active', 'done'));
+      infoTitle.textContent = '選擇一個步驟開始';
+      infoBody.innerHTML = 'VPN 是「Virtual Private Network」的縮寫。它的核心做法是：在你和一台「VPN 伺服器」之間建立一條加密通道，所有的網路流量都先送進這條通道。';
+      infoKeyPoint.style.display = 'none';
+      infoPanel.classList.remove('highlight');
+      btnPrev.disabled = true;
+      btnNext.textContent = '開始 →';
+      showTunnel(false);
+      showBubbles(null, null);
+    }
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowRight' || e.key === 'ArrowDown') { e.preventDefault(); btnNext.click(); }
+      else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') { e.preventDefault(); btnPrev.click(); }
+    });
+  })();
+  </script>
+</body>
+</html>
