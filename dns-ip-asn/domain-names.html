@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>域名的世界 — HIW</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=Noto+Sans+TC:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../shared/style.css">
+</head>
+<body>
+  <nav class="site-nav">
+    <a href="../index.html" class="logo">HIW</a>
+    <ul class="nav-links">
+      <li><a href="../index.html">首頁</a></li>
+      <li><a href="index.html">DNS / IP / ASN</a></li>
+      <li><a href="domain-names.html" class="active">域名的世界</a></li>
+    </ul>
+  </nav>
+
+  <div class="page-container">
+    <h1 class="page-title">域名的世界</h1>
+    <p class="page-subtitle">誰決定 example.com 屬於誰？域名背後的治理結構與安全風險。</p>
+
+    <div class="step-bar" id="stepBar"></div>
+
+    <div class="diagram-container">
+      <svg id="diagram" viewBox="0 0 900 300" xmlns="http://www.w3.org/2000/svg">
+        <!-- 階層連線 -->
+        <line id="edge-icann-registry" class="edge-line" x1="130" y1="90" x2="340" y2="90"/>
+        <line id="edge-registry-registrar" class="edge-line" x1="480" y1="90" x2="650" y2="90"/>
+        <line id="edge-registrar-you" class="edge-line" x1="780" y1="90" x2="780" y2="180"/>
+
+        <!-- 域名結構展示 -->
+        <line id="edge-structure" class="edge-line" x1="130" y1="220" x2="760" y2="220"/>
+
+        <!-- 冒用連線 -->
+        <line id="edge-fake" class="edge-line" x1="500" y1="250" x2="640" y2="250"/>
+
+        <!-- 節點：治理階層 -->
+        <g id="node-icann" class="node-group">
+          <rect class="node-box" x="40" y="65" width="140" height="50" rx="10"
+                fill="var(--node-asn)" opacity="0.15" stroke="var(--node-asn)" stroke-width="2"/>
+          <text class="node-label" x="110" y="88" fill="var(--node-asn)">ICANN</text>
+          <text class="node-sublabel" x="110" y="105">全球域名治理</text>
+        </g>
+
+        <g id="node-registry" class="node-group">
+          <rect class="node-box" x="310" y="65" width="180" height="50" rx="10"
+                fill="var(--node-dns)" opacity="0.15" stroke="var(--node-dns)" stroke-width="2"/>
+          <text class="node-label" x="400" y="88" fill="var(--node-dns)">Registry 註冊局</text>
+          <text class="node-sublabel" x="400" y="105">管理 TLD（如 .com）</text>
+        </g>
+
+        <g id="node-registrar" class="node-group">
+          <rect class="node-box" x="620" y="65" width="180" height="50" rx="10"
+                fill="var(--node-isp)" opacity="0.15" stroke="var(--node-isp)" stroke-width="2"/>
+          <text class="node-label" x="710" y="88" fill="var(--node-isp)">Registrar 註冊商</text>
+          <text class="node-sublabel" x="710" y="105">你買域名的窗口</text>
+        </g>
+
+        <g id="node-you" class="node-group">
+          <rect class="node-box" x="720" y="170" width="120" height="50" rx="10"
+                fill="var(--node-user)" opacity="0.15" stroke="var(--node-user)" stroke-width="2"/>
+          <text class="node-label" x="780" y="193" fill="var(--node-user)">你</text>
+          <text class="node-sublabel" x="780" y="210">域名持有者</text>
+        </g>
+
+        <!-- 節點：域名結構 -->
+        <g id="node-tld" class="node-group">
+          <rect class="node-box" x="40" y="195" width="120" height="50" rx="10"
+                fill="var(--node-dns)" opacity="0.15" stroke="var(--node-dns)" stroke-width="2"/>
+          <text class="node-label" x="100" y="218" fill="var(--node-dns)">.com</text>
+          <text class="node-sublabel" x="100" y="235">頂級域 TLD</text>
+        </g>
+
+        <g id="node-sld" class="node-group">
+          <rect class="node-box" x="240" y="195" width="180" height="50" rx="10"
+                fill="var(--node-ixp)" opacity="0.15" stroke="var(--node-ixp)" stroke-width="2"/>
+          <text class="node-label" x="330" y="218" fill="var(--node-ixp)">example.com</text>
+          <text class="node-sublabel" x="330" y="235">二級域名 SLD</text>
+        </g>
+
+        <g id="node-sub" class="node-group">
+          <rect class="node-box" x="500" y="195" width="180" height="50" rx="10"
+                fill="var(--step-done)" opacity="0.15" stroke="var(--step-done)" stroke-width="2"/>
+          <text class="node-label" x="590" y="218" fill="var(--step-done)">blog.example.com</text>
+          <text class="node-sublabel" x="590" y="235">子域名 subdomain</text>
+        </g>
+
+        <!-- 節點：冒用 -->
+        <g id="node-fake" class="node-group">
+          <rect class="node-box" x="400" y="255" width="200" height="40" rx="10"
+                fill="var(--node-server)" opacity="0.15" stroke="var(--node-server)" stroke-width="2"/>
+          <text class="node-label" x="500" y="280" fill="var(--node-server)">examp1e.com</text>
+        </g>
+
+        <g id="node-victim" class="node-group">
+          <rect class="node-box" x="640" y="255" width="160" height="40" rx="10"
+                fill="var(--node-user)" opacity="0.15" stroke="var(--node-user)" stroke-width="2"/>
+          <text class="node-label" x="720" y="280" fill="var(--node-user)">受害者點擊</text>
+        </g>
+      </svg>
+    </div>
+
+    <div class="info-panel" id="infoPanel">
+      <h3 id="infoTitle">選擇一個步驟開始</h3>
+      <p id="infoBody">在「封包的旅程」中，我們知道 DNS 負責把域名翻譯成 IP 位址。但域名本身是怎麼來的？誰決定它屬於誰？這個系統的治理結構，直接影響你的網路身份和安全。</p>
+      <div class="key-point" id="infoKeyPoint" style="display:none;"></div>
+    </div>
+
+    <div class="step-nav">
+      <button id="btnPrev" disabled>← 上一步</button>
+      <button id="btnNext">開始 →</button>
+    </div>
+  </div>
+
+  <footer class="site-footer">HIW — How Internet Works · © weichen · 以 <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">CC BY 4.0</a> 授權釋出</footer>
+
+  <script>
+  (function () {
+    const steps = [
+      {
+        label: '1. 域名的結構',
+        title: '域名怎麼組成？為什麼全球唯一？',
+        body: '域名是有層級的，從右往左讀：' +
+              '<br><br><strong>blog.example.com</strong> 拆開來看：' +
+              '<br>- <strong>.com</strong> — 頂級域（TLD, Top-Level Domain），最高層級' +
+              '<br>- <strong>example</strong> — 二級域名（SLD），你註冊的部分' +
+              '<br>- <strong>blog</strong> — 子域名（subdomain），你自己設定的，不需要額外註冊' +
+              '<br><br>全球的域名系統保證：<strong>同一個 TLD 下，每個二級域名只能有一個持有者</strong>。example.com 被註冊了，就沒有第二個人能註冊同樣的名字。' +
+              '<details class="analogy-box"><summary>生活化比喻</summary><div class="analogy-content">域名就像<strong>門牌</strong>。「.com」是一整個行政區，「example」是這個區裡的一個門牌號碼。同一個區不能有兩個一樣的門牌，否則信件就不知道送到哪了。至於「blog」就像門牌主人在自家院子裡蓋的分棟，自己決定怎麼編號，不用跟管理局申請。</div></details>',
+        keyPoint: '域名的唯一性是整個網際網路能運作的前提。這個「唯一性」由一套全球治理體系來保證——接下來看看這套體系是怎麼運作的。',
+        highlightNodes: ['node-tld', 'node-sld', 'node-sub'],
+        highlightEdges: ['edge-structure'],
+      },
+      {
+        label: '2. 誰管域名',
+        title: 'ICANN、Registry、Registrar：三層治理',
+        body: '域名系統的管理分為三個層級：' +
+              '<br><br><strong>ICANN（網際網路名稱與數字位址分配機構）</strong>' +
+              '<br>最頂層的協調組織，負責制定規則、批准新的 TLD、監督整個域名生態。總部在美國洛杉磯，但名義上是國際性的非營利組織。' +
+              '<br><br><strong>Registry（註冊局）</strong>' +
+              '<br>每個 TLD 都有一個 Registry 負責管理。例如 Verisign 管理 .com 和 .net，台灣的 TWNIC 管理 .tw。Registry 維護該 TLD 下所有域名的資料庫。' +
+              '<br><br><strong>Registrar（註冊商）</strong>' +
+              '<br>一般人不會直接跟 Registry 打交道。你是透過 Registrar（如 GoDaddy、Namecheap、Gandi）來註冊域名。Registrar 是經 ICANN 認證的「代辦窗口」。' +
+              '<details class="analogy-box"><summary>生活化比喻</summary><div class="analogy-content"><strong>ICANN</strong> 像是全國的門牌管理局——制定門牌的編碼規則、決定要不要開放新的行政區。<br><strong>Registry</strong> 像是各區的區公所——負責管理自己這一區有哪些門牌、誰持有它們。<br><strong>Registrar</strong> 像是代書——你想申請門牌，去找代書辦手續就好，代書會幫你跟區公所登記。</div></details>',
+        keyPoint: '你「擁有」的域名，其實是向 Registrar 租用的。你付年費續約，不續約就會被釋出。而 Registrar 必須遵守 Registry 和 ICANN 的規則——這條鏈上的每一層都有權影響你的域名。',
+        highlightNodes: ['node-icann', 'node-registry', 'node-registrar', 'node-you'],
+        highlightEdges: ['edge-icann-registry', 'edge-registry-registrar', 'edge-registrar-you'],
+      },
+      {
+        label: '3. 冒用與搶註',
+        title: '域名的安全風險：冒用、搶註、釣魚',
+        body: '域名的唯一性保證了「同名不會重複」，但不能防止<strong>相似名稱的冒用</strong>：' +
+              '<br><br><strong>Typosquatting（打字搶註）</strong>' +
+              '<br>註冊跟知名網站<strong>拼寫相似</strong>的域名，等使用者打錯字。例如 <strong>gooogle.com</strong>（多一個 o）、<strong>faceb00k.com</strong>（用數字 0 代替字母 o）。使用者一不小心就連到假網站。' +
+              '<br><br><strong>Cybersquatting（惡意搶註）</strong>' +
+              '<br>搶先註冊品牌或名人的域名，再高價轉賣給商標持有者。例如搶註某 NGO 名稱的 .com，等組織來買。' +
+              '<br><br><strong>Homograph 攻擊</strong>' +
+              '<br>使用不同語系但外觀相同的字母。例如用西里爾字母的「а」（看起來跟拉丁字母的「a」一模一樣）來註冊 аpple.com，肉眼幾乎分辨不出。' +
+              '<details class="analogy-box"><summary>為什麼我們該關心</summary><div class="analogy-content">NGO 和公民社會組織特別容易成為冒用目標。攻擊者可能註冊跟你組織名稱相似的域名，用來發送釣魚郵件或架設假網站。<br><br><strong>防禦建議：</strong><br>- 預先註冊常見的拼寫變體和不同 TLD（例如同時持有 .com、.org、.tw）<br>- 設定 DMARC / SPF / DKIM 防止他人冒用你的域名發信<br>- 對你已知的冒用域名，可以透過 ICANN 的 <strong>UDRP（統一域名爭議解決政策）</strong>提出申訴——如果你持有相關商標，勝率很高</div></details>',
+        keyPoint: '域名系統保證唯一性，但不保證安全性。相似域名的冒用是最常見的網路釣魚手法之一——看清楚網址列，是你最基本的防線。',
+        highlightNodes: ['node-sld', 'node-fake', 'node-victim'],
+        highlightEdges: ['edge-fake'],
+      },
+    ];
+
+    let currentStep = -1;
+    const stepBar = document.getElementById('stepBar');
+    const infoTitle = document.getElementById('infoTitle');
+    const infoBody = document.getElementById('infoBody');
+    const infoKeyPoint = document.getElementById('infoKeyPoint');
+    const infoPanel = document.getElementById('infoPanel');
+    const btnPrev = document.getElementById('btnPrev');
+    const btnNext = document.getElementById('btnNext');
+    const allNodes = document.querySelectorAll('.node-group');
+    const allEdges = document.querySelectorAll('.edge-line');
+
+    steps.forEach((s, i) => {
+      const btn = document.createElement('button');
+      btn.className = 'step-btn';
+      btn.textContent = s.label;
+      btn.addEventListener('click', () => goToStep(i));
+      stepBar.appendChild(btn);
+    });
+
+    function goToStep(index) {
+      currentStep = index;
+      const step = steps[index];
+      const btns = stepBar.querySelectorAll('.step-btn');
+      btns.forEach((b, i) => {
+        b.classList.remove('active', 'done');
+        if (i === index) b.classList.add('active');
+        else if (i < index) b.classList.add('done');
+      });
+      allNodes.forEach(n => { n.classList.remove('highlighted'); n.classList.add('dimmed'); });
+      allEdges.forEach(e => { e.classList.remove('active'); e.classList.add('dimmed'); });
+      step.highlightNodes.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) { el.classList.remove('dimmed'); el.classList.add('highlighted'); }
+      });
+      step.highlightEdges.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) { el.classList.remove('dimmed'); el.classList.add('active'); }
+      });
+      infoTitle.textContent = step.title;
+      infoBody.innerHTML = step.body;
+      if (step.keyPoint) {
+        infoKeyPoint.textContent = step.keyPoint;
+        infoKeyPoint.style.display = 'block';
+      } else {
+        infoKeyPoint.style.display = 'none';
+      }
+      infoPanel.classList.remove('highlight');
+      void infoPanel.offsetWidth;
+      infoPanel.classList.add('highlight');
+      btnPrev.disabled = index === 0;
+      btnNext.textContent = index === steps.length - 1 ? '重新開始 ↺' : '下一步 →';
+    }
+
+    btnPrev.addEventListener('click', () => { if (currentStep > 0) goToStep(currentStep - 1); });
+    btnNext.addEventListener('click', () => {
+      if (currentStep === -1) goToStep(0);
+      else if (currentStep === steps.length - 1) { currentStep = -1; resetDiagram(); }
+      else goToStep(currentStep + 1);
+    });
+
+    function resetDiagram() {
+      allNodes.forEach(n => { n.classList.remove('highlighted', 'dimmed'); });
+      allEdges.forEach(e => { e.classList.remove('active', 'dimmed'); });
+      stepBar.querySelectorAll('.step-btn').forEach(b => b.classList.remove('active', 'done'));
+      infoTitle.textContent = '選擇一個步驟開始';
+      infoBody.innerHTML = '在「封包的旅程」中，我們知道 DNS 負責把域名翻譯成 IP 位址。但域名本身是怎麼來的？誰決定它屬於誰？這個系統的治理結構，直接影響你的網路身份和安全。';
+      infoKeyPoint.style.display = 'none';
+      infoPanel.classList.remove('highlight');
+      btnPrev.disabled = true;
+      btnNext.textContent = '開始 →';
+    }
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowRight' || e.key === 'ArrowDown') { e.preventDefault(); btnNext.click(); }
+      else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') { e.preventDefault(); btnPrev.click(); }
+    });
+  })();
+  </script>
+</body>
+</html>
