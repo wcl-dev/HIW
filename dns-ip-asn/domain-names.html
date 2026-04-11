@@ -102,12 +102,6 @@
           <text class="node-sublabel" x="515" y="290">冒牌（1 取代 l）</text>
         </g>
 
-        <g id="node-victim" class="node-group">
-          <rect class="node-box" x="700" y="250" width="160" height="50" rx="10"
-                fill="var(--node-user)" opacity="0.15" stroke="var(--node-user)" stroke-width="2"/>
-          <text class="node-label" x="780" y="273" fill="var(--node-user)">受害者</text>
-          <text class="node-sublabel" x="780" y="290">以為是正牌</text>
-        </g>
       </svg>
     </div>
 
@@ -169,7 +163,7 @@
               '<br>使用不同語系但外觀相同的字母。例如用西里爾字母的「а」（看起來跟拉丁字母的「a」一模一樣）來註冊 аpple.com，肉眼幾乎分辨不出。' +
               '<details class="analogy-box"><summary>為什麼我們該關心</summary><div class="analogy-content">NGO 和公民社會組織特別容易成為冒用目標。攻擊者可能註冊跟你組織名稱相似的域名，用來發送釣魚郵件或架設假網站。<br><br><strong>防禦建議：</strong><br>- 預先註冊常見的拼寫變體和不同 TLD（例如同時持有 .com、.org、.tw）<br>- 設定 DMARC / SPF / DKIM 防止他人冒用你的域名發信<br>- 對你已知的冒用域名，可以透過 ICANN 的 <strong>UDRP（統一域名爭議解決政策）</strong>提出申訴——如果你持有相關商標，勝率很高</div></details>',
         keyPoint: '域名系統保證唯一性，但不保證安全性。相似域名的冒用是最常見的網路釣魚手法之一——看清楚網址列，是你最基本的防線。',
-        highlightNodes: ['node-real', 'node-fake', 'node-victim'],
+        highlightNodes: ['node-real', 'node-fake'],
         highlightEdges: [],
       },
     ];
