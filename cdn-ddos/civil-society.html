@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>保護公民社會網站 — HIW</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=Noto+Sans+TC:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../shared/style.css">
+</head>
+<body>
+  <nav class="site-nav">
+    <a href="../index.html" class="logo">HIW</a>
+    <ul class="nav-links">
+      <li><a href="../index.html">首頁</a></li>
+      <li><a href="index.html">CDN / DDoS</a></li>
+      <li><a href="civil-society.html" class="active">保護公民社會網站</a></li>
+    </ul>
+  </nav>
+
+  <div class="page-container">
+    <h1 class="page-title">保護公民社會網站</h1>
+    <p class="page-subtitle">Project Galileo、Deflect、Project Shield——為什麼這些免費服務是 NGO 的重要資源？</p>
+
+    <div class="step-bar" id="stepBar"></div>
+
+    <div class="diagram-container">
+      <svg id="diagram" viewBox="0 0 900 320" xmlns="http://www.w3.org/2000/svg">
+        <!-- NGO 網站 -->
+        <g id="node-ngo" class="node-group">
+          <rect class="node-box" x="30" y="135" width="140" height="50" rx="10"
+                fill="var(--node-user)" opacity="0.15" stroke="var(--node-user)" stroke-width="2"/>
+          <text class="node-label" x="100" y="158" fill="var(--node-user)">你的 NGO 網站</text>
+          <text class="node-sublabel" x="100" y="175">預算有限</text>
+        </g>
+
+        <!-- 三個保護服務 -->
+        <g id="node-galileo" class="node-group">
+          <rect class="node-box" x="360" y="50" width="180" height="50" rx="10"
+                fill="var(--step-done)" opacity="0.15" stroke="var(--step-done)" stroke-width="2"/>
+          <text class="node-label" x="450" y="73" fill="var(--step-done)">Project Galileo</text>
+          <text class="node-sublabel" x="450" y="90">Cloudflare · 最大規模</text>
+        </g>
+
+        <g id="node-deflect" class="node-group">
+          <rect class="node-box" x="360" y="145" width="180" height="50" rx="10"
+                fill="var(--step-done)" opacity="0.15" stroke="var(--step-done)" stroke-width="2"/>
+          <text class="node-label" x="450" y="168" fill="var(--step-done)">Deflect</text>
+          <text class="node-sublabel" x="450" y="185">eQualit.ie · 非營利</text>
+        </g>
+
+        <g id="node-shield" class="node-group">
+          <rect class="node-box" x="360" y="240" width="180" height="50" rx="10"
+                fill="var(--step-done)" opacity="0.15" stroke="var(--step-done)" stroke-width="2"/>
+          <text class="node-label" x="450" y="263" fill="var(--step-done)">Project Shield</text>
+          <text class="node-sublabel" x="450" y="280">Google · Jigsaw</text>
+        </g>
+
+        <!-- 攻擊者 -->
+        <g id="node-attacker" class="node-group">
+          <rect class="node-box" x="730" y="135" width="140" height="50" rx="10"
+                fill="var(--node-server)" opacity="0.15" stroke="var(--node-server)" stroke-width="2"/>
+          <text class="node-label" x="800" y="158" fill="var(--node-server)">DDoS 攻擊</text>
+          <text class="node-sublabel" x="800" y="175">被擋下</text>
+        </g>
+
+        <!-- 連線：NGO 到三個保護 -->
+        <line id="edge-ngo-galileo" class="edge-line" x1="170" y1="150" x2="360" y2="75"/>
+        <line id="edge-ngo-deflect" class="edge-line" x1="170" y1="160" x2="360" y2="170"/>
+        <line id="edge-ngo-shield" class="edge-line" x1="170" y1="170" x2="360" y2="265"/>
+
+        <!-- 連線：保護到攻擊者（擋下） -->
+        <line id="edge-galileo-block" class="edge-line" x1="540" y1="75" x2="730" y2="150"/>
+        <line id="edge-deflect-block" class="edge-line" x1="540" y1="170" x2="730" y2="160"/>
+        <line id="edge-shield-block" class="edge-line" x1="540" y1="265" x2="730" y2="170"/>
+
+        <!-- 盾牌圖示 -->
+        <g id="shield-icon" style="display:none;">
+          <text x="635" y="165" text-anchor="middle" font-size="32" fill="var(--step-done)">🛡</text>
+        </g>
+      </svg>
+    </div>
+
+    <div class="info-panel" id="infoPanel">
+      <h3 id="infoTitle">選擇一個步驟開始</h3>
+      <p id="infoBody">商業 CDN 一年動輒幾千到幾萬美元。但針對公民社會，有幾個專門的免費服務——它們是 NGO、獨立記者、人權組織最重要的基礎設施資源之一。</p>
+      <div class="key-point" id="infoKeyPoint" style="display:none;"></div>
+    </div>
+
+    <div class="step-nav">
+      <button id="btnPrev" disabled>← 上一步</button>
+      <button id="btnNext">開始 →</button>
+    </div>
+  </div>
+
+  <footer class="site-footer">HIW — How Internet Works · © weichen · 以 <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">CC BY 4.0</a> 授權釋出</footer>
+
+  <script>
+  (function () {
+    const shieldIcon = document.getElementById('shield-icon');
+
+    const steps = [
+      {
+        label: '1. 為什麼需要專門服務',
+        title: '公民社會網站的困境',
+        body: '前面我們看到，CDN 是防禦 DDoS 最有效的方案。但商業 CDN 的費用對公民社會來說不容易負擔：' +
+              '<br><br>- <strong>Cloudflare Enterprise</strong>：一年數千到數萬美元' +
+              '<br>- <strong>Akamai / Fastly</strong>：類似價位' +
+              '<br>- 免費方案通常<strong>不含 DDoS 防護</strong>或有限制' +
+              '<br><br>問題是：<strong>最需要 DDoS 防護的，往往是最付不起錢的</strong>——獨立記者、小型 NGO、人權倡議團體。他們的網站可能是某個地區唯一的真相來源，卻沒有預算雇用專業的基礎設施。' +
+              '<br><br>為了解決這個不對等，幾個主要的科技公司設立了<strong>專門免費服務</strong>保護公民社會。',
+        keyPoint: '這些免費服務不是慈善行為，是有明確使命的：保護網路言論自由的基礎設施。它們的存在本身就是一種政治立場。',
+        highlightNodes: ['node-ngo'],
+        highlightEdges: [],
+        onEnter: () => { shieldIcon.style.display = 'none'; },
+      },
+      {
+        label: '2. Project Galileo',
+        title: 'Cloudflare Project Galileo',
+        body: '<strong>Cloudflare 在 2014 年啟動的計畫</strong>，免費為公民社會組織提供 Cloudflare 最高等級的安全保護（原價一年數萬美元）。' +
+              '<br><br><strong>保護對象：</strong>' +
+              '<br>- 人權組織' +
+              '<br>- 獨立記者和新聞網站' +
+              '<br>- 藝術組織' +
+              '<br>- 少數群體權益團體' +
+              '<br><br><strong>規模：</strong>目前保護全球超過 2,000 個網站，涵蓋 111 個國家。' +
+              '<br><br><strong>申請方式：</strong>不能自己直接申請，必須透過 Cloudflare 合作的推薦組織（如 Access Now、CPJ、Electronic Frontier Foundation）提出。' +
+              '<br><br><strong>真實案例：</strong>' +
+              '<br>- 保護了報導俄烏戰爭的烏克蘭獨立媒體' +
+              '<br>- 擋下了對人權組織的大規模 DDoS 攻擊' +
+              '<br>- 協助了香港反送中運動期間的獨立媒體',
+        keyPoint: 'Project Galileo 是目前規模最大、資源最豐富的公民社會防護服務。但因為申請需要推薦，建議先聯絡你信任的國際 NGO 合作夥伴。',
+        highlightNodes: ['node-ngo', 'node-galileo', 'node-attacker'],
+        highlightEdges: ['edge-ngo-galileo', 'edge-galileo-block'],
+        onEnter: () => { shieldIcon.style.display = 'block'; },
+      },
+      {
+        label: '3. Deflect',
+        title: 'Deflect：非營利組織營運',
+        body: '<strong>由加拿大非營利組織 eQualit.ie 營運</strong>，專門為公民社會提供 DDoS 防護。' +
+              '<br><br><strong>和 Project Galileo 的差異：</strong>' +
+              '<br>- Deflect 是<strong>非營利組織</strong>，不是商業公司的公益計畫' +
+              '<br>- 受資助方包括 Open Technology Fund、人權組織、歐洲基金會' +
+              '<br>- 提供更深入的<strong>攻擊分析報告</strong>——有些使用者需要知道「誰在攻擊我」，幫助後續倡議或調查' +
+              '<br>- 申請門檻較低，小型 NGO 也能直接申請' +
+              '<br><br><strong>保護對象：</strong>全球的獨立媒體、選舉監察組織、LGBTQ+ 權益團體、女性主義組織等。' +
+              '<br><br><strong>為什麼重要：</strong>有些組織對於「把資料託付給大科技公司」有疑慮，Deflect 作為非營利選項，提供了另一條路。',
+        keyPoint: '不同的保護服務有不同的價值取向和信任模型。Project Galileo 規模大、Deflect 透明度高——選擇哪個，取決於你的組織最在意什麼。',
+        highlightNodes: ['node-ngo', 'node-deflect', 'node-attacker'],
+        highlightEdges: ['edge-ngo-deflect', 'edge-deflect-block'],
+        onEnter: () => { shieldIcon.style.display = 'block'; },
+      },
+      {
+        label: '4. Project Shield',
+        title: 'Google Project Shield',
+        body: '<strong>Google 旗下 Jigsaw 團隊營運的免費服務</strong>，使用 Google 自己的基礎設施提供 DDoS 防護。' +
+              '<br><br><strong>特色：</strong>' +
+              '<br>- 使用 Google 的 <strong>全球基礎設施</strong>——規模等級與 Cloudflare 相當' +
+              '<br>- 完全<strong>免費、沒有頻寬上限</strong>' +
+              '<br>- 原本專注於<strong>新聞與選舉相關網站</strong>，後來擴大到人權、公民倡議領域' +
+              '<br>- 在選舉期間免費開放給更多網站' +
+              '<br><br><strong>申請方式：</strong>直接在網站申請（projectshield.withgoogle.com），不需推薦。' +
+              '<br><br><strong>真實案例：</strong>' +
+              '<br>- 保護了美國、歐洲多次選舉中的新聞網站' +
+              '<br>- 協助了獨立調查報導網站（例如 Bellingcat）對抗國家級攻擊者' +
+              '<br>- 烏克蘭戰爭期間保護了大量當地媒體',
+        keyPoint: 'Project Shield 最容易上手——直接線上申請即可。新聞和選舉相關網站特別適合。',
+        highlightNodes: ['node-ngo', 'node-shield', 'node-attacker'],
+        highlightEdges: ['edge-ngo-shield', 'edge-shield-block'],
+        onEnter: () => { shieldIcon.style.display = 'block'; },
+      },
+      {
+        label: '5. 怎麼選、怎麼做',
+        title: '給你的組織的行動建議',
+        body: '<strong>怎麼選擇？</strong>' +
+              '<br><br>- <strong>新聞 / 選舉相關</strong>：Project Shield（最快申請）' +
+              '<br>- <strong>人權 / 社運 / 弱勢群體倡議</strong>：Project Galileo 或 Deflect' +
+              '<br>- <strong>在意信任模型</strong>（不想把資料給大科技公司）：Deflect' +
+              '<br>- <strong>規模大、需要最高等級防護</strong>：Project Galileo' +
+              '<br><br><strong>預先準備，不要等到被打才找資源：</strong>' +
+              '<br>- 申請流程通常要幾週到幾個月' +
+              '<br>- 被 DDoS 打到才申請就來不及了——網站已經斷線' +
+              '<br>- 建議在平時就把 CDN 設定好，定期測試' +
+              '<br><br><strong>搭配其他準備：</strong>' +
+              '<br>- 重要內容鏡像到多個平台（Internet Archive、社群媒體）' +
+              '<br>- 準備緊急聯絡管道（不依賴自己網站的方式）' +
+              '<br>- 與 <strong>Access Now 數位安全 Helpline</strong> 建立聯繫（24/7 免費協助）' +
+              '<details class="analogy-box"><summary>為什麼我們該關心</summary><div class="analogy-content">DDoS 防護不是技術問題，是<strong>資源分配的正義問題</strong>——最需要被聽到的聲音，往往最容易被打壓。這些免費服務是公民社會網路自由的重要基礎設施。如果你的組織沒用上，現在就是好時機。如果你的組織很安全，可以支持推廣這些資源給其他人。</div></details>',
+        keyPoint: '網路安全不是一次性的設定，是持續的準備。預先安排好防護，遠比災難來臨時才應對有效得多。',
+        highlightNodes: ['node-ngo', 'node-galileo', 'node-deflect', 'node-shield'],
+        highlightEdges: ['edge-ngo-galileo', 'edge-ngo-deflect', 'edge-ngo-shield'],
+        onEnter: () => { shieldIcon.style.display = 'none'; },
+      },
+    ];
+
+    let currentStep = -1;
+    const stepBar = document.getElementById('stepBar');
+    const infoTitle = document.getElementById('infoTitle');
+    const infoBody = document.getElementById('infoBody');
+    const infoKeyPoint = document.getElementById('infoKeyPoint');
+    const infoPanel = document.getElementById('infoPanel');
+    const btnPrev = document.getElementById('btnPrev');
+    const btnNext = document.getElementById('btnNext');
+    const allNodes = document.querySelectorAll('.node-group');
+    const allEdges = document.querySelectorAll('.edge-line');
+
+    steps.forEach((s, i) => {
+      const btn = document.createElement('button');
+      btn.className = 'step-btn';
+      btn.textContent = s.label;
+      btn.addEventListener('click', () => goToStep(i));
+      stepBar.appendChild(btn);
+    });
+
+    function goToStep(index) {
+      currentStep = index;
+      const step = steps[index];
+      const btns = stepBar.querySelectorAll('.step-btn');
+      btns.forEach((b, i) => {
+        b.classList.remove('active', 'done');
+        if (i === index) b.classList.add('active');
+        else if (i < index) b.classList.add('done');
+      });
+      allNodes.forEach(n => { n.classList.remove('highlighted'); n.classList.add('dimmed'); });
+      allEdges.forEach(e => { e.classList.remove('active'); e.classList.add('dimmed'); });
+      step.highlightNodes.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) { el.classList.remove('dimmed'); el.classList.add('highlighted'); }
+      });
+      step.highlightEdges.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) { el.classList.remove('dimmed'); el.classList.add('active'); }
+      });
+      infoTitle.textContent = step.title;
+      infoBody.innerHTML = step.body;
+      if (step.keyPoint) {
+        infoKeyPoint.textContent = step.keyPoint;
+        infoKeyPoint.style.display = 'block';
+      } else {
+        infoKeyPoint.style.display = 'none';
+      }
+      infoPanel.classList.remove('highlight');
+      void infoPanel.offsetWidth;
+      infoPanel.classList.add('highlight');
+      btnPrev.disabled = index === 0;
+      btnNext.textContent = index === steps.length - 1 ? '重新開始 ↺' : '下一步 →';
+      if (step.onEnter) step.onEnter();
+    }
+
+    btnPrev.addEventListener('click', () => { if (currentStep > 0) goToStep(currentStep - 1); });
+    btnNext.addEventListener('click', () => {
+      if (currentStep === -1) goToStep(0);
+      else if (currentStep === steps.length - 1) { currentStep = -1; resetDiagram(); }
+      else goToStep(currentStep + 1);
+    });
+
+    function resetDiagram() {
+      allNodes.forEach(n => { n.classList.remove('highlighted', 'dimmed'); });
+      allEdges.forEach(e => { e.classList.remove('active', 'dimmed'); });
+      stepBar.querySelectorAll('.step-btn').forEach(b => b.classList.remove('active', 'done'));
+      infoTitle.textContent = '選擇一個步驟開始';
+      infoBody.innerHTML = '商業 CDN 一年動輒幾千到幾萬美元。但針對公民社會，有幾個專門的免費服務——它們是 NGO、獨立記者、人權組織最重要的基礎設施資源之一。';
+      infoKeyPoint.style.display = 'none';
+      infoPanel.classList.remove('highlight');
+      btnPrev.disabled = true;
+      btnNext.textContent = '開始 →';
+      shieldIcon.style.display = 'none';
+    }
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowRight' || e.key === 'ArrowDown') { e.preventDefault(); btnNext.click(); }
+      else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') { e.preventDefault(); btnPrev.click(); }
+    });
+  })();
+  </script>
+</body>
+</html>

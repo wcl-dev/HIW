@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DDoS 攻擊 — HIW</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=Noto+Sans+TC:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../shared/style.css">
+</head>
+<body>
+  <nav class="site-nav">
+    <a href="../index.html" class="logo">HIW</a>
+    <ul class="nav-links">
+      <li><a href="../index.html">首頁</a></li>
+      <li><a href="index.html">CDN / DDoS</a></li>
+      <li><a href="ddos.html" class="active">DDoS 攻擊</a></li>
+    </ul>
+  </nav>
+
+  <div class="page-container">
+    <h1 class="page-title">DDoS 攻擊</h1>
+    <p class="page-subtitle">大量假流量怎麼把一個網站打下來？為什麼 NGO 網站特別容易成為目標？</p>
+
+    <div class="step-bar" id="stepBar"></div>
+
+    <div class="diagram-container">
+      <svg id="diagram" viewBox="0 0 900 340" xmlns="http://www.w3.org/2000/svg">
+        <!-- 正常使用者連線 -->
+        <line id="edge-normal" class="edge-line" x1="170" y1="170" x2="680" y2="170"/>
+
+        <!-- 攻擊者連線（從多個殭屍電腦） -->
+        <line id="edge-attack1" class="edge-line" x1="120" y1="55" x2="680" y2="155"/>
+        <line id="edge-attack2" class="edge-line" x1="120" y1="100" x2="680" y2="160"/>
+        <line id="edge-attack3" class="edge-line" x1="120" y1="255" x2="680" y2="175"/>
+        <line id="edge-attack4" class="edge-line" x1="120" y1="300" x2="680" y2="180"/>
+
+        <!-- 殭屍網路節點 -->
+        <g id="node-bot1" class="node-group">
+          <rect class="node-box" x="40" y="30" width="110" height="50" rx="10"
+                fill="var(--node-server)" opacity="0.15" stroke="var(--node-server)" stroke-width="2"/>
+          <text class="node-label" x="95" y="53" fill="var(--node-server)">殭屍電腦 1</text>
+          <text class="node-sublabel" x="95" y="70">被感染的 IoT</text>
+        </g>
+
+        <g id="node-bot2" class="node-group">
+          <rect class="node-box" x="40" y="75" width="110" height="50" rx="10"
+                fill="var(--node-server)" opacity="0.15" stroke="var(--node-server)" stroke-width="2"/>
+          <text class="node-label" x="95" y="98" fill="var(--node-server)">殭屍電腦 2</text>
+          <text class="node-sublabel" x="95" y="115">路由器、攝影機</text>
+        </g>
+
+        <g id="node-bot3" class="node-group">
+          <rect class="node-box" x="40" y="230" width="110" height="50" rx="10"
+                fill="var(--node-server)" opacity="0.15" stroke="var(--node-server)" stroke-width="2"/>
+          <text class="node-label" x="95" y="253" fill="var(--node-server)">殭屍電腦 3</text>
+          <text class="node-sublabel" x="95" y="270">家用電腦</text>
+        </g>
+
+        <g id="node-bot4" class="node-group">
+          <rect class="node-box" x="40" y="275" width="110" height="50" rx="10"
+                fill="var(--node-server)" opacity="0.15" stroke="var(--node-server)" stroke-width="2"/>
+          <text class="node-label" x="95" y="298" fill="var(--node-server)">殭屍電腦 N</text>
+          <text class="node-sublabel" x="95" y="315">... 數十萬台</text>
+        </g>
+
+        <!-- 殭屍網路標示框 -->
+        <rect x="20" y="15" width="150" height="320" rx="12" fill="none"
+              stroke="var(--node-server)" stroke-width="1.5" stroke-dasharray="6,4" opacity="0.3"/>
+        <text x="95" y="15" text-anchor="middle" fill="var(--node-server)" font-size="12" font-family="inherit" opacity="0.8">殭屍網路 Botnet</text>
+
+        <!-- 正常使用者 -->
+        <g id="node-user" class="node-group">
+          <rect class="node-box" x="200" y="145" width="120" height="50" rx="10"
+                fill="var(--node-user)" opacity="0.15" stroke="var(--node-user)" stroke-width="2"/>
+          <text class="node-label" x="260" y="168" fill="var(--node-user)">正常使用者</text>
+          <text class="node-sublabel" x="260" y="185">想看網站</text>
+        </g>
+
+        <!-- 目標網站 -->
+        <g id="node-server" class="node-group">
+          <rect class="node-box" x="690" y="145" width="140" height="50" rx="10"
+                fill="var(--step-done)" opacity="0.15" stroke="var(--step-done)" stroke-width="2"/>
+          <text class="node-label" x="760" y="168" fill="var(--step-done)">目標網站</text>
+          <text class="node-sublabel" x="760" y="185">NGO / 新聞網</text>
+        </g>
+
+        <!-- 伺服器掛掉狀態 -->
+        <g id="server-down" style="display:none;">
+          <rect x="690" y="145" width="140" height="50" rx="10"
+                fill="var(--node-server)" opacity="0.3" stroke="var(--node-server)" stroke-width="2"/>
+          <text x="760" y="173" text-anchor="middle" fill="var(--node-server)" font-size="14" font-family="inherit" font-weight="700">✕ 伺服器掛了</text>
+        </g>
+      </svg>
+    </div>
+
+    <div class="info-panel" id="infoPanel">
+      <h3 id="infoTitle">選擇一個步驟開始</h3>
+      <p id="infoBody">DDoS（分散式阻斷服務攻擊）是最常見的網站癱瘓手法。它不需要「駭進」你的系統，只要讓你的網站忙不過來就好。</p>
+      <div class="key-point" id="infoKeyPoint" style="display:none;"></div>
+    </div>
+
+    <div class="step-nav">
+      <button id="btnPrev" disabled>← 上一步</button>
+      <button id="btnNext">開始 →</button>
+    </div>
+  </div>
+
+  <footer class="site-footer">HIW — How Internet Works · © weichen · 以 <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">CC BY 4.0</a> 授權釋出</footer>
+
+  <script>
+  (function () {
+    const serverDown = document.getElementById('server-down');
+
+    const steps = [
+      {
+        label: '1. 正常流量',
+        title: '一個網站平常怎麼運作？',
+        body: '一個網站的伺服器有<strong>處理能力的上限</strong>——每秒能回應多少個請求、能同時維持多少個連線。' +
+              '<br><br>平常使用者一個接一個來訪問，伺服器輕鬆應付，每個人都能順利看到網頁。' +
+              '<details class="analogy-box"><summary>生活化比喻</summary><div class="analogy-content">想像一家餐廳。平常客人陸續上門，一個人點餐、一個人出餐，雖然偶爾排隊但大家都能吃到飯。餐廳的「處理能力」就是廚房和服務生的上限。</div></details>',
+        keyPoint: '所有伺服器都有容量上限。這個上限，就是 DDoS 攻擊要突破的目標。',
+        highlightNodes: ['node-user', 'node-server'],
+        highlightEdges: ['edge-normal'],
+        onEnter: () => { serverDown.style.display = 'none'; },
+      },
+      {
+        label: '2. 攻擊者動手',
+        title: 'DDoS：用大量假流量灌爆伺服器',
+        body: '<strong>DDoS（Distributed Denial of Service，分散式阻斷服務）</strong>攻擊的核心很簡單：<strong>製造遠超過伺服器容量的請求</strong>，讓它忙不過來，連真的使用者都擠不進去。' +
+              '<br><br>「Distributed」是關鍵——攻擊不是從一台電腦來，而是同時從<strong>幾千、幾萬、甚至幾百萬台電腦</strong>發動。這些電腦通常不是攻擊者自己的，而是<strong>殭屍網路（Botnet）</strong>——被惡意軟體感染、受攻擊者遠端控制的電腦、路由器、網路攝影機等 IoT 設備。' +
+              '<br><br>設備的主人通常完全不知道自己的東西正在參與攻擊。' +
+              '<details class="analogy-box"><summary>生活化比喻</summary><div class="analogy-content">就像有人雇了<strong>一萬個人同時湧進餐廳假裝點餐</strong>。每個假客人只點杯水，但服務生忙著應付這些假客人，真的想吃飯的客人連門都擠不進去。餐廳就「癱瘓」了——不是因為被炸掉，而是因為完全被假訂單淹沒。</div></details>',
+        keyPoint: 'DDoS 不需要「駭進」你的系統——它只需要讓你的系統忙到無法服務真正的使用者。這種攻擊很便宜，租用殭屍網路發動一小時攻擊，可能只要幾十美元。',
+        highlightNodes: ['node-bot1', 'node-bot2', 'node-bot3', 'node-bot4', 'node-server'],
+        highlightEdges: ['edge-attack1', 'edge-attack2', 'edge-attack3', 'edge-attack4'],
+        onEnter: () => { serverDown.style.display = 'none'; },
+      },
+      {
+        label: '3. 伺服器癱瘓',
+        title: '結果：網站對所有人都打不開',
+        body: '當攻擊流量超過伺服器處理能力，<strong>所有人都進不去</strong>了——包括真正想看網站的使用者。' +
+              '<br><br>對外界來說，網站就是「壞掉」了。對攻擊者來說，目的達成：<strong>讓這個網站在這段時間內消失</strong>。' +
+              '<br><br>DDoS 攻擊規模歷年來不斷刷新紀錄：' +
+              '<br>- <strong>2016 年 Dyn 攻擊</strong>：殭屍網路 Mirai 癱瘓了大半個美東網路，Twitter、Netflix、GitHub 全都打不開' +
+              '<br>- <strong>2023 年</strong>：Cloudflare 擋下了每秒 2.01 億次請求的攻擊，是當時的世界紀錄' +
+              '<details class="analogy-box"><summary>生活化比喻</summary><div class="analogy-content">餐廳老闆只能看著店裡擠滿假客人，真的想吃飯的客人氣得離開。等攻擊結束，可能已經流失了一天的生意，甚至是長期客戶的信任。</div></details>',
+        keyPoint: 'DDoS 的傷害不只是當下打不開——對新聞網站來說，它可能讓你錯過重大事件的報導時機；對公民社會組織來說，它可能讓重要訊息無法傳遞到需要的人手中。',
+        highlightNodes: ['node-bot1', 'node-bot2', 'node-bot3', 'node-bot4', 'node-user', 'node-server'],
+        highlightEdges: ['edge-attack1', 'edge-attack2', 'edge-attack3', 'edge-attack4', 'edge-normal'],
+        onEnter: () => { serverDown.style.display = 'block'; },
+      },
+      {
+        label: '4. 誰被攻擊',
+        title: '為什麼公民社會網站特別容易被打？',
+        body: 'DDoS 攻擊者的動機通常是這幾種：' +
+              '<br><br><strong>1) 政治或意識形態壓制</strong>——政府或敵對勢力攻擊人權、異議、獨立媒體網站' +
+              '<br><strong>2) 商業競爭</strong>——攻擊對手的購物網站' +
+              '<br><strong>3) 勒索</strong>——付錢就停手' +
+              '<br><strong>4) 單純搗亂</strong>——為了出名或娛樂' +
+              '<br><br>其中，<strong>公民社會網站</strong>特別容易成為 1) 的目標：' +
+              '<br>- <strong>俄羅斯</strong>：反對派媒體 Meduza、Novaya Gazeta 長期遭受 DDoS' +
+              '<br>- <strong>香港</strong>：2019 年反送中運動期間，連登、LIHKG 等公民論壇多次被攻擊' +
+              '<br>- <strong>台灣</strong>：選舉期間，政治相關媒體、政府網站常成為攻擊目標' +
+              '<br>- <strong>中東、非洲</strong>：人權組織、獨立記者網站不斷遭受攻擊' +
+              '<details class="analogy-box"><summary>為什麼我們該關心</summary><div class="analogy-content">公民社會網站通常預算少、技術資源有限，但又最可能成為攻擊目標——這是不對等的處境。自己扛 DDoS 防禦幾乎不可能（需要大規模基礎設施）。好消息是有專門的免費服務針對這個問題，在「保護公民社會網站」那頁會介紹。</div></details>',
+        keyPoint: 'DDoS 不是「會不會」發生，而是「什麼時候」發生的問題。如果你的組織做的是敏感議題，預先準備防禦比事後救火重要得多。',
+        highlightNodes: ['node-bot1', 'node-bot2', 'node-bot3', 'node-bot4', 'node-server'],
+        highlightEdges: ['edge-attack1', 'edge-attack2', 'edge-attack3', 'edge-attack4'],
+        onEnter: () => { serverDown.style.display = 'block'; },
+      },
+    ];
+
+    let currentStep = -1;
+    const stepBar = document.getElementById('stepBar');
+    const infoTitle = document.getElementById('infoTitle');
+    const infoBody = document.getElementById('infoBody');
+    const infoKeyPoint = document.getElementById('infoKeyPoint');
+    const infoPanel = document.getElementById('infoPanel');
+    const btnPrev = document.getElementById('btnPrev');
+    const btnNext = document.getElementById('btnNext');
+    const allNodes = document.querySelectorAll('.node-group');
+    const allEdges = document.querySelectorAll('.edge-line');
+
+    steps.forEach((s, i) => {
+      const btn = document.createElement('button');
+      btn.className = 'step-btn';
+      btn.textContent = s.label;
+      btn.addEventListener('click', () => goToStep(i));
+      stepBar.appendChild(btn);
+    });
+
+    function goToStep(index) {
+      currentStep = index;
+      const step = steps[index];
+      const btns = stepBar.querySelectorAll('.step-btn');
+      btns.forEach((b, i) => {
+        b.classList.remove('active', 'done');
+        if (i === index) b.classList.add('active');
+        else if (i < index) b.classList.add('done');
+      });
+      allNodes.forEach(n => { n.classList.remove('highlighted'); n.classList.add('dimmed'); });
+      allEdges.forEach(e => { e.classList.remove('active'); e.classList.add('dimmed'); });
+      step.highlightNodes.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) { el.classList.remove('dimmed'); el.classList.add('highlighted'); }
+      });
+      step.highlightEdges.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) { el.classList.remove('dimmed'); el.classList.add('active'); }
+      });
+      infoTitle.textContent = step.title;
+      infoBody.innerHTML = step.body;
+      if (step.keyPoint) {
+        infoKeyPoint.textContent = step.keyPoint;
+        infoKeyPoint.style.display = 'block';
+      } else {
+        infoKeyPoint.style.display = 'none';
+      }
+      infoPanel.classList.remove('highlight');
+      void infoPanel.offsetWidth;
+      infoPanel.classList.add('highlight');
+      btnPrev.disabled = index === 0;
+      btnNext.textContent = index === steps.length - 1 ? '重新開始 ↺' : '下一步 →';
+      if (step.onEnter) step.onEnter();
+    }
+
+    btnPrev.addEventListener('click', () => { if (currentStep > 0) goToStep(currentStep - 1); });
+    btnNext.addEventListener('click', () => {
+      if (currentStep === -1) goToStep(0);
+      else if (currentStep === steps.length - 1) { currentStep = -1; resetDiagram(); }
+      else goToStep(currentStep + 1);
+    });
+
+    function resetDiagram() {
+      allNodes.forEach(n => { n.classList.remove('highlighted', 'dimmed'); });
+      allEdges.forEach(e => { e.classList.remove('active', 'dimmed'); });
+      stepBar.querySelectorAll('.step-btn').forEach(b => b.classList.remove('active', 'done'));
+      infoTitle.textContent = '選擇一個步驟開始';
+      infoBody.innerHTML = 'DDoS（分散式阻斷服務攻擊）是最常見的網站癱瘓手法。它不需要「駭進」你的系統，只要讓你的網站忙不過來就好。';
+      infoKeyPoint.style.display = 'none';
+      infoPanel.classList.remove('highlight');
+      btnPrev.disabled = true;
+      btnNext.textContent = '開始 →';
+      serverDown.style.display = 'none';
+    }
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowRight' || e.key === 'ArrowDown') { e.preventDefault(); btnNext.click(); }
+      else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') { e.preventDefault(); btnPrev.click(); }
+    });
+  })();
+  </script>
+</body>
+</html>

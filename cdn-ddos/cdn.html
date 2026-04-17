@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CDN 防禦 — HIW</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=Noto+Sans+TC:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../shared/style.css">
+</head>
+<body>
+  <nav class="site-nav">
+    <a href="../index.html" class="logo">HIW</a>
+    <ul class="nav-links">
+      <li><a href="../index.html">首頁</a></li>
+      <li><a href="index.html">CDN / DDoS</a></li>
+      <li><a href="cdn.html" class="active">CDN 防禦</a></li>
+    </ul>
+  </nav>
+
+  <div class="page-container">
+    <h1 class="page-title">CDN 防禦</h1>
+    <p class="page-subtitle">CDN 怎麼把內容分散到全球，讓攻擊打不到真的伺服器，同時加速正常使用者？</p>
+
+    <div class="step-bar" id="stepBar"></div>
+
+    <div class="diagram-container">
+      <svg id="diagram" viewBox="0 0 900 340" xmlns="http://www.w3.org/2000/svg">
+        <!-- 使用者連線 -->
+        <line id="edge-user1-edge1" class="edge-line" x1="90" y1="60" x2="340" y2="90"/>
+        <line id="edge-user2-edge2" class="edge-line" x1="90" y1="170" x2="340" y2="170"/>
+        <line id="edge-user3-edge3" class="edge-line" x1="90" y1="280" x2="340" y2="250"/>
+
+        <!-- CDN 節點到源站 -->
+        <line id="edge-edge1-origin" class="edge-line" x1="440" y1="90" x2="710" y2="170"/>
+        <line id="edge-edge2-origin" class="edge-line" x1="440" y1="170" x2="710" y2="170"/>
+        <line id="edge-edge3-origin" class="edge-line" x1="440" y1="250" x2="710" y2="170"/>
+
+        <!-- 攻擊流量到 CDN 節點 -->
+        <line id="edge-attack1" class="edge-line" x1="90" y1="310" x2="340" y2="170"/>
+        <line id="edge-attack2" class="edge-line" x1="90" y1="30" x2="340" y2="90"/>
+
+        <!-- 使用者 -->
+        <g id="node-user1" class="node-group">
+          <rect class="node-box" x="20" y="35" width="100" height="50" rx="10"
+                fill="var(--node-user)" opacity="0.15" stroke="var(--node-user)" stroke-width="2"/>
+          <text class="node-label" x="70" y="58" fill="var(--node-user)">台灣使用者</text>
+          <text class="node-sublabel" x="70" y="75">亞洲</text>
+        </g>
+
+        <g id="node-user2" class="node-group">
+          <rect class="node-box" x="20" y="145" width="100" height="50" rx="10"
+                fill="var(--node-user)" opacity="0.15" stroke="var(--node-user)" stroke-width="2"/>
+          <text class="node-label" x="70" y="168" fill="var(--node-user)">歐洲使用者</text>
+          <text class="node-sublabel" x="70" y="185">歐洲</text>
+        </g>
+
+        <g id="node-user3" class="node-group">
+          <rect class="node-box" x="20" y="255" width="100" height="50" rx="10"
+                fill="var(--node-user)" opacity="0.15" stroke="var(--node-user)" stroke-width="2"/>
+          <text class="node-label" x="70" y="278" fill="var(--node-user)">美洲使用者</text>
+          <text class="node-sublabel" x="70" y="295">美洲</text>
+        </g>
+
+        <!-- CDN 邊緣節點 -->
+        <g id="node-edge1" class="node-group">
+          <rect class="node-box" x="340" y="65" width="100" height="50" rx="10"
+                fill="var(--node-ixp)" opacity="0.15" stroke="var(--node-ixp)" stroke-width="2"/>
+          <text class="node-label" x="390" y="88" fill="var(--node-ixp)">亞洲節點</text>
+          <text class="node-sublabel" x="390" y="105">東京 / 台北</text>
+        </g>
+
+        <g id="node-edge2" class="node-group">
+          <rect class="node-box" x="340" y="145" width="100" height="50" rx="10"
+                fill="var(--node-ixp)" opacity="0.15" stroke="var(--node-ixp)" stroke-width="2"/>
+          <text class="node-label" x="390" y="168" fill="var(--node-ixp)">歐洲節點</text>
+          <text class="node-sublabel" x="390" y="185">法蘭克福</text>
+        </g>
+
+        <g id="node-edge3" class="node-group">
+          <rect class="node-box" x="340" y="225" width="100" height="50" rx="10"
+                fill="var(--node-ixp)" opacity="0.15" stroke="var(--node-ixp)" stroke-width="2"/>
+          <text class="node-label" x="390" y="248" fill="var(--node-ixp)">美洲節點</text>
+          <text class="node-sublabel" x="390" y="265">紐約 / LA</text>
+        </g>
+
+        <!-- CDN 網路標示框 -->
+        <rect x="325" y="50" width="130" height="240" rx="12" fill="none"
+              stroke="var(--node-ixp)" stroke-width="1.5" stroke-dasharray="6,4" opacity="0.4"/>
+        <text x="390" y="40" text-anchor="middle" fill="var(--node-ixp)" font-size="12" font-family="inherit" opacity="0.8">CDN 邊緣節點（全球數百個）</text>
+
+        <!-- 源站 -->
+        <g id="node-origin" class="node-group">
+          <rect class="node-box" x="710" y="145" width="160" height="50" rx="10"
+                fill="var(--step-done)" opacity="0.15" stroke="var(--step-done)" stroke-width="2"/>
+          <text class="node-label" x="790" y="168" fill="var(--step-done)">源站伺服器</text>
+          <text class="node-sublabel" x="790" y="185">你真正的網站</text>
+        </g>
+
+        <!-- 攻擊者 -->
+        <g id="node-attack" class="node-group" style="display:none;">
+          <rect class="node-box" x="20" y="285" width="100" height="50" rx="10"
+                fill="var(--node-server)" opacity="0.15" stroke="var(--node-server)" stroke-width="2"/>
+          <text class="node-label" x="70" y="308" fill="var(--node-server)">攻擊流量</text>
+          <text class="node-sublabel" x="70" y="325">殭屍網路</text>
+        </g>
+
+        <g id="node-attack2" class="node-group" style="display:none;">
+          <rect class="node-box" x="20" y="5" width="100" height="40" rx="10"
+                fill="var(--node-server)" opacity="0.15" stroke="var(--node-server)" stroke-width="2"/>
+          <text class="node-label" x="70" y="30" fill="var(--node-server)">攻擊流量</text>
+        </g>
+      </svg>
+    </div>
+
+    <div class="info-panel" id="infoPanel">
+      <h3 id="infoTitle">選擇一個步驟開始</h3>
+      <p id="infoBody">CDN（Content Delivery Network，內容傳遞網路）原本是為了加速網頁載入而發明的——但它順便解決了 DDoS 的大部分威脅。</p>
+      <div class="key-point" id="infoKeyPoint" style="display:none;"></div>
+    </div>
+
+    <div class="step-nav">
+      <button id="btnPrev" disabled>← 上一步</button>
+      <button id="btnNext">開始 →</button>
+    </div>
+  </div>
+
+  <footer class="site-footer">HIW — How Internet Works · © weichen · 以 <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">CC BY 4.0</a> 授權釋出</footer>
+
+  <script>
+  (function () {
+    const nodeAttack = document.getElementById('node-attack');
+    const nodeAttack2 = document.getElementById('node-attack2');
+
+    const steps = [
+      {
+        label: '1. CDN 的基本想法',
+        title: '把內容分散到全世界',
+        body: 'CDN（<strong>Content Delivery Network</strong>，內容傳遞網路）的概念很簡單：<strong>不要只有一台伺服器，而是在全世界放幾百個「節點」</strong>，每個節點都存一份你網站的複本。' +
+              '<br><br>當使用者訪問你的網站：' +
+              '<br>- 他實際上連到的是 <strong>離他最近的 CDN 節點</strong>，不是你真正的伺服器' +
+              '<br>- 節點如果有這個內容的快取就直接回傳；沒有才向源站要' +
+              '<br><br>對使用者來說，這代表<strong>更快的速度</strong>——不用跨海連到美國，直接從台北的節點拿。' +
+              '<details class="analogy-box"><summary>生活化比喻</summary><div class="analogy-content">延續物流公司的比喻：原本你只有一間總店，所有客人都要到總店拿貨。CDN 就像在每個城市都開<strong>分店</strong>——客人去最近的分店就能拿到同樣的商品，不用千里迢迢跑到總店。</div></details>',
+        keyPoint: 'CDN 最初是為了網頁加速而設計的（例如 Cloudflare、Akamai、Fastly）。DDoS 防禦是它的「副作用」——但這個副作用極其強大。',
+        highlightNodes: ['node-user1', 'node-user2', 'node-user3', 'node-edge1', 'node-edge2', 'node-edge3', 'node-origin'],
+        highlightEdges: ['edge-user1-edge1', 'edge-user2-edge2', 'edge-user3-edge3', 'edge-edge1-origin', 'edge-edge2-origin', 'edge-edge3-origin'],
+        onEnter: () => { nodeAttack.style.display = 'none'; nodeAttack2.style.display = 'none'; },
+      },
+      {
+        label: '2. 源站藏起來',
+        title: '你的真伺服器不再直接面對網路',
+        body: '啟用 CDN 後，你網站的 DNS 不再指向你真正的伺服器，而是<strong>指向 CDN 的節點</strong>。' +
+              '<br><br>對外界來說：' +
+              '<br>- <strong>看到的 IP 是 CDN 的 IP</strong>，不是你的源站 IP' +
+              '<br>- 所有請求都先經過 CDN 節點' +
+              '<br>- 你真正的源站伺服器「藏在 CDN 後面」，外界根本不知道它在哪裡' +
+              '<br><br>這個特性對 DDoS 防禦來說至關重要：<strong>攻擊者要打你，但他根本不知道你真正的 IP 在哪裡</strong>。他只能打 CDN 的節點。' +
+              '<details class="analogy-box"><summary>生活化比喻</summary><div class="analogy-content">延續剛才的比喻：客人去分店拿貨時，根本不知道總店倉庫在哪。想找麻煩的人也只能騷擾分店，但分店受影響、總店還是安然無恙。</div></details>',
+        keyPoint: '隱藏源站 IP 是 CDN 防禦的第一道牆。但要注意：如果你的源站 IP 在開啟 CDN 前就已經曝光（例如公開在 DNS 歷史紀錄裡），攻擊者可能繞過 CDN 直接打源站。',
+        highlightNodes: ['node-edge1', 'node-edge2', 'node-edge3', 'node-origin'],
+        highlightEdges: ['edge-edge1-origin', 'edge-edge2-origin', 'edge-edge3-origin'],
+        onEnter: () => { nodeAttack.style.display = 'none'; nodeAttack2.style.display = 'none'; },
+      },
+      {
+        label: '3. 攻擊被分散',
+        title: 'DDoS 打到 CDN，被分散到全球',
+        body: '當攻擊者對你的網站發動 DDoS，<strong>攻擊流量會被 DNS 導向 CDN 節點</strong>——不會打到你真的伺服器。' +
+              '<br><br>然後關鍵的事情發生：' +
+              '<br><strong>1)</strong> 攻擊流量被<strong>分散到全球數百個 CDN 節點</strong>，每個節點只承受一小部分' +
+              '<br><strong>2)</strong> CDN 的總頻寬和處理能力是<strong>上百 Tbps 級</strong>——遠遠超過任何一個 NGO 網站的容量' +
+              '<br><strong>3)</strong> CDN 內建的流量過濾系統能識別明顯的攻擊特徵（假的請求模式、異常的 IP 集中），自動擋下' +
+              '<br><br>結果：即使攻擊規模大到能打垮你原本的伺服器，對 CDN 來說只是<strong>日常流量</strong>。你的源站安然無恙。' +
+              '<details class="analogy-box"><summary>生活化比喻</summary><div class="analogy-content">一萬個假客人衝到餐廳鬧事——但現在你不只一家店，你有 300 家分店。假客人被分散到 300 家店，每家店只要應付 30 幾個人，根本不算事。而且每家分店還有保全（CDN 的過濾系統）會把明顯亂鬧的人擋在門口。</div></details>',
+        keyPoint: 'CDN 抵禦 DDoS 的核心是「規模」和「分散」——攻擊者的流量再大，對 CDN 來說還是相對小的。公民社會網站靠自己完全不可能做到這種規模的防禦。',
+        highlightNodes: ['node-edge1', 'node-edge2', 'node-edge3', 'node-attack', 'node-attack2'],
+        highlightEdges: ['edge-attack1', 'edge-attack2'],
+        onEnter: () => { nodeAttack.style.display = 'block'; nodeAttack2.style.display = 'block'; },
+      },
+      {
+        label: '4. 但有代價',
+        title: 'CDN 的信任問題與限制',
+        body: 'CDN 不是完美方案。它也有需要理解的代價：' +
+              '<br><br><strong>1) CDN 能看到你的流量</strong>' +
+              '<br>為了快取內容和檢查攻擊，CDN 必須<strong>解密 HTTPS 流量</strong>——你的使用者連到 CDN 時的 TLS，是用 CDN 的憑證，而不是你的源站的。這代表 CDN 技術上能看到所有經過的資料。' +
+              '<br><br><strong>2) 信任集中化</strong>' +
+              '<br>全球大部分的 CDN 市場被 Cloudflare、Akamai、Fastly 等少數幾家壟斷。2021 年 Fastly 故障，導致全球半個網路（包括英國政府、亞馬遜、Twitch）同時斷線數小時。' +
+              '<br><br><strong>3) 商業 CDN 也可能拒絕服務</strong>' +
+              '<br>CDN 是商業公司，可以隨時決定拒絕某個客戶。Cloudflare 曾在 2017 年切斷極右翼網站 Daily Stormer 的服務，引發爭議——好的一面是它能擋掉仇恨網站，但也意味著它有權決定誰能被保護。' +
+              '<details class="analogy-box"><summary>為什麼我們該關心</summary><div class="analogy-content">用 CDN 是把「被 DDoS 打掛」的風險換成「被 CDN 商看光流量、或被拒絕服務」的風險。對大多數公民社會網站來說，這個交易是值得的——因為 DDoS 的威脅太大、太常見。但如果你處理極度敏感的資料（例如舉報人保護平台），需要更仔細評估。</div></details>',
+        keyPoint: 'CDN 讓你從「自己扛攻擊」變成「信任 CDN 商幫你擋」。這是目前公民社會網站最務實的防禦方案——但要清楚你在信任誰、對方可能在什麼情況下改變立場。',
+        highlightNodes: ['node-edge1', 'node-edge2', 'node-edge3', 'node-origin'],
+        highlightEdges: ['edge-edge1-origin', 'edge-edge2-origin', 'edge-edge3-origin'],
+        onEnter: () => { nodeAttack.style.display = 'none'; nodeAttack2.style.display = 'none'; },
+      },
+    ];
+
+    let currentStep = -1;
+    const stepBar = document.getElementById('stepBar');
+    const infoTitle = document.getElementById('infoTitle');
+    const infoBody = document.getElementById('infoBody');
+    const infoKeyPoint = document.getElementById('infoKeyPoint');
+    const infoPanel = document.getElementById('infoPanel');
+    const btnPrev = document.getElementById('btnPrev');
+    const btnNext = document.getElementById('btnNext');
+    const allNodes = document.querySelectorAll('.node-group');
+    const allEdges = document.querySelectorAll('.edge-line');
+
+    steps.forEach((s, i) => {
+      const btn = document.createElement('button');
+      btn.className = 'step-btn';
+      btn.textContent = s.label;
+      btn.addEventListener('click', () => goToStep(i));
+      stepBar.appendChild(btn);
+    });
+
+    function goToStep(index) {
+      currentStep = index;
+      const step = steps[index];
+      const btns = stepBar.querySelectorAll('.step-btn');
+      btns.forEach((b, i) => {
+        b.classList.remove('active', 'done');
+        if (i === index) b.classList.add('active');
+        else if (i < index) b.classList.add('done');
+      });
+      allNodes.forEach(n => { n.classList.remove('highlighted'); n.classList.add('dimmed'); });
+      allEdges.forEach(e => { e.classList.remove('active'); e.classList.add('dimmed'); });
+      step.highlightNodes.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) { el.classList.remove('dimmed'); el.classList.add('highlighted'); }
+      });
+      step.highlightEdges.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) { el.classList.remove('dimmed'); el.classList.add('active'); }
+      });
+      infoTitle.textContent = step.title;
+      infoBody.innerHTML = step.body;
+      if (step.keyPoint) {
+        infoKeyPoint.textContent = step.keyPoint;
+        infoKeyPoint.style.display = 'block';
+      } else {
+        infoKeyPoint.style.display = 'none';
+      }
+      infoPanel.classList.remove('highlight');
+      void infoPanel.offsetWidth;
+      infoPanel.classList.add('highlight');
+      btnPrev.disabled = index === 0;
+      btnNext.textContent = index === steps.length - 1 ? '重新開始 ↺' : '下一步 →';
+      if (step.onEnter) step.onEnter();
+    }
+
+    btnPrev.addEventListener('click', () => { if (currentStep > 0) goToStep(currentStep - 1); });
+    btnNext.addEventListener('click', () => {
+      if (currentStep === -1) goToStep(0);
+      else if (currentStep === steps.length - 1) { currentStep = -1; resetDiagram(); }
+      else goToStep(currentStep + 1);
+    });
+
+    function resetDiagram() {
+      allNodes.forEach(n => { n.classList.remove('highlighted', 'dimmed'); });
+      allEdges.forEach(e => { e.classList.remove('active', 'dimmed'); });
+      stepBar.querySelectorAll('.step-btn').forEach(b => b.classList.remove('active', 'done'));
+      infoTitle.textContent = '選擇一個步驟開始';
+      infoBody.innerHTML = 'CDN（Content Delivery Network，內容傳遞網路）原本是為了加速網頁載入而發明的——但它順便解決了 DDoS 的大部分威脅。';
+      infoKeyPoint.style.display = 'none';
+      infoPanel.classList.remove('highlight');
+      btnPrev.disabled = true;
+      btnNext.textContent = '開始 →';
+      nodeAttack.style.display = 'none';
+      nodeAttack2.style.display = 'none';
+    }
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowRight' || e.key === 'ArrowDown') { e.preventDefault(); btnNext.click(); }
+      else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') { e.preventDefault(); btnPrev.click(); }
+    });
+  })();
+  </script>
+</body>
+</html>
