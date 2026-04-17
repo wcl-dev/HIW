@@ -125,11 +125,12 @@
               '<br>- 少數群體權益團體' +
               '<br><br><strong>規模：</strong>目前保護全球超過 2,000 個網站，涵蓋 111 個國家。' +
               '<br><br><strong>申請方式：</strong>不能自己直接申請，必須透過 Cloudflare 合作的推薦組織（如 Access Now、CPJ、Electronic Frontier Foundation）提出。' +
+              '<details class="analogy-box"><summary>台灣的申請管道</summary><div class="analogy-content"><strong>開放文化基金會（OCF）</strong> 是 Cloudflare Galileo 在台灣的<strong>官方合作夥伴</strong>。台灣的人權、公民倡議、新聞、民主推廣類組織可以透過 OCF 申請——由他們協助審核與推薦。<br><br>聯絡方式：<strong>ssd@ocf.tw</strong><br>說明頁面：<a href="https://security.ocf.tw/network/cloudflare/" target="_blank" rel="noopener">security.ocf.tw/network/cloudflare</a></div></details>' +
               '<br><br><strong>真實案例：</strong>' +
               '<br>- 保護了報導俄烏戰爭的烏克蘭獨立媒體' +
               '<br>- 擋下了對人權組織的大規模 DDoS 攻擊' +
               '<br>- 協助了香港反送中運動期間的獨立媒體',
-        keyPoint: 'Project Galileo 是目前規模最大、資源最豐富的公民社會防護服務。但因為申請需要推薦，建議先聯絡你信任的國際 NGO 合作夥伴。',
+        keyPoint: 'Project Galileo 是目前規模最大、資源最豐富的公民社會防護服務。台灣組織可以透過 OCF（開放文化基金會）申請，不需要再找國外推薦組織。',
         highlightNodes: ['node-ngo', 'node-galileo', 'node-attacker'],
         highlightEdges: ['edge-ngo-galileo', 'edge-galileo-block'],
         onEnter: () => { shieldIcon.style.display = 'block'; },
@@ -184,7 +185,8 @@
               '<br><br><strong>搭配其他準備：</strong>' +
               '<br>- 重要內容鏡像到多個平台（Internet Archive、社群媒體）' +
               '<br>- 準備緊急聯絡管道（不依賴自己網站的方式）' +
-              '<br>- 與 <strong>Access Now 數位安全 Helpline</strong> 建立聯繫（24/7 免費協助）' +
+              '<br>- 台灣組織可以聯繫 <strong>開放文化基金會（OCF）</strong>的數位安全支援：<a href="https://security.ocf.tw" target="_blank" rel="noopener">security.ocf.tw</a>' +
+              '<br>- 國際資源：<strong>Access Now 數位安全 Helpline</strong>（24/7 免費協助）' +
               '<details class="analogy-box"><summary>為什麼我們該關心</summary><div class="analogy-content">DDoS 防護不是技術問題，是<strong>資源分配的正義問題</strong>——最需要被聽到的聲音，往往最容易被打壓。這些免費服務是公民社會網路自由的重要基礎設施。如果你的組織沒用上，現在就是好時機。如果你的組織很安全，可以支持推廣這些資源給其他人。</div></details>',
         keyPoint: '網路安全不是一次性的設定，是持續的準備。預先安排好防護，遠比災難來臨時才應對有效得多。',
         highlightNodes: ['node-ngo', 'node-galileo', 'node-deflect', 'node-shield'],
