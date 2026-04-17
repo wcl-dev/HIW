@@ -31,7 +31,7 @@
         <line id="edge-user2-edge2" class="edge-line" x1="120" y1="170" x2="340" y2="170"/>
         <line id="edge-user3-edge3" class="edge-line" x1="120" y1="280" x2="340" y2="250"/>
 
-        <!-- CDN 節點到源站 -->
+        <!-- CDN 節點到來源伺服器 -->
         <line id="edge-edge1-origin" class="edge-line" x1="440" y1="90" x2="710" y2="170"/>
         <line id="edge-edge2-origin" class="edge-line" x1="440" y1="170" x2="710" y2="170"/>
         <line id="edge-edge3-origin" class="edge-line" x1="440" y1="250" x2="710" y2="170"/>
@@ -89,11 +89,11 @@
               stroke="var(--node-ixp)" stroke-width="1.5" stroke-dasharray="6,4" opacity="0.4"/>
         <text x="390" y="40" text-anchor="middle" fill="var(--node-ixp)" font-size="12" font-family="inherit" opacity="0.8">CDN 邊緣節點（全球數百個）</text>
 
-        <!-- 源站 -->
+        <!-- 來源伺服器 -->
         <g id="node-origin" class="node-group">
           <rect class="node-box" x="710" y="145" width="160" height="50" rx="10"
                 fill="var(--step-done)" opacity="0.15" stroke="var(--step-done)" stroke-width="2"/>
-          <text class="node-label" x="790" y="168" fill="var(--step-done)">源站伺服器</text>
+          <text class="node-label" x="790" y="168" fill="var(--step-done)">來源伺服器</text>
           <text class="node-sublabel" x="790" y="185">你真正的網站</text>
         </g>
 
@@ -139,7 +139,7 @@
         body: 'CDN（<strong>Content Delivery Network</strong>，內容傳遞網路）的概念很簡單：<strong>不要只有一台伺服器，而是在全世界放幾百個「節點」</strong>，每個節點都存一份你網站的複本。' +
               '<br><br>當使用者訪問你的網站：' +
               '<br>- 他實際上連到的是 <strong>離他最近的 CDN 節點</strong>，不是你真正的伺服器' +
-              '<br>- 節點如果有這個內容的快取就直接回傳；沒有才向源站要' +
+              '<br>- 節點如果有這個內容的快取就直接回傳；沒有才向來源伺服器要' +
               '<br><br>對使用者來說，這代表<strong>更快的速度</strong>——不用跨海連到美國，直接從台北的節點拿。' +
               '<details class="analogy-box"><summary>生活化比喻</summary><div class="analogy-content">延續物流公司的比喻：原本你只有一間總店，所有客人都要到總店拿貨。CDN 就像在每個城市都開<strong>分店</strong>——客人去最近的分店就能拿到同樣的商品，不用千里迢迢跑到總店。</div></details>',
         keyPoint: 'CDN 最初是為了網頁加速而設計的（例如 Cloudflare、Akamai、Fastly）。DDoS 防禦是它的「副作用」——但這個副作用極其強大。',
@@ -148,16 +148,16 @@
         onEnter: () => { nodeAttack.style.display = 'none'; nodeAttack2.style.display = 'none'; },
       },
       {
-        label: '2. 源站藏起來',
+        label: '2. 來源伺服器藏起來',
         title: '你的真伺服器不再直接面對網路',
         body: '啟用 CDN 後，你網站的 DNS 不再指向你真正的伺服器，而是<strong>指向 CDN 的節點</strong>。' +
               '<br><br>對外界來說：' +
-              '<br>- <strong>看到的 IP 是 CDN 的 IP</strong>，不是你的源站 IP' +
+              '<br>- <strong>看到的 IP 是 CDN 的 IP</strong>，不是你的來源伺服器 IP' +
               '<br>- 所有請求都先經過 CDN 節點' +
-              '<br>- 你真正的源站伺服器「藏在 CDN 後面」，外界根本不知道它在哪裡' +
+              '<br>- 你真正的來源伺服器「藏在 CDN 後面」，外界根本不知道它在哪裡' +
               '<br><br>這個特性對 DDoS 防禦來說至關重要：<strong>攻擊者要打你，但他根本不知道你真正的 IP 在哪裡</strong>。他只能打 CDN 的節點。' +
               '<details class="analogy-box"><summary>生活化比喻</summary><div class="analogy-content">延續剛才的比喻：客人去分店拿貨時，根本不知道總店倉庫在哪。想找麻煩的人也只能騷擾分店，但分店受影響、總店還是安然無恙。</div></details>',
-        keyPoint: '隱藏源站 IP 是 CDN 防禦的第一道牆。但要注意：如果你的源站 IP 在開啟 CDN 前就已經曝光（例如公開在 DNS 歷史紀錄裡），攻擊者可能繞過 CDN 直接打源站。',
+        keyPoint: '隱藏來源伺服器 IP 是 CDN 防禦的第一道牆。但要注意：如果你的來源伺服器 IP 在開啟 CDN 前就已經曝光（例如公開在 DNS 歷史紀錄裡），攻擊者可能繞過 CDN 直接打來源伺服器。',
         highlightNodes: ['node-edge1', 'node-edge2', 'node-edge3', 'node-origin'],
         highlightEdges: ['edge-edge1-origin', 'edge-edge2-origin', 'edge-edge3-origin'],
         onEnter: () => { nodeAttack.style.display = 'none'; nodeAttack2.style.display = 'none'; },
@@ -170,7 +170,7 @@
               '<br><strong>1)</strong> 攻擊流量被<strong>分散到全球數百個 CDN 節點</strong>，每個節點只承受一小部分' +
               '<br><strong>2)</strong> CDN 的總頻寬和處理能力是<strong>上百 Tbps 級</strong>——遠遠超過任何一個 NGO 網站的容量' +
               '<br><strong>3)</strong> CDN 內建的流量過濾系統能識別明顯的攻擊特徵（假的請求模式、異常的 IP 集中），自動擋下' +
-              '<br><br>結果：即使攻擊規模大到能打垮你原本的伺服器，對 CDN 來說只是<strong>日常流量</strong>。你的源站安然無恙。' +
+              '<br><br>結果：即使攻擊規模大到能打垮你原本的伺服器，對 CDN 來說只是<strong>日常流量</strong>。你的來源伺服器安然無恙。' +
               '<details class="analogy-box"><summary>生活化比喻</summary><div class="analogy-content">一萬個假客人衝到餐廳鬧事——但現在你不只一家店，你有 300 家分店。假客人被分散到 300 家店，每家店只要應付 30 幾個人，根本不算事。而且每家分店還有保全（CDN 的過濾系統）會把明顯亂鬧的人擋在門口。</div></details>',
         keyPoint: 'CDN 抵禦 DDoS 的核心是「規模」和「分散」——攻擊者的流量再大，對 CDN 來說還是相對小的。公民社會網站靠自己完全不可能做到這種規模的防禦。',
         highlightNodes: ['node-edge1', 'node-edge2', 'node-edge3', 'node-attack', 'node-attack2'],
@@ -182,7 +182,7 @@
         title: 'CDN 的信任問題與限制',
         body: 'CDN 不是完美方案。它也有需要理解的代價：' +
               '<br><br><strong>1) CDN 能看到你的流量</strong>' +
-              '<br>為了快取內容和檢查攻擊，CDN 必須<strong>解密 HTTPS 流量</strong>——你的使用者連到 CDN 時的 TLS，是用 CDN 的憑證，而不是你的源站的。這代表 CDN 技術上能看到所有經過的資料。' +
+              '<br>為了快取內容和檢查攻擊，CDN 必須<strong>解密 HTTPS 流量</strong>——你的使用者連到 CDN 時的 TLS，是用 CDN 的憑證，而不是你的來源伺服器的。這代表 CDN 技術上能看到所有經過的資料。' +
               '<br><br><strong>2) 信任集中化</strong>' +
               '<br>全球大部分的 CDN 市場被 Cloudflare、Akamai、Fastly 等少數幾家壟斷。2021 年 Fastly 故障，導致全球半個網路（包括英國政府、亞馬遜、Twitch）同時斷線數小時。' +
               '<br><br><strong>3) 商業 CDN 也可能拒絕服務</strong>' +
