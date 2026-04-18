@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>多方利害關係人模式 — HIW</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=Noto+Sans+TC:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../shared/style.css">
+</head>
+<body>
+  <nav class="site-nav">
+    <a href="../index.html" class="logo">HIW</a>
+    <ul class="nav-links">
+      <li><a href="../index.html">首頁</a></li>
+      <li><a href="index.html">網路治理</a></li>
+      <li><a href="multistakeholder.html" class="active">多方利害關係人模式</a></li>
+    </ul>
+  </nav>
+
+  <div class="page-container">
+    <h1 class="page-title">多方利害關係人模式</h1>
+    <p class="page-subtitle">為什麼網路不是由某國政府決定的？這套「四方共治」怎麼運作？</p>
+
+    <div class="step-bar" id="stepBar"></div>
+
+    <div class="diagram-container">
+      <svg id="diagram" viewBox="0 0 900 340" xmlns="http://www.w3.org/2000/svg">
+        <!-- 中心：網路治理決策 -->
+        <g id="node-decision" class="node-group">
+          <rect class="node-box" x="380" y="145" width="140" height="50" rx="10"
+                fill="var(--step-done)" opacity="0.15" stroke="var(--step-done)" stroke-width="2"/>
+          <text class="node-label" x="450" y="168" fill="var(--step-done)">網路治理決策</text>
+          <text class="node-sublabel" x="450" y="185">四方共識</text>
+        </g>
+
+        <!-- 四個利害關係人 -->
+        <g id="node-gov" class="node-group">
+          <rect class="node-box" x="100" y="50" width="160" height="55" rx="10"
+                fill="var(--node-dns)" opacity="0.15" stroke="var(--node-dns)" stroke-width="2"/>
+          <text class="node-label" x="180" y="73" fill="var(--node-dns)">政府</text>
+          <text class="node-sublabel" x="180" y="92">法律、主權、政策</text>
+        </g>
+
+        <g id="node-biz" class="node-group">
+          <rect class="node-box" x="640" y="50" width="160" height="55" rx="10"
+                fill="var(--node-ixp)" opacity="0.15" stroke="var(--node-ixp)" stroke-width="2"/>
+          <text class="node-label" x="720" y="73" fill="var(--node-ixp)">企業</text>
+          <text class="node-sublabel" x="720" y="92">基礎建設、服務</text>
+        </g>
+
+        <g id="node-tech" class="node-group">
+          <rect class="node-box" x="100" y="235" width="160" height="55" rx="10"
+                fill="var(--node-user)" opacity="0.15" stroke="var(--node-user)" stroke-width="2"/>
+          <text class="node-label" x="180" y="258" fill="var(--node-user)">技術社群</text>
+          <text class="node-sublabel" x="180" y="277">協定、標準制定</text>
+        </g>
+
+        <g id="node-civil" class="node-group">
+          <rect class="node-box" x="640" y="235" width="160" height="55" rx="10"
+                fill="var(--node-asn)" opacity="0.15" stroke="var(--node-asn)" stroke-width="2"/>
+          <text class="node-label" x="720" y="258" fill="var(--node-asn)">公民社會</text>
+          <text class="node-sublabel" x="720" y="277">使用者權益、倡議</text>
+        </g>
+
+        <!-- 連線：四方都連到中心 -->
+        <line id="edge-gov" class="edge-line" x1="260" y1="90" x2="380" y2="160"/>
+        <line id="edge-biz" class="edge-line" x1="640" y1="90" x2="520" y2="160"/>
+        <line id="edge-tech" class="edge-line" x1="260" y1="250" x2="380" y2="180"/>
+        <line id="edge-civil" class="edge-line" x1="640" y1="250" x2="520" y2="180"/>
+      </svg>
+    </div>
+
+    <div class="info-panel" id="infoPanel">
+      <h3 id="infoTitle">選擇一個步驟開始</h3>
+      <p id="infoBody"><strong>多方利害關係人模式（Multistakeholder Model）</strong>是網路治理的核心原則：不讓任何單一方主導，讓政府、企業、技術社群、公民社會共同決定網路的方向。</p>
+      <div class="key-point" id="infoKeyPoint" style="display:none;"></div>
+    </div>
+
+    <div class="step-nav">
+      <button id="btnPrev" disabled>← 上一步</button>
+      <button id="btnNext">開始 →</button>
+    </div>
+  </div>
+
+  <footer class="site-footer">HIW — How Internet Works · © weichen · 以 <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">CC BY 4.0</a> 授權釋出</footer>
+
+  <script>
+  (function () {
+    const steps = [
+      {
+        label: '1. 什麼是多方模式',
+        title: '不是政府說了算，也不是企業說了算',
+        body: '傳統的國際事務（例如郵政、民航、海事）通常是由<strong>各國政府代表</strong>談判協調。但網路治理走的是完全不同的路：<strong>多方利害關係人模式（Multistakeholder Model）</strong>。' +
+              '<br><br>這套模式的核心主張是：網路不屬於任何一方，所以決策必須有<strong>四方共同參與</strong>：' +
+              '<br><br><strong>1) 政府（Governments）</strong>——代表國家主權、法律框架' +
+              '<br><strong>2) 企業（Private Sector）</strong>——營運網路基礎建設的公司' +
+              '<br><strong>3) 技術社群（Technical Community）</strong>——制定協定和標準的工程師們' +
+              '<br><strong>4) 公民社會（Civil Society）</strong>——NGO、學術界、使用者代表' +
+              '<details class="analogy-box"><summary>生活化比喻</summary><div class="analogy-content">傳統國際組織像<strong>各國大使的會議</strong>——只有政府代表能坐在桌邊。多方模式則是<strong>圓桌論壇</strong>——政府、企業、工程師、NGO 都有席位，沒有誰是「主桌」、誰是「旁聽」。</div></details>',
+        keyPoint: '多方利害關係人不是某國發明的——它是網路本身的歷史演化結果。網路一開始是學術、軍方、工程師共同打造的，從來就不是由政府主導的。',
+        highlightNodes: ['node-decision', 'node-gov', 'node-biz', 'node-tech', 'node-civil'],
+        highlightEdges: ['edge-gov', 'edge-biz', 'edge-tech', 'edge-civil'],
+      },
+      {
+        label: '2. 各方角色',
+        title: '四方各自帶來什麼？',
+        body: '<strong>政府</strong>：帶來法律約束力、代表國民。但政府不能單方面決定全球網路規則——除非它只想管自己國內的網路。' +
+              '<br><br><strong>企業</strong>：營運實體網路——ISP、CDN、雲端平台、海底電纜都是企業建的。企業有實務知識和資源，但也有商業利益。' +
+              '<br><br><strong>技術社群</strong>：IETF、W3C 這些組織的核心。他們理解「什麼在技術上可行」，往往能否決掉不切實際的政治方案。' +
+              '<br><br><strong>公民社會</strong>：代表使用者、弱勢群體、倡議團體。當其他三方優先考慮主權、獲利、技術時，公民社會負責問「這對一般人（尤其是最脆弱的人）好嗎？」' +
+              '<details class="analogy-box"><summary>為什麼我們該關心</summary><div class="analogy-content">如果沒有公民社會的聲音，其他三方都有強烈動機做對一般使用者不利的決定——政府想要更多監控權力、企業想要更多商業自由、技術社群可能忽略不懂技術的使用者的處境。<br><br>公民社會在這張桌子上的席位是<strong>爭取來的，不是天賦的</strong>——這也是為什麼 NGO 參與網路治理本身就是重要的倡議工作。</div></details>',
+        keyPoint: '四方之間經常意見不同——這是設計。多方模式不是要「一團和氣」，而是要「沒有任何一方能單邊壓過其他人」。張力就是這套模式的運作方式。',
+        highlightNodes: ['node-gov', 'node-biz', 'node-tech', 'node-civil'],
+        highlightEdges: [],
+      },
+      {
+        label: '3. 怎麼運作',
+        title: 'IGF、ICANN 的多方結構',
+        body: '多方模式不是空談，有具體的運作場域：' +
+              '<br><br><strong>IGF（Internet Governance Forum，網路治理論壇）</strong>' +
+              '<br>聯合國在 2006 年設立，每年舉辦一次全球會議，加上各地區和國家層級的 IGF。<strong>不做決議、只做討論</strong>——這是特色不是缺點，因為「有共識的討論」本身就會影響各方後續的政策。台灣有 <strong>TWIGF</strong>（台灣網路治理論壇）。' +
+              '<br><br><strong>ICANN 的四方結構</strong>' +
+              '<br>ICANN 內部有四個支援組織（Supporting Organizations）和四個諮詢委員會（Advisory Committees），確保政府（GAC）、企業（商業、註冊商）、技術社群（RIRs、IETF liaison）、公民社會（ALAC 使用者代表）都有席位。決策需要跨組織的共識。' +
+              '<br><br><strong>IETF 的開放參與</strong>' +
+              '<br>前面提過——任何人都能參加，沒有會員身份、沒有國籍限制。這是最純粹的技術社群模式，但公民社會聲音相對弱。',
+        keyPoint: '多方模式的實踐場域很多元——從聯合國的 IGF 到 ICANN 的正式結構，從 IETF 的開放郵件論壇到地區性的 TWIGF。不同場域有不同的權力平衡。',
+        highlightNodes: ['node-decision', 'node-gov', 'node-biz', 'node-tech', 'node-civil'],
+        highlightEdges: ['edge-gov', 'edge-biz', 'edge-tech', 'edge-civil'],
+      },
+      {
+        label: '4. 挑戰與批評',
+        title: '這套模式真的公平嗎？',
+        body: '多方模式被推崇，但也面對許多批評：' +
+              '<br><br><strong>1) 實質不平等</strong>' +
+              '<br>四方都有席位，但資源差距巨大。企業有全職政策團隊，公民社會代表常是志工。能長期參與國際會議的 NGO，本身就必須有足夠的資金。' +
+              '<br><br><strong>2) Global North 主導</strong>' +
+              '<br>會議多在歐美舉辦、主要語言是英語、時區以美東為準。來自全球南方的代表參與成本遠高於西方。' +
+              '<br><br><strong>3) 威權國家的挑戰</strong>' +
+              '<br>中國、俄羅斯等國家推動「網路主權」概念，主張網路治理應該回到「政府間模式」（multilateral），由聯合國 ITU 這類政府組織主導。這會大幅削弱公民社會和技術社群的角色。' +
+              '<br><br><strong>4) 「共識決」的代價</strong>' +
+              '<br>追求共識意味著決策緩慢、改革困難。許多需要採取立場的議題（例如網路仇恨言論）因此被擱置。' +
+              '<details class="analogy-box"><summary>為什麼我們該關心</summary><div class="analogy-content">多方模式不完美，但它是目前<strong>保護網路不被任何單一強權壟斷</strong>的最務實方案。如果這套模式崩潰，下一個模式很可能是「政府間模式」——由各國政府關起門來決定網路規則，公民社會連發聲的場域都沒有。<br><br>台灣的處境特別——我們在聯合國體系中位置艱難，但在 I* 組織和 IGF 中通常能以「Taiwan」身份參與。多方模式的維護對台灣來說不只是理念問題，也是實質的地緣利益。</div></details>',
+        keyPoint: '多方模式不是完美的烏托邦，但它的存在本身就是政治成就——任何人（包括最小的 NGO）都能在桌邊有一席之地的體制，在國際治理裡非常罕見。',
+        highlightNodes: ['node-decision', 'node-gov', 'node-biz', 'node-tech', 'node-civil'],
+        highlightEdges: ['edge-gov', 'edge-biz', 'edge-tech', 'edge-civil'],
+      },
+    ];
+
+    let currentStep = -1;
+    const stepBar = document.getElementById('stepBar');
+    const infoTitle = document.getElementById('infoTitle');
+    const infoBody = document.getElementById('infoBody');
+    const infoKeyPoint = document.getElementById('infoKeyPoint');
+    const infoPanel = document.getElementById('infoPanel');
+    const btnPrev = document.getElementById('btnPrev');
+    const btnNext = document.getElementById('btnNext');
+    const allNodes = document.querySelectorAll('.node-group');
+    const allEdges = document.querySelectorAll('.edge-line');
+
+    steps.forEach((s, i) => {
+      const btn = document.createElement('button');
+      btn.className = 'step-btn';
+      btn.textContent = s.label;
+      btn.addEventListener('click', () => goToStep(i));
+      stepBar.appendChild(btn);
+    });
+
+    function goToStep(index) {
+      currentStep = index;
+      const step = steps[index];
+      const btns = stepBar.querySelectorAll('.step-btn');
+      btns.forEach((b, i) => {
+        b.classList.remove('active', 'done');
+        if (i === index) b.classList.add('active');
+        else if (i < index) b.classList.add('done');
+      });
+      allNodes.forEach(n => { n.classList.remove('highlighted'); n.classList.add('dimmed'); });
+      allEdges.forEach(e => { e.classList.remove('active'); e.classList.add('dimmed'); });
+      step.highlightNodes.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) { el.classList.remove('dimmed'); el.classList.add('highlighted'); }
+      });
+      step.highlightEdges.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) { el.classList.remove('dimmed'); el.classList.add('active'); }
+      });
+      infoTitle.textContent = step.title;
+      infoBody.innerHTML = step.body;
+      if (step.keyPoint) {
+        infoKeyPoint.textContent = step.keyPoint;
+        infoKeyPoint.style.display = 'block';
+      } else {
+        infoKeyPoint.style.display = 'none';
+      }
+      infoPanel.classList.remove('highlight');
+      void infoPanel.offsetWidth;
+      infoPanel.classList.add('highlight');
+      btnPrev.disabled = index === 0;
+      btnNext.textContent = index === steps.length - 1 ? '重新開始 ↺' : '下一步 →';
+    }
+
+    btnPrev.addEventListener('click', () => { if (currentStep > 0) goToStep(currentStep - 1); });
+    btnNext.addEventListener('click', () => {
+      if (currentStep === -1) goToStep(0);
+      else if (currentStep === steps.length - 1) { currentStep = -1; resetDiagram(); }
+      else goToStep(currentStep + 1);
+    });
+
+    function resetDiagram() {
+      allNodes.forEach(n => { n.classList.remove('highlighted', 'dimmed'); });
+      allEdges.forEach(e => { e.classList.remove('active', 'dimmed'); });
+      stepBar.querySelectorAll('.step-btn').forEach(b => b.classList.remove('active', 'done'));
+      infoTitle.textContent = '選擇一個步驟開始';
+      infoBody.innerHTML = '<strong>多方利害關係人模式（Multistakeholder Model）</strong>是網路治理的核心原則：不讓任何單一方主導，讓政府、企業、技術社群、公民社會共同決定網路的方向。';
+      infoKeyPoint.style.display = 'none';
+      infoPanel.classList.remove('highlight');
+      btnPrev.disabled = true;
+      btnNext.textContent = '開始 →';
+    }
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowRight' || e.key === 'ArrowDown') { e.preventDefault(); btnNext.click(); }
+      else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') { e.preventDefault(); btnPrev.click(); }
+    });
+  })();
+  </script>
+</body>
+</html>

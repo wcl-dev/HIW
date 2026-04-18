@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>誰管網路？認識 I* — HIW</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=Noto+Sans+TC:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../shared/style.css">
+</head>
+<body>
+  <nav class="site-nav">
+    <a href="../index.html" class="logo">HIW</a>
+    <ul class="nav-links">
+      <li><a href="../index.html">首頁</a></li>
+      <li><a href="index.html">網路治理</a></li>
+      <li><a href="i-star.html" class="active">誰管網路？</a></li>
+    </ul>
+  </nav>
+
+  <div class="page-container">
+    <h1 class="page-title">誰管網路？認識 I*</h1>
+    <p class="page-subtitle">網路沒有老闆，但有一群可愛的 I*（I-star）組織，各自負責不同領域。</p>
+
+    <div class="step-bar" id="stepBar"></div>
+
+    <div class="diagram-container">
+      <svg id="diagram" viewBox="0 0 900 340" xmlns="http://www.w3.org/2000/svg">
+        <!-- 中心：網路 -->
+        <g id="node-internet" class="node-group">
+          <rect class="node-box" x="380" y="145" width="140" height="50" rx="10"
+                fill="var(--step-done)" opacity="0.15" stroke="var(--step-done)" stroke-width="2"/>
+          <text class="node-label" x="450" y="168" fill="var(--step-done)">網際網路</text>
+          <text class="node-sublabel" x="450" y="185">沒有單一老闆</text>
+        </g>
+
+        <!-- 六個 I* 組織，圍繞中心 -->
+        <g id="node-ietf" class="node-group">
+          <rect class="node-box" x="30" y="50" width="140" height="50" rx="10"
+                fill="var(--node-user)" opacity="0.15" stroke="var(--node-user)" stroke-width="2"/>
+          <text class="node-label" x="100" y="73" fill="var(--node-user)">IETF</text>
+          <text class="node-sublabel" x="100" y="90">制定協定標準</text>
+        </g>
+
+        <g id="node-icann" class="node-group">
+          <rect class="node-box" x="380" y="30" width="140" height="50" rx="10"
+                fill="var(--node-dns)" opacity="0.15" stroke="var(--node-dns)" stroke-width="2"/>
+          <text class="node-label" x="450" y="53" fill="var(--node-dns)">ICANN</text>
+          <text class="node-sublabel" x="450" y="70">域名與 IP 協調</text>
+        </g>
+
+        <g id="node-w3c" class="node-group">
+          <rect class="node-box" x="730" y="50" width="140" height="50" rx="10"
+                fill="var(--node-isp)" opacity="0.15" stroke="var(--node-isp)" stroke-width="2"/>
+          <text class="node-label" x="800" y="73" fill="var(--node-isp)">W3C</text>
+          <text class="node-sublabel" x="800" y="90">網頁標準</text>
+        </g>
+
+        <g id="node-rir" class="node-group">
+          <rect class="node-box" x="30" y="240" width="140" height="50" rx="10"
+                fill="var(--node-ixp)" opacity="0.15" stroke="var(--node-ixp)" stroke-width="2"/>
+          <text class="node-label" x="100" y="263" fill="var(--node-ixp)">RIRs</text>
+          <text class="node-sublabel" x="100" y="280">分配 IP 位址</text>
+        </g>
+
+        <g id="node-isoc" class="node-group">
+          <rect class="node-box" x="380" y="260" width="140" height="50" rx="10"
+                fill="var(--node-asn)" opacity="0.15" stroke="var(--node-asn)" stroke-width="2"/>
+          <text class="node-label" x="450" y="283" fill="var(--node-asn)">ISOC</text>
+          <text class="node-sublabel" x="450" y="300">整體願景與倡議</text>
+        </g>
+
+        <g id="node-iab" class="node-group">
+          <rect class="node-box" x="730" y="240" width="140" height="50" rx="10"
+                fill="var(--node-user)" opacity="0.15" stroke="var(--node-user)" stroke-width="2"/>
+          <text class="node-label" x="800" y="263" fill="var(--node-user)">IAB</text>
+          <text class="node-sublabel" x="800" y="280">架構監督</text>
+        </g>
+
+        <!-- 連線：網際網路 ← 各 I* -->
+        <line id="edge-ietf" class="edge-line" x1="170" y1="85" x2="380" y2="160"/>
+        <line id="edge-icann" class="edge-line" x1="450" y1="80" x2="450" y2="145"/>
+        <line id="edge-w3c" class="edge-line" x1="730" y1="85" x2="520" y2="160"/>
+        <line id="edge-rir" class="edge-line" x1="170" y1="255" x2="380" y2="180"/>
+        <line id="edge-isoc" class="edge-line" x1="450" y1="260" x2="450" y2="195"/>
+        <line id="edge-iab" class="edge-line" x1="730" y1="255" x2="520" y2="180"/>
+      </svg>
+    </div>
+
+    <div class="info-panel" id="infoPanel">
+      <h3 id="infoTitle">選擇一個步驟開始</h3>
+      <p id="infoBody">網際網路沒有「總經理」——它是靠一群技術社群、非營利組織協調運作的。這群組織的名稱大多以 I 開頭（或跟 Internet 相關），技術圈暱稱為 <strong>I*（I-star，念作 I-star）</strong>。</p>
+      <div class="key-point" id="infoKeyPoint" style="display:none;"></div>
+    </div>
+
+    <div class="step-nav">
+      <button id="btnPrev" disabled>← 上一步</button>
+      <button id="btnNext">開始 →</button>
+    </div>
+  </div>
+
+  <footer class="site-footer">HIW — How Internet Works · © weichen · 以 <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">CC BY 4.0</a> 授權釋出</footer>
+
+  <script>
+  (function () {
+    const steps = [
+      {
+        label: '1. 為什麼叫 I*？',
+        title: 'I*（I-star）——網路治理的核心成員',
+        body: '網際網路能順利運作，不是因為有個「網路老闆」在下令，而是靠一群負責不同面向的組織彼此協調。' +
+              '<br><br>這群組織的名稱大多以 <strong>I 開頭</strong>（或跟 Internet 相關），技術社群把它們統稱為 <strong>I*（念作 I-star）</strong>——用星號當萬用字元，涵蓋 I 開頭的各種縮寫。' +
+              '<br><br>成員通常包括：' +
+              '<br>- <strong>IETF</strong>（Internet Engineering Task Force）' +
+              '<br>- <strong>IAB</strong>（Internet Architecture Board）' +
+              '<br>- <strong>ISOC</strong>（Internet Society）' +
+              '<br>- <strong>ICANN</strong>（Internet Corporation for Assigned Names and Numbers）' +
+              '<br>- <strong>RIRs</strong>（Regional Internet Registries）' +
+              '<br>- <strong>W3C</strong>（World Wide Web Consortium，雖然是 W 開頭但慣例也算在內）' +
+              '<details class="analogy-box"><summary>生活化比喻</summary><div class="analogy-content">想像一座沒有市長的城市——但路有人鋪、地址有人編、建築有人訂規範、水電有人管。各種公共事務由不同專業社群分工協調。I* 組織對網路來說就是這些專業社群，各管一攤，但共同維持城市運轉。</div></details>',
+        keyPoint: 'I* 不是政府組織，大多是非營利的技術社群。它們的權力來自「技術共識」——誰的方案被大家採用，誰就實質上在「管」網路的某個部分。',
+        highlightNodes: ['node-internet', 'node-ietf', 'node-icann', 'node-w3c', 'node-rir', 'node-isoc', 'node-iab'],
+        highlightEdges: ['edge-ietf', 'edge-icann', 'edge-w3c', 'edge-rir', 'edge-isoc', 'edge-iab'],
+      },
+      {
+        label: '2. 協定的制定者',
+        title: 'IETF 與 IAB：網路協定的制定者',
+        body: '<strong>IETF（Internet Engineering Task Force）</strong>——制定網路協定的核心組織。' +
+              '<br><br>你在前面主題看過的每一個協定，幾乎都是 IETF 制定的：' +
+              '<br>- <strong>IP、TCP、UDP</strong>（封包怎麼傳）' +
+              '<br>- <strong>DNS、DoH、DoT</strong>（域名查詢與加密）' +
+              '<br>- <strong>HTTP、HTTPS、TLS、ECH</strong>（網頁與加密）' +
+              '<br>- <strong>BGP</strong>（自治系統間的路由）' +
+              '<br><br>IETF 的運作方式很特別：' +
+              '<br>- <strong>沒有會員資格</strong>，任何人都能參加' +
+              '<br>- 決策靠「粗略共識與可運作的程式碼」（rough consensus and running code）' +
+              '<br>- 所有討論都公開在郵件論壇上，任何人都能讀、能提意見' +
+              '<br><br><strong>IAB（Internet Architecture Board）</strong>——IETF 的上級監督單位，負責整體架構方向與長期規劃。' +
+              '<details class="analogy-box"><summary>生活化比喻</summary><div class="analogy-content">IETF 像一個永遠開放的<strong>工程師公會</strong>——任何人都能來開會、提議、寫草案。通過共識、證明可行的方案就變成標準。這不是投票民主，而是「用能動的方案說服別人」的技術民主。</div></details>',
+        keyPoint: 'IETF 的決策原則是「粗略共識 + 能運作的程式碼」——不靠投票，靠「誰的方案能說服別人、實際跑得動」。這種模式讓技術進步不被任何單一國家或公司控制。',
+        highlightNodes: ['node-ietf', 'node-iab'],
+        highlightEdges: ['edge-ietf', 'edge-iab'],
+      },
+      {
+        label: '3. 名稱與位址',
+        title: 'ICANN 與 RIRs：誰分配域名和 IP',
+        body: '<strong>ICANN（Internet Corporation for Assigned Names and Numbers）</strong>' +
+              '<br>負責<strong>全球域名系統</strong>的協調——包含頂級域（.com、.org、.tw 等）的授權、Root DNS 的監督。在「域名的世界」中我們已經介紹過它。' +
+              '<br><br><strong>RIRs（Regional Internet Registries，區域網際網路註冊管理機構）</strong>' +
+              '<br>負責<strong>IP 位址的分配</strong>。全球分五個區域：' +
+              '<br>- <strong>APNIC</strong> — 亞太區（台灣屬於此區）' +
+              '<br>- <strong>ARIN</strong> — 北美' +
+              '<br>- <strong>RIPE NCC</strong> — 歐洲、中東、中亞' +
+              '<br>- <strong>LACNIC</strong> — 拉丁美洲、加勒比海' +
+              '<br>- <strong>AFRINIC</strong> — 非洲' +
+              '<br><br>你的 ISP 要營運網路，需要向所屬區域的 RIR 申請 IP 範圍和 ASN 編號。' +
+              '<details class="analogy-box"><summary>台灣的例子</summary><div class="analogy-content">台灣的 ISP（中華電信、遠傳等）向 <strong>APNIC</strong> 申請 IP 和 ASN。<strong>TWNIC（台灣網路資訊中心）</strong>是 APNIC 在台灣的會員，同時也管理 .tw 國碼域名。你如果要註冊 .tw 域名，最終就是向 TWNIC 體系登記。</div></details>',
+        keyPoint: 'ICANN 管「名字」（域名），RIRs 管「號碼」（IP）。這兩個系統分開運作，各有治理結構，但都必須協調才能讓網路運作。',
+        highlightNodes: ['node-icann', 'node-rir'],
+        highlightEdges: ['edge-icann', 'edge-rir'],
+      },
+      {
+        label: '4. 網頁與願景',
+        title: 'W3C 與 ISOC：網頁標準和整體倡議',
+        body: '<strong>W3C（World Wide Web Consortium）</strong>' +
+              '<br>制定<strong>網頁相關標準</strong>：HTML、CSS、DOM、Web APIs、無障礙規範（WCAG）等。由 Tim Berners-Lee（WWW 發明人）在 1994 年創立，目前是會員制組織（企業、大學、NGO 都能加入）。' +
+              '<br><br><strong>ISOC（Internet Society）</strong>' +
+              '<br>1992 年成立的國際非營利組織，使命是「確保網路對所有人開放、可近用、可信」。它的角色比較偏<strong>倡議和願景</strong>：' +
+              '<br>- 提供 IETF 的組織支援' +
+              '<br>- 在聯合國、各國政府場合為「開放網路」發聲' +
+              '<br>- 資助開發中國家的網路建設' +
+              '<br>- 全球有數十個 <strong>地方分會（Chapter）</strong>，包括 ISOC-TW（台灣分會）' +
+              '<details class="analogy-box"><summary>為什麼我們該關心</summary><div class="analogy-content">ISOC 是少數<strong>專門為「網路應該為所有人服務」發聲</strong>的國際組織。當各國政府想要透過法律或技術手段限制網路時，ISOC 往往是國際層級最主要的公民社會代言人。台灣 NGO 可以透過 <strong>ISOC-TW</strong> 接觸到這個國際倡議網路。</div></details>',
+        keyPoint: 'W3C 管「你在瀏覽器看到的東西怎麼標準化」，ISOC 管「網路整體該往哪裡去」。前者技術性強，後者政治性強，兩者互補。',
+        highlightNodes: ['node-w3c', 'node-isoc'],
+        highlightEdges: ['edge-w3c', 'edge-isoc'],
+      },
+      {
+        label: '5. 共同運作',
+        title: '為什麼這套分工能運作？',
+        body: 'I* 組織的分工不是誰規定的，而是歷史演化的結果。但它能穩定運作，有幾個關鍵原則：' +
+              '<br><br><strong>1) 各司其職、互不越權</strong>' +
+              '<br>IETF 不管域名，ICANN 不管協定，W3C 不管 IP。界線清楚，避免權力集中。' +
+              '<br><br><strong>2) 開放透明</strong>' +
+              '<br>幾乎所有討論都公開，任何人都能旁聽、提意見（雖然影響力程度不同）。' +
+              '<br><br><strong>3) 技術共識優先</strong>' +
+              '<br>決策不是靠投票或政治角力，而是「哪個方案能說服大家、實際跑得動」。' +
+              '<br><br><strong>4) 多方利害關係人模式</strong>' +
+              '<br>政府、企業、技術社群、公民社會都有席位——沒有任何一方能單獨決定。下一個主題「多方利害關係人模式」會深入說明。' +
+              '<br><br>這套模式不完美，經常被批評「由 global north 主導」、「英語霸權」、「企業影響力過大」等。但它確實是目前讓網路跨國運作的最務實方案。',
+        keyPoint: 'I* 的分工體現了一個哲學：網路太重要了，不能讓任何單一組織（包括任何政府）全權決定。把權力分散，讓各方互相制衡——這就是網路治理的核心精神。',
+        highlightNodes: ['node-internet', 'node-ietf', 'node-icann', 'node-w3c', 'node-rir', 'node-isoc', 'node-iab'],
+        highlightEdges: ['edge-ietf', 'edge-icann', 'edge-w3c', 'edge-rir', 'edge-isoc', 'edge-iab'],
+      },
+    ];
+
+    let currentStep = -1;
+    const stepBar = document.getElementById('stepBar');
+    const infoTitle = document.getElementById('infoTitle');
+    const infoBody = document.getElementById('infoBody');
+    const infoKeyPoint = document.getElementById('infoKeyPoint');
+    const infoPanel = document.getElementById('infoPanel');
+    const btnPrev = document.getElementById('btnPrev');
+    const btnNext = document.getElementById('btnNext');
+    const allNodes = document.querySelectorAll('.node-group');
+    const allEdges = document.querySelectorAll('.edge-line');
+
+    steps.forEach((s, i) => {
+      const btn = document.createElement('button');
+      btn.className = 'step-btn';
+      btn.textContent = s.label;
+      btn.addEventListener('click', () => goToStep(i));
+      stepBar.appendChild(btn);
+    });
+
+    function goToStep(index) {
+      currentStep = index;
+      const step = steps[index];
+      const btns = stepBar.querySelectorAll('.step-btn');
+      btns.forEach((b, i) => {
+        b.classList.remove('active', 'done');
+        if (i === index) b.classList.add('active');
+        else if (i < index) b.classList.add('done');
+      });
+      allNodes.forEach(n => { n.classList.remove('highlighted'); n.classList.add('dimmed'); });
+      allEdges.forEach(e => { e.classList.remove('active'); e.classList.add('dimmed'); });
+      step.highlightNodes.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) { el.classList.remove('dimmed'); el.classList.add('highlighted'); }
+      });
+      step.highlightEdges.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) { el.classList.remove('dimmed'); el.classList.add('active'); }
+      });
+      infoTitle.textContent = step.title;
+      infoBody.innerHTML = step.body;
+      if (step.keyPoint) {
+        infoKeyPoint.textContent = step.keyPoint;
+        infoKeyPoint.style.display = 'block';
+      } else {
+        infoKeyPoint.style.display = 'none';
+      }
+      infoPanel.classList.remove('highlight');
+      void infoPanel.offsetWidth;
+      infoPanel.classList.add('highlight');
+      btnPrev.disabled = index === 0;
+      btnNext.textContent = index === steps.length - 1 ? '重新開始 ↺' : '下一步 →';
+    }
+
+    btnPrev.addEventListener('click', () => { if (currentStep > 0) goToStep(currentStep - 1); });
+    btnNext.addEventListener('click', () => {
+      if (currentStep === -1) goToStep(0);
+      else if (currentStep === steps.length - 1) { currentStep = -1; resetDiagram(); }
+      else goToStep(currentStep + 1);
+    });
+
+    function resetDiagram() {
+      allNodes.forEach(n => { n.classList.remove('highlighted', 'dimmed'); });
+      allEdges.forEach(e => { e.classList.remove('active', 'dimmed'); });
+      stepBar.querySelectorAll('.step-btn').forEach(b => b.classList.remove('active', 'done'));
+      infoTitle.textContent = '選擇一個步驟開始';
+      infoBody.innerHTML = '網際網路沒有「總經理」——它是靠一群技術社群、非營利組織協調運作的。這群組織的名稱大多以 I 開頭（或跟 Internet 相關），技術圈暱稱為 <strong>I*（I-star，念作 I-star）</strong>。';
+      infoKeyPoint.style.display = 'none';
+      infoPanel.classList.remove('highlight');
+      btnPrev.disabled = true;
+      btnNext.textContent = '開始 →';
+    }
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowRight' || e.key === 'ArrowDown') { e.preventDefault(); btnNext.click(); }
+      else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') { e.preventDefault(); btnPrev.click(); }
+    });
+  })();
+  </script>
+</body>
+</html>

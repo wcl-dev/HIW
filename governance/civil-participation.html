@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>公民社會怎麼參與 — HIW</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=Noto+Sans+TC:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../shared/style.css">
+</head>
+<body>
+  <nav class="site-nav">
+    <a href="../index.html" class="logo">HIW</a>
+    <ul class="nav-links">
+      <li><a href="../index.html">首頁</a></li>
+      <li><a href="index.html">網路治理</a></li>
+      <li><a href="civil-participation.html" class="active">公民社會怎麼參與</a></li>
+    </ul>
+  </nav>
+
+  <div class="page-container">
+    <h1 class="page-title">公民社會怎麼參與</h1>
+    <p class="page-subtitle">NGO、一般人如何在網路治理中發聲？台灣人怎麼參與？</p>
+
+    <div class="step-bar" id="stepBar"></div>
+
+    <div class="diagram-container">
+      <svg id="diagram" viewBox="0 0 900 340" xmlns="http://www.w3.org/2000/svg">
+        <!-- 公民個人 -->
+        <g id="node-person" class="node-group">
+          <rect class="node-box" x="30" y="145" width="130" height="50" rx="10"
+                fill="var(--node-user)" opacity="0.15" stroke="var(--node-user)" stroke-width="2"/>
+          <text class="node-label" x="95" y="168" fill="var(--node-user)">你 / 組織</text>
+          <text class="node-sublabel" x="95" y="185">公民社會</text>
+        </g>
+
+        <!-- 三層參與管道 -->
+        <g id="node-local" class="node-group">
+          <rect class="node-box" x="270" y="50" width="180" height="50" rx="10"
+                fill="var(--node-isp)" opacity="0.15" stroke="var(--node-isp)" stroke-width="2"/>
+          <text class="node-label" x="360" y="73" fill="var(--node-isp)">在地參與</text>
+          <text class="node-sublabel" x="360" y="90">TWIGF、ISOC-TW、OCF</text>
+        </g>
+
+        <g id="node-regional" class="node-group">
+          <rect class="node-box" x="270" y="145" width="180" height="50" rx="10"
+                fill="var(--node-ixp)" opacity="0.15" stroke="var(--node-ixp)" stroke-width="2"/>
+          <text class="node-label" x="360" y="168" fill="var(--node-ixp)">區域參與</text>
+          <text class="node-sublabel" x="360" y="185">APrIGF、APNIC</text>
+        </g>
+
+        <g id="node-global" class="node-group">
+          <rect class="node-box" x="270" y="240" width="180" height="50" rx="10"
+                fill="var(--node-asn)" opacity="0.15" stroke="var(--node-asn)" stroke-width="2"/>
+          <text class="node-label" x="360" y="263" fill="var(--node-asn)">全球參與</text>
+          <text class="node-sublabel" x="360" y="280">IGF、ICANN、IETF</text>
+        </g>
+
+        <!-- 影響層面 -->
+        <g id="node-policy" class="node-group">
+          <rect class="node-box" x="580" y="50" width="180" height="50" rx="10"
+                fill="var(--step-done)" opacity="0.15" stroke="var(--step-done)" stroke-width="2"/>
+          <text class="node-label" x="670" y="73" fill="var(--step-done)">政策倡議</text>
+          <text class="node-sublabel" x="670" y="90">立法、監管</text>
+        </g>
+
+        <g id="node-standards" class="node-group">
+          <rect class="node-box" x="580" y="145" width="180" height="50" rx="10"
+                fill="var(--step-done)" opacity="0.15" stroke="var(--step-done)" stroke-width="2"/>
+          <text class="node-label" x="670" y="168" fill="var(--step-done)">技術標準</text>
+          <text class="node-sublabel" x="670" y="185">協定、規範</text>
+        </g>
+
+        <g id="node-norms" class="node-group">
+          <rect class="node-box" x="580" y="240" width="180" height="50" rx="10"
+                fill="var(--step-done)" opacity="0.15" stroke="var(--step-done)" stroke-width="2"/>
+          <text class="node-label" x="670" y="263" fill="var(--step-done)">價值規範</text>
+          <text class="node-sublabel" x="670" y="280">人權、隱私、可近用</text>
+        </g>
+
+        <!-- 連線 -->
+        <line id="edge-person-local" class="edge-line" x1="160" y1="160" x2="270" y2="75"/>
+        <line id="edge-person-regional" class="edge-line" x1="160" y1="170" x2="270" y2="170"/>
+        <line id="edge-person-global" class="edge-line" x1="160" y1="180" x2="270" y2="265"/>
+
+        <line id="edge-local-policy" class="edge-line" x1="450" y1="75" x2="580" y2="75"/>
+        <line id="edge-regional-standards" class="edge-line" x1="450" y1="170" x2="580" y2="170"/>
+        <line id="edge-global-norms" class="edge-line" x1="450" y1="265" x2="580" y2="265"/>
+      </svg>
+    </div>
+
+    <div class="info-panel" id="infoPanel">
+      <h3 id="infoTitle">選擇一個步驟開始</h3>
+      <p id="infoBody">「多方利害關係人」不是抽象原則——它有具體的場域和參與管道。從在地到全球，公民社會都能找到發聲的位置。</p>
+      <div class="key-point" id="infoKeyPoint" style="display:none;"></div>
+    </div>
+
+    <div class="step-nav">
+      <button id="btnPrev" disabled>← 上一步</button>
+      <button id="btnNext">開始 →</button>
+    </div>
+  </div>
+
+  <footer class="site-footer">HIW — How Internet Works · © weichen · 以 <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">CC BY 4.0</a> 授權釋出</footer>
+
+  <script>
+  (function () {
+    const steps = [
+      {
+        label: '1. 在地場域',
+        title: '台灣：從 TWIGF 開始',
+        body: '參與網路治理不用飛出國——從在地開始就好。' +
+              '<br><br><strong>TWIGF（台灣網路治理論壇）</strong>' +
+              '<br>每年舉辦一次，是台灣網路治理最主要的公共論壇。由多個單位共同主辦，議題涵蓋從網路基礎建設到數位人權。任何人（包括學生、NGO 工作者、一般關心者）都能報名參加。' +
+              '<br><br><strong>ISOC-TW（Internet Society 台灣分會）</strong>' +
+              '<br>ISOC 在台灣的正式分會，會員制但很容易加入。提供國際網路治理議題的在地討論與倡議。' +
+              '<br><br><strong>OCF（開放文化基金會）</strong>' +
+              '<br>前面在 CDN / DDoS 章節提過——除了協助 Cloudflare 申請，OCF 也是台灣網路治理、數位人權議題的主要推動者之一。定期舉辦活動、發表政策分析。' +
+              '<br><br><strong>TWNIC（台灣網路資訊中心）</strong>' +
+              '<br>管理 .tw 域名的機構，也是 APNIC 會員。有公開的會員大會和諮詢委員會，提供公民社會席位。' +
+              '<details class="analogy-box"><summary>為什麼我們該關心</summary><div class="analogy-content">在地參與的門檻最低、能量最扎實。你在 TWIGF 認識的人，很可能是未來去 APrIGF 和全球 IGF 時的在地夥伴。國際倡議往往靠在地基礎——沒有本地社群，國際參與是漂浮的。</div></details>',
+        keyPoint: '國際參與不是目的，在地紮根才是基礎。TWIGF 每年的議題設定，會直接反映到台灣在 APrIGF 和全球 IGF 的發言立場。',
+        highlightNodes: ['node-person', 'node-local'],
+        highlightEdges: ['edge-person-local'],
+      },
+      {
+        label: '2. 區域場域',
+        title: '亞太：APrIGF 和 APNIC',
+        body: '<strong>APrIGF（Asia Pacific Regional IGF）</strong>' +
+              '<br>亞太區的網路治理論壇，每年在不同國家舉辦。台灣長期參與，曾在 2016 年於台北主辦。議題以亞太觀點為主，對應全球 IGF 難以涵蓋的地區議題（例如跨境執法、印太網路基礎建設）。' +
+              '<br><br><strong>APNIC（亞太網際網路資訊中心）</strong>' +
+              '<br>亞太區的 RIR，負責分配 IP 和 ASN。除了技術運作，APNIC 也有政策制定流程（Policy Development Process，PDP）——任何人都能在 APNIC 的郵件論壇提出政策提案，包括來自公民社會的提案。' +
+              '<br><br><strong>為什麼重要？</strong>' +
+              '<br>亞太區人口和網路使用者佔全球超過一半，但在全球 IGF 的聲量常被歐美主導。APrIGF 是亞太公民社會凝聚共識、集體發聲的場域。' +
+              '<details class="analogy-box"><summary>台灣的例子</summary><div class="analogy-content">台灣雖然在 ITU 等聯合國體系被排除，但在 APrIGF、APNIC、APTLD 等<strong>多方模式的技術治理組織</strong>中，通常能以「Taiwan」身份正常參與。這些場域因此對台灣特別重要——它們是台灣能平等發聲的少數國際場域。</div></details>',
+        keyPoint: '區域層級是公民社會發揮影響力的最佳尺度——比全球更精準、比在地更有國際共識。台灣 NGO 若要長期投入網路治理，APrIGF 是最值得先熟悉的場域。',
+        highlightNodes: ['node-person', 'node-regional'],
+        highlightEdges: ['edge-person-regional'],
+      },
+      {
+        label: '3. 全球場域',
+        title: 'IGF、ICANN、IETF：全球參與管道',
+        body: '<strong>IGF（Internet Governance Forum）</strong>' +
+              '<br>聯合國下的全球網路治理論壇，每年舉辦。非決議性質，但是<strong>各方共識形成的主要場域</strong>。報名免費，任何人都能參與（線上或實體）。' +
+              '<br><br><strong>ICANN Public Comment</strong>' +
+              '<br>ICANN 重大決策前都有 <strong>公開徵詢期（public comment）</strong>，任何人、任何組織都能遞交意見。這是最直接的參與方式——你寫一封理由充分的意見信，會被列入正式紀錄，影響最後決議。' +
+              '<br><br><strong>IETF：任何人都能參與協定制定</strong>' +
+              '<br>IETF 的郵件論壇完全公開，沒有會員制。公民社會組織（如 EFF、CDT、Access Now）的工程師長期在 IETF 倡議隱私、人權相關的協定設計。DoH、ECH 的推動就有公民社會的身影。' +
+              '<br><br><strong>參與的現實門檻</strong>' +
+              '<br>- 主要語言是英語' +
+              '<br>- 時差對亞太不友善（歐美時區為主）' +
+              '<br>- 長期參與需要時間和資源投入' +
+              '<br>- 技術門檻（尤其是 IETF）很高' +
+              '<details class="analogy-box"><summary>為什麼我們該關心</summary><div class="analogy-content">如果你認為「這些國際組織很遠、跟我無關」——這正是讓公民社會代表性被稀釋的原因。國家代表、企業代表、甚至是對公民社會不友善的團體，都在積極參與。每一個公民社會席位如果沒人去坐，就會被別人取代。</div></details>',
+        keyPoint: '全球參與門檻高，但不參與的代價是「被代表」——由別人定義公民社會需要什麼。即使不能全程參與，閱讀議程、提交書面意見也是有效的參與方式。',
+        highlightNodes: ['node-person', 'node-global'],
+        highlightEdges: ['edge-person-global'],
+      },
+      {
+        label: '4. 影響什麼',
+        title: '你的參與可以改變什麼？',
+        body: '網路治理討論的議題，最終會落實到三個層面：' +
+              '<br><br><strong>1) 政策倡議</strong>' +
+              '<br>各國的網路相關立法（個資法、平台責任、資料在地化）。台灣近年的《個資法》修正、數位發展部成立，都受國際趨勢影響。在 IGF 建立的論述，會反過來影響國內立法辯論。' +
+              '<br><br><strong>2) 技術標準</strong>' +
+              '<br>前面看過——DoH、ECH、HTTPS 等隱私保護技術，很大程度是公民社會在 IETF 推動的結果。每一個協定的設計選擇，都有人權和政治後果。' +
+              '<br><br><strong>3) 價值規範</strong>' +
+              '<br>「網路應該開放、安全、可近用」這類原則，聽起來空泛，但它們是所有具體決策的背景。2024 年聯合國通過的《全球數位契約》（Global Digital Compact），就是這類價值規範的國際共識嘗試。' +
+              '<details class="analogy-box"><summary>台灣的位置</summary><div class="analogy-content">台灣在國際網路治理中有<strong>不對稱的影響力</strong>——規模不大，但因為地緣位置、民主治理、活躍的公民社會和科技產業，常能在這些場域扮演超過規模的角色。這需要持續投入才能維持。<br><br>每一個願意投入時間的台灣公民社會工作者，都在為這個位置貢獻力量。</div></details>',
+        keyPoint: '網路治理不是遠方的事。它最終會變成你的網路體驗、你的隱私權、你的言論自由空間。你今天參與的每一個在地論壇，都在為這些決定累積在地民主的基礎。',
+        highlightNodes: ['node-local', 'node-regional', 'node-global', 'node-policy', 'node-standards', 'node-norms'],
+        highlightEdges: ['edge-local-policy', 'edge-regional-standards', 'edge-global-norms'],
+      },
+    ];
+
+    let currentStep = -1;
+    const stepBar = document.getElementById('stepBar');
+    const infoTitle = document.getElementById('infoTitle');
+    const infoBody = document.getElementById('infoBody');
+    const infoKeyPoint = document.getElementById('infoKeyPoint');
+    const infoPanel = document.getElementById('infoPanel');
+    const btnPrev = document.getElementById('btnPrev');
+    const btnNext = document.getElementById('btnNext');
+    const allNodes = document.querySelectorAll('.node-group');
+    const allEdges = document.querySelectorAll('.edge-line');
+
+    steps.forEach((s, i) => {
+      const btn = document.createElement('button');
+      btn.className = 'step-btn';
+      btn.textContent = s.label;
+      btn.addEventListener('click', () => goToStep(i));
+      stepBar.appendChild(btn);
+    });
+
+    function goToStep(index) {
+      currentStep = index;
+      const step = steps[index];
+      const btns = stepBar.querySelectorAll('.step-btn');
+      btns.forEach((b, i) => {
+        b.classList.remove('active', 'done');
+        if (i === index) b.classList.add('active');
+        else if (i < index) b.classList.add('done');
+      });
+      allNodes.forEach(n => { n.classList.remove('highlighted'); n.classList.add('dimmed'); });
+      allEdges.forEach(e => { e.classList.remove('active'); e.classList.add('dimmed'); });
+      step.highlightNodes.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) { el.classList.remove('dimmed'); el.classList.add('highlighted'); }
+      });
+      step.highlightEdges.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) { el.classList.remove('dimmed'); el.classList.add('active'); }
+      });
+      infoTitle.textContent = step.title;
+      infoBody.innerHTML = step.body;
+      if (step.keyPoint) {
+        infoKeyPoint.textContent = step.keyPoint;
+        infoKeyPoint.style.display = 'block';
+      } else {
+        infoKeyPoint.style.display = 'none';
+      }
+      infoPanel.classList.remove('highlight');
+      void infoPanel.offsetWidth;
+      infoPanel.classList.add('highlight');
+      btnPrev.disabled = index === 0;
+      btnNext.textContent = index === steps.length - 1 ? '重新開始 ↺' : '下一步 →';
+    }
+
+    btnPrev.addEventListener('click', () => { if (currentStep > 0) goToStep(currentStep - 1); });
+    btnNext.addEventListener('click', () => {
+      if (currentStep === -1) goToStep(0);
+      else if (currentStep === steps.length - 1) { currentStep = -1; resetDiagram(); }
+      else goToStep(currentStep + 1);
+    });
+
+    function resetDiagram() {
+      allNodes.forEach(n => { n.classList.remove('highlighted', 'dimmed'); });
+      allEdges.forEach(e => { e.classList.remove('active', 'dimmed'); });
+      stepBar.querySelectorAll('.step-btn').forEach(b => b.classList.remove('active', 'done'));
+      infoTitle.textContent = '選擇一個步驟開始';
+      infoBody.innerHTML = '「多方利害關係人」不是抽象原則——它有具體的場域和參與管道。從在地到全球，公民社會都能找到發聲的位置。';
+      infoKeyPoint.style.display = 'none';
+      infoPanel.classList.remove('highlight');
+      btnPrev.disabled = true;
+      btnNext.textContent = '開始 →';
+    }
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowRight' || e.key === 'ArrowDown') { e.preventDefault(); btnNext.click(); }
+      else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') { e.preventDefault(); btnPrev.click(); }
+    });
+  })();
+  </script>
+</body>
+</html>
