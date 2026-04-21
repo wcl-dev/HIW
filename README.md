@@ -25,7 +25,7 @@
 
 - HTML + CSS + Vanilla JS
 - SVG 拓撲圖搭配步驟切換互動
-- 部署於 GitHub Pages
+- 部署於 GitHub Pages https://wcl-dev.github.io/HIW/
 
 ## 本地開發
 
