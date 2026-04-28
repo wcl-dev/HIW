@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Transit vs Peering — HIW</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=Noto+Sans+TC:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../shared/style.css">
+</head>
+<body>
+  <nav class="site-nav">
+    <a href="../index.html" class="logo">HIW</a>
+    <ul class="nav-links">
+      <li><a href="../index.html">首頁</a></li>
+      <li><a href="index.html">Peering</a></li>
+      <li><a href="transit-peering.html" class="active">Transit vs Peering</a></li>
+    </ul>
+  </nav>
+
+  <div class="page-container">
+    <h1 class="page-title">Transit vs Peering</h1>
+    <p class="page-subtitle">你家 ISP 跟 Google 之間，是付費關係還是對等關係？</p>
+
+    <div class="step-bar" id="stepBar"></div>
+
+    <div class="diagram-container">
+      <svg id="diagram" viewBox="0 0 900 340" xmlns="http://www.w3.org/2000/svg">
+        <!-- 連線 -->
+        <line id="edge-user-isp" class="edge-line" x1="160" y1="195" x2="220" y2="195"/>
+        <line id="edge-isp-tier1" class="edge-line" x1="290" y1="170" x2="430" y2="105"/>
+        <line id="edge-tier1-google" class="edge-line" x1="550" y1="105" x2="700" y2="170"/>
+        <line id="edge-isp-google" class="edge-line" x1="360" y1="195" x2="660" y2="195"/>
+
+        <!-- 連線標籤 -->
+        <g id="label-transit-cost" style="display:none;">
+          <text x="345" y="138" text-anchor="middle" font-size="13" font-weight="600"
+                fill="var(--node-server)" stroke="var(--bg-card)" stroke-width="4" paint-order="stroke fill">$ Transit（付費）</text>
+        </g>
+        <g id="label-peering-top" style="display:none;">
+          <text x="630" y="138" text-anchor="middle" font-size="13" font-weight="600"
+                fill="var(--accent)" stroke="var(--bg-card)" stroke-width="4" paint-order="stroke fill">免費 Peering</text>
+        </g>
+        <g id="label-peering-direct" style="display:none;">
+          <text x="510" y="183" text-anchor="middle" font-size="13" font-weight="600"
+                fill="var(--accent)" stroke="var(--bg-card)" stroke-width="4" paint-order="stroke fill">免費 Peering</text>
+        </g>
+
+        <!-- 節點 -->
+        <g id="node-user" class="node-group">
+          <rect class="node-box" x="40" y="170" width="120" height="50" rx="10"
+                fill="var(--node-user)" opacity="0.15" stroke="var(--node-user)" stroke-width="2"/>
+          <text class="node-label" x="100" y="193" fill="var(--node-user)">你</text>
+          <text class="node-sublabel" x="100" y="210">家用網路</text>
+        </g>
+
+        <g id="node-isp" class="node-group">
+          <rect class="node-box" x="220" y="170" width="140" height="50" rx="10"
+                fill="var(--node-isp)" opacity="0.15" stroke="var(--node-isp)" stroke-width="2"/>
+          <text class="node-label" x="290" y="193" fill="var(--node-isp)">中華電信</text>
+          <text class="node-sublabel" x="290" y="210">你的 ISP</text>
+        </g>
+
+        <g id="node-tier1" class="node-group">
+          <rect class="node-box" x="420" y="55" width="140" height="50" rx="10"
+                fill="var(--node-asn)" opacity="0.15" stroke="var(--node-asn)" stroke-width="2"/>
+          <text class="node-label" x="490" y="78" fill="var(--node-asn)">Tier 1 ISP</text>
+          <text class="node-sublabel" x="490" y="95">全球骨幹網路</text>
+        </g>
+
+        <g id="node-google" class="node-group">
+          <rect class="node-box" x="660" y="170" width="160" height="50" rx="10"
+                fill="var(--node-server)" opacity="0.15" stroke="var(--node-server)" stroke-width="2"/>
+          <text class="node-label" x="740" y="193" fill="var(--node-server)">Google</text>
+          <text class="node-sublabel" x="740" y="210">內容服務商</text>
+        </g>
+      </svg>
+    </div>
+
+    <div class="info-panel" id="infoPanel">
+      <h3 id="infoTitle">選擇一個步驟開始</h3>
+      <p id="infoBody">網際網路其實是超過 8 萬個獨立網路互相連結組成的。當你連 Google，封包要從中華電信跨到 Google——這兩家獨立公司之間怎麼決定走哪條路、誰付誰錢？</p>
+      <div class="key-point" id="infoKeyPoint" style="display:none;"></div>
+    </div>
+
+    <div class="step-nav">
+      <button id="btnPrev" disabled>← 上一步</button>
+      <button id="btnNext">開始 →</button>
+    </div>
+  </div>
+
+  <footer class="site-footer">HIW — How Internet Works · © weichen · 以 <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">CC BY 4.0</a> 授權釋出</footer>
+
+  <script>
+  (function () {
+    const labelTransitCost = document.getElementById('label-transit-cost');
+    const labelPeeringTop = document.getElementById('label-peering-top');
+    const labelPeeringDirect = document.getElementById('label-peering-direct');
+
+    function hideAllLabels() {
+      labelTransitCost.style.display = 'none';
+      labelPeeringTop.style.display = 'none';
+      labelPeeringDirect.style.display = 'none';
+    }
+
+    const steps = [
+      {
+        label: '1. 兩個網路要連起來',
+        title: '你想看 Google，封包要跨過誰？',
+        body: '你家用的是中華電信，Google 是另一家獨立網路。網際網路其實是 <strong>超過 8 萬個自治系統 (AS)</strong> 互相連結組成的——每個 ISP、每個雲端公司、每所大學都是一個 AS。' +
+              '<br><br>當你連 Google，封包要從中華電信跨到 Google。問題是：這兩家獨立公司之間，<strong>怎麼決定走哪條路、誰付誰錢</strong>？答案是兩種模式——Transit 跟 Peering。',
+        keyPoint: '網際網路不是「一張網」，是 7 萬個獨立網路的市集——它們之間怎麼互連，是談出來的，不是規定的。',
+        highlightNodes: ['node-user', 'node-isp', 'node-google'],
+        highlightEdges: [],
+        onEnter: hideAllLabels,
+      },
+      {
+        label: '2. 模式一：Transit',
+        title: 'Transit：花錢買「全網路存取」',
+        body: '第一種選擇是 <strong>Transit</strong>——小網路花錢向上游買「全網路存取」的服務。' +
+              '<br><br>中華電信規模再大，全球也還有更大的 ISP（Tier 1 骨幹網路）。如果中華電信沒辦法直接連到所有想去的目的地，就會跟 Tier 1 簽約，付費取得「世界上其他地方都能到」的服務。' +
+              '<br><br>金字塔由下往上付錢：你付中華電信、中華電信付 Tier 1。Tier 1 之間則透過頂層 peering 互連（後面會講）。' +
+              '<details class="analogy-box"><summary>生活化比喻</summary><div class="analogy-content">想像一個區域物流業者沒辦法到每個城市，但可以把貨交給更大的全國物流商代轉，付錢買「全國送達」的服務。Transit 就是 ISP 之間的這種關係。</div></details>',
+        keyPoint: 'Transit 是「買路費」——付錢取得到全世界其他網路的存取權。',
+        highlightNodes: ['node-user', 'node-isp', 'node-tier1', 'node-google'],
+        highlightEdges: ['edge-user-isp', 'edge-isp-tier1', 'edge-tier1-google'],
+        onEnter: () => {
+          hideAllLabels();
+          labelTransitCost.style.display = 'block';
+          labelPeeringTop.style.display = 'block';
+        },
+      },
+      {
+        label: '3. 模式二：Peering',
+        title: 'Peering：對等互連，誰也不付誰',
+        body: '第二種選擇是 <strong>Peering</strong>——兩個規模相近的 AS 直接連，互相免費交換流量。' +
+              '<br><br>為什麼免費？因為流量量級對等的話，雙方都互相需要對方的使用者，誰都不該佔誰便宜。這種關係叫「<strong>settlement-free peering</strong>」（免結算對等）。' +
+              '<br><br>但 peering 有條件：通常雙方都要在同個 IXP（網際網路交換中心）有設備、雙方都同意。要嘛兩邊規模相近，要嘛內容公司有大量流量是 ISP 的使用者想要的。' +
+              '<details class="analogy-box"><summary>生活化比喻</summary><div class="analogy-content">想像兩個郵局規模相當、流量也相當——與其各自付第三方代轉，不如直接交換郵件，對雙方都划算。但前提是兩邊都同意這套安排。</div></details>',
+        keyPoint: 'Peering 是「以物易物」——不付錢，但雙方都得到自己想要的。',
+        highlightNodes: ['node-user', 'node-isp', 'node-google'],
+        highlightEdges: ['edge-user-isp', 'edge-isp-google'],
+        onEnter: () => {
+          hideAllLabels();
+          labelPeeringDirect.style.display = 'block';
+        },
+      },
+      {
+        label: '4. 實際上：你家跟 Google',
+        title: '中華電信跟 Google 之間，是哪一種？',
+        body: '中華電信規模算大，Google 規模也大。流量不對稱（Google 端流出比較多），但雙方都需要對方的使用者——Google 想接觸台灣使用者，中華電信使用者想用 Google。' +
+              '<br><br>結果通常是 <strong>peering</strong>。雙方在同個 IXP 設置交換點，封包不需要繞到 Tier 1 再回來，路徑短、雙方都省錢。' +
+              '<br><br>但這是<strong>商業協商結果</strong>。如果某天 Google 大幅成長、中華電信變相對小，或某方覺得不划算，談判力會變、條件可能改——這就是 <a href="peering-wars.html">peering 戰爭</a> 的源頭。',
+        keyPoint: '你家網速好不好，部分取決於你家 ISP 跟內容公司之間談的條件。這是商業關係，不是技術必然。',
+        highlightNodes: ['node-user', 'node-isp', 'node-google'],
+        highlightEdges: ['edge-user-isp', 'edge-isp-google'],
+        onEnter: () => {
+          hideAllLabels();
+          labelPeeringDirect.style.display = 'block';
+        },
+      },
+      {
+        label: '5. 啟示',
+        title: '互連是談出來的，不是規定的',
+        body: '互連從來不是政府規定的，也沒有「網路憲法」說誰必須跟誰連——這是 ISP 之間自己談出來的商業協議。' +
+              '<br><br>這個事實是後面所有故事的起點：' +
+              '<br>- 為什麼有些網路彼此免費，有些就要付錢？<a href="tier-structure.html">看 Tier 結構</a>' +
+              '<br>- 為什麼這麼多網路要互連，卻都擠在同一棟機房？<a href="ixp.html">看 IXP</a>' +
+              '<br>- 當 ISP 跟內容公司在 peering 上談不攏，受害的是誰？<a href="peering-wars.html">看 Peering 戰爭</a>',
+        keyPoint: '網路是「協商」而非「規定」——這是它的特色，也是後面所有治理難題的源頭。',
+        highlightNodes: ['node-user', 'node-isp', 'node-tier1', 'node-google'],
+        highlightEdges: ['edge-user-isp', 'edge-isp-tier1', 'edge-tier1-google', 'edge-isp-google'],
+        onEnter: () => {
+          hideAllLabels();
+          labelTransitCost.style.display = 'block';
+          labelPeeringTop.style.display = 'block';
+          labelPeeringDirect.style.display = 'block';
+        },
+      },
+    ];
+
+    let currentStep = -1;
+    const stepBar = document.getElementById('stepBar');
+    const infoTitle = document.getElementById('infoTitle');
+    const infoBody = document.getElementById('infoBody');
+    const infoKeyPoint = document.getElementById('infoKeyPoint');
+    const infoPanel = document.getElementById('infoPanel');
+    const btnPrev = document.getElementById('btnPrev');
+    const btnNext = document.getElementById('btnNext');
+    const allNodes = document.querySelectorAll('.node-group');
+    const allEdges = document.querySelectorAll('.edge-line');
+
+    steps.forEach((s, i) => {
+      const btn = document.createElement('button');
+      btn.className = 'step-btn';
+      btn.textContent = s.label;
+      btn.addEventListener('click', () => goToStep(i));
+      stepBar.appendChild(btn);
+    });
+
+    function goToStep(index) {
+      currentStep = index;
+      const step = steps[index];
+      const btns = stepBar.querySelectorAll('.step-btn');
+      btns.forEach((b, i) => {
+        b.classList.remove('active', 'done');
+        if (i === index) b.classList.add('active');
+        else if (i < index) b.classList.add('done');
+      });
+      allNodes.forEach(n => { n.classList.remove('highlighted'); n.classList.add('dimmed'); });
+      allEdges.forEach(e => { e.classList.remove('active'); e.classList.add('dimmed'); });
+      step.highlightNodes.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) { el.classList.remove('dimmed'); el.classList.add('highlighted'); }
+      });
+      step.highlightEdges.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) { el.classList.remove('dimmed'); el.classList.add('active'); }
+      });
+      infoTitle.textContent = step.title;
+      infoBody.innerHTML = step.body;
+      if (step.keyPoint) {
+        infoKeyPoint.textContent = step.keyPoint;
+        infoKeyPoint.style.display = 'block';
+      } else {
+        infoKeyPoint.style.display = 'none';
+      }
+      infoPanel.classList.remove('highlight');
+      void infoPanel.offsetWidth;
+      infoPanel.classList.add('highlight');
+      btnPrev.disabled = index === 0;
+      btnNext.textContent = index === steps.length - 1 ? '重新開始 ↺' : '下一步 →';
+      if (step.onEnter) step.onEnter();
+    }
+
+    btnPrev.addEventListener('click', () => { if (currentStep > 0) goToStep(currentStep - 1); });
+    btnNext.addEventListener('click', () => {
+      if (currentStep === -1) goToStep(0);
+      else if (currentStep === steps.length - 1) { currentStep = -1; resetDiagram(); }
+      else goToStep(currentStep + 1);
+    });
+
+    function resetDiagram() {
+      allNodes.forEach(n => { n.classList.remove('highlighted', 'dimmed'); });
+      allEdges.forEach(e => { e.classList.remove('active', 'dimmed'); });
+      stepBar.querySelectorAll('.step-btn').forEach(b => b.classList.remove('active', 'done'));
+      infoTitle.textContent = '選擇一個步驟開始';
+      infoBody.innerHTML = '網際網路其實是超過 8 萬個獨立網路互相連結組成的。當你連 Google，封包要從中華電信跨到 Google——這兩家獨立公司之間怎麼決定走哪條路、誰付誰錢？';
+      infoKeyPoint.style.display = 'none';
+      infoPanel.classList.remove('highlight');
+      btnPrev.disabled = true;
+      btnNext.textContent = '開始 →';
+      hideAllLabels();
+    }
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowRight' || e.key === 'ArrowDown') { e.preventDefault(); btnNext.click(); }
+      else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') { e.preventDefault(); btnPrev.click(); }
+    });
+  })();
+  </script>
+</body>
+</html>

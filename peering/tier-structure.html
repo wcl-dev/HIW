@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tier 結構 — HIW</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=Noto+Sans+TC:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../shared/style.css">
+</head>
+<body>
+  <nav class="site-nav">
+    <a href="../index.html" class="logo">HIW</a>
+    <ul class="nav-links">
+      <li><a href="../index.html">首頁</a></li>
+      <li><a href="index.html">Peering</a></li>
+      <li><a href="tier-structure.html" class="active">Tier 結構</a></li>
+    </ul>
+  </nav>
+
+  <div class="page-container">
+    <h1 class="page-title">Tier 結構</h1>
+    <p class="page-subtitle">為什麼有些網路彼此免費互連，而你家網路要付錢上去？</p>
+
+    <div class="step-bar" id="stepBar"></div>
+
+    <div class="diagram-container">
+      <svg id="diagram" viewBox="0 0 900 360" xmlns="http://www.w3.org/2000/svg">
+        <!-- Tier 1 之間的弧形 peering 線 (A↔C) -->
+        <path id="edge-t1a-t1c" class="edge-line" d="M 220 80 Q 450 20 680 80" fill="none"/>
+
+        <!-- 直線連線 -->
+        <line id="edge-t1a-t1b" class="edge-line" x1="220" y1="105" x2="380" y2="105"/>
+        <line id="edge-t1b-t1c" class="edge-line" x1="520" y1="105" x2="680" y2="105"/>
+        <line id="edge-t2a-t1a" class="edge-line" x1="270" y1="190" x2="150" y2="130"/>
+        <line id="edge-t2b-t1c" class="edge-line" x1="630" y1="190" x2="750" y2="130"/>
+        <line id="edge-user-t2a" class="edge-line" x1="450" y1="300" x2="270" y2="240"/>
+
+        <!-- 拒絕互連 X 標記（步驟 3-4 顯示）-->
+        <g id="reject-mark" style="display:none;">
+          <line x1="430" y1="35" x2="470" y2="65" stroke="var(--node-server)" stroke-width="3.5"/>
+          <line x1="470" y1="35" x2="430" y2="65" stroke="var(--node-server)" stroke-width="3.5"/>
+        </g>
+
+        <!-- 標籤 -->
+        <g id="label-peering-ab" style="display:none;">
+          <text x="300" y="125" text-anchor="middle" font-size="12" font-weight="600"
+                fill="var(--accent)" stroke="var(--bg-card)" stroke-width="4" paint-order="stroke fill">免費 Peering</text>
+        </g>
+        <g id="label-peering-bc" style="display:none;">
+          <text x="600" y="125" text-anchor="middle" font-size="12" font-weight="600"
+                fill="var(--accent)" stroke="var(--bg-card)" stroke-width="4" paint-order="stroke fill">免費 Peering</text>
+        </g>
+        <g id="label-peering-ac" style="display:none;">
+          <text x="450" y="20" text-anchor="middle" font-size="12" font-weight="600"
+                fill="var(--accent)" stroke="var(--bg-card)" stroke-width="4" paint-order="stroke fill">免費 Peering</text>
+        </g>
+        <g id="label-transit-t2a" style="display:none;">
+          <text x="190" y="170" text-anchor="middle" font-size="12" font-weight="600"
+                fill="var(--node-server)" stroke="var(--bg-card)" stroke-width="4" paint-order="stroke fill">$ Transit</text>
+        </g>
+        <g id="label-transit-t2b" style="display:none;">
+          <text x="710" y="170" text-anchor="middle" font-size="12" font-weight="600"
+                fill="var(--node-server)" stroke="var(--bg-card)" stroke-width="4" paint-order="stroke fill">$ Transit</text>
+        </g>
+        <g id="label-transit-user" style="display:none;">
+          <text x="370" y="280" text-anchor="middle" font-size="12" font-weight="600"
+                fill="var(--node-server)" stroke="var(--bg-card)" stroke-width="4" paint-order="stroke fill">$ Transit</text>
+        </g>
+
+        <!-- 節點 -->
+        <g id="node-t1a" class="node-group">
+          <rect class="node-box" x="80" y="80" width="140" height="50" rx="10"
+                fill="var(--node-asn)" opacity="0.15" stroke="var(--node-asn)" stroke-width="2"/>
+          <text class="node-label" x="150" y="103" fill="var(--node-asn)">Tier 1 ISP</text>
+          <text class="node-sublabel" x="150" y="120" id="sub-t1a">例：Cogent</text>
+        </g>
+
+        <g id="node-t1b" class="node-group">
+          <rect class="node-box" x="380" y="80" width="140" height="50" rx="10"
+                fill="var(--node-asn)" opacity="0.15" stroke="var(--node-asn)" stroke-width="2"/>
+          <text class="node-label" x="450" y="103" fill="var(--node-asn)">Tier 1 ISP</text>
+          <text class="node-sublabel" x="450" y="120">例：Lumen</text>
+        </g>
+
+        <g id="node-t1c" class="node-group">
+          <rect class="node-box" x="680" y="80" width="140" height="50" rx="10"
+                fill="var(--node-asn)" opacity="0.15" stroke="var(--node-asn)" stroke-width="2"/>
+          <text class="node-label" x="750" y="103" fill="var(--node-asn)">Tier 1 ISP</text>
+          <text class="node-sublabel" x="750" y="120" id="sub-t1c">例：Hurricane Electric</text>
+        </g>
+
+        <g id="node-t2a" class="node-group">
+          <rect class="node-box" x="200" y="190" width="140" height="50" rx="10"
+                fill="var(--node-isp)" opacity="0.15" stroke="var(--node-isp)" stroke-width="2"/>
+          <text class="node-label" x="270" y="213" fill="var(--node-isp)">中型 ISP</text>
+          <text class="node-sublabel" x="270" y="230">Tier 2</text>
+        </g>
+
+        <g id="node-t2b" class="node-group">
+          <rect class="node-box" x="560" y="190" width="140" height="50" rx="10"
+                fill="var(--node-isp)" opacity="0.15" stroke="var(--node-isp)" stroke-width="2"/>
+          <text class="node-label" x="630" y="213" fill="var(--node-isp)">中型 ISP</text>
+          <text class="node-sublabel" x="630" y="230">Tier 2</text>
+        </g>
+
+        <g id="node-user" class="node-group">
+          <rect class="node-box" x="380" y="300" width="140" height="50" rx="10"
+                fill="var(--node-user)" opacity="0.15" stroke="var(--node-user)" stroke-width="2"/>
+          <text class="node-label" x="450" y="323" fill="var(--node-user)">你</text>
+          <text class="node-sublabel" x="450" y="340">家用網路</text>
+        </g>
+      </svg>
+    </div>
+
+    <div class="info-panel" id="infoPanel">
+      <h3 id="infoTitle">選擇一個步驟開始</h3>
+      <p id="infoBody">不是所有網路都一樣大。Tier 結構描述網路間的階層關係——但這個「俱樂部」沒有正式名單，是業界自行公認的。</p>
+      <div class="key-point" id="infoKeyPoint" style="display:none;"></div>
+    </div>
+
+    <div class="step-nav">
+      <button id="btnPrev" disabled>← 上一步</button>
+      <button id="btnNext">開始 →</button>
+    </div>
+  </div>
+
+  <footer class="site-footer">HIW — How Internet Works · © weichen · 以 <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">CC BY 4.0</a> 授權釋出</footer>
+
+  <script>
+  (function () {
+    const rejectMark = document.getElementById('reject-mark');
+    const labels = ['label-peering-ab','label-peering-bc','label-peering-ac','label-transit-t2a','label-transit-t2b','label-transit-user']
+      .map(id => document.getElementById(id));
+
+    function setLabels(visible) {
+      labels.forEach(l => l.style.display = visible ? 'block' : 'none');
+    }
+
+    const steps = [
+      {
+        label: '1. 三層金字塔',
+        title: '網路其實有等級',
+        body: '不是所有網路一樣大。把世界上的 AS 大致分三層：<br><br>' +
+              '<strong>Tier 1</strong>：全球骨幹，彼此免費互連、不向任何人買 transit。代表性玩家：Cogent、Lumen、AT&T、Telia、NTT、Hurricane Electric。' +
+              '<br><strong>Tier 2</strong>：大型區域 ISP，向 Tier 1 買 transit，也跟其他 Tier 2 peering。' +
+              '<br><strong>Tier 3 / 終端</strong>：你家用網路、小公司——只買 transit、不賣。' +
+              '<br><br>金字塔由下往上付錢，頂層之間免費互連。',
+        keyPoint: '金字塔由下往上付錢——你付你家 ISP，ISP 付 Tier 1。Tier 1 之間互連免費。',
+        highlightNodes: ['node-t1a', 'node-t1b', 'node-t1c', 'node-t2a', 'node-t2b', 'node-user'],
+        highlightEdges: ['edge-t1a-t1b', 'edge-t1b-t1c', 'edge-t1a-t1c', 'edge-t2a-t1a', 'edge-t2b-t1c', 'edge-user-t2a'],
+        onEnter: () => { rejectMark.style.display = 'none'; setLabels(true); },
+      },
+      {
+        label: '2. Tier 1 是俱樂部',
+        title: 'Tier 1 之間：沒有正式名單的俱樂部',
+        body: '為什麼 Tier 1 之間互連免費？因為它們規模都大、流量大致對等，誰都互相需要對方的使用者。這種關係叫 <strong>settlement-free peering</strong>（免結算對等）。' +
+              '<br><br>但「Tier 1」不是標準認證，沒有官方名單——是業界自行公認哪些公司夠大、夠有議價力。一家公司被「公認」為 Tier 1，靠的是它跟所有其他 Tier 1 都能達成 settlement-free peering。' +
+              '<details class="analogy-box"><summary>生活化比喻</summary><div class="analogy-content">想像一群同等級的批發商，互相換貨不收錢，因為大家都需要對方的庫存。但你不是「被認證」加入俱樂部——是其他成員願意跟你免費換貨，你才算數。</div></details>',
+        keyPoint: 'Tier 1 不是標準認證，是業界默契——一旦被認可，就能免費跟所有其他 Tier 1 互連。',
+        highlightNodes: ['node-t1a', 'node-t1b', 'node-t1c'],
+        highlightEdges: ['edge-t1a-t1b', 'edge-t1b-t1c', 'edge-t1a-t1c'],
+        onEnter: () => { rejectMark.style.display = 'none'; setLabels(true); },
+      },
+      {
+        label: '3. 拒絕互連的權力',
+        title: '如果有人被踢出俱樂部？',
+        body: '假設兩家 Tier 1 互相不爽、決定不再互連——其中一方就要付錢買 transit 才能到對方網路，等於從 Tier 1 「降級」。<br><br>這套機制的關鍵：<strong>拒絕互連是一種商業權力</strong>。沒有任何政府、組織能強制兩家公司交換流量。<br><br>對使用者來說後果可能很嚴重：當兩家 Tier 1 之間沒有互連，A 的客戶看不到 B 的客戶。',
+        keyPoint: '拒絕互連是純粹的商業權力，沒政府能強制兩家公司交換流量。',
+        highlightNodes: ['node-t1a', 'node-t1c'],
+        highlightEdges: ['edge-t1a-t1c'],
+        onEnter: () => { rejectMark.style.display = 'block'; setLabels(true); },
+      },
+      {
+        label: '4. 真實案例：IPv6 路由戰',
+        title: 'Cogent vs Hurricane Electric：一場 16 年的對峙',
+        body: 'Cogent 跟 Hurricane Electric (HE) 都是 Tier 1。但它們對 IPv6 流量的 peering 一直沒談攏——從 <strong>2009 年至今超過 16 年</strong>，雙方互相不接受對方的 IPv6 路由。' +
+              '<br><br>後果：Cogent 客戶看不到 HE 的 IPv6 客戶，反之亦然。雙方都要其中一方付費買 transit 才解得開，但雙方都不肯讓步。' +
+              '<br><br>幸運的是 IPv4 仍正常運作，影響有限。但這顯示——Tier 1 拒絕互連可以持續超過十年，沒人能仲裁。',
+        keyPoint: '連最大的網路公司之間的爭執，網路也沒有「最高法院」可以仲裁——這就是「網路是協商」的現實。',
+        highlightNodes: ['node-t1a', 'node-t1c'],
+        highlightEdges: ['edge-t1a-t1c'],
+        onEnter: () => { rejectMark.style.display = 'block'; setLabels(true); },
+      },
+      {
+        label: '5. 啟示',
+        title: '網路是「協商」而非「法律」',
+        body: '網路沒有「強制互連」這個原則。每對 AS 都可以選擇要不要連、付不付錢。這套制度有彈性、能擴張，但也有風險：當某家公司決定拒絕互連，受害的是另一邊的所有使用者。' +
+              '<br><br>注意：傳統 Tier 結構在 CDN/雲端時代逐漸鬆動——大型內容公司直接 peering 到所有 IXP，繞過傳統階層。看 <a href="flattening.html">扁平化</a>。' +
+              '<br><br>延伸：那 ISP 跟內容公司之間的衝突呢？看 <a href="peering-wars.html">Peering 戰爭</a>。',
+        keyPoint: '網路是社會契約而不是法律契約——這是它的特色，也是治理難題的源頭。',
+        highlightNodes: ['node-t1a', 'node-t1b', 'node-t1c', 'node-t2a', 'node-t2b', 'node-user'],
+        highlightEdges: ['edge-t1a-t1b', 'edge-t1b-t1c', 'edge-t1a-t1c', 'edge-t2a-t1a', 'edge-t2b-t1c', 'edge-user-t2a'],
+        onEnter: () => { rejectMark.style.display = 'none'; setLabels(true); },
+      },
+    ];
+
+    let currentStep = -1;
+    const stepBar = document.getElementById('stepBar');
+    const infoTitle = document.getElementById('infoTitle');
+    const infoBody = document.getElementById('infoBody');
+    const infoKeyPoint = document.getElementById('infoKeyPoint');
+    const infoPanel = document.getElementById('infoPanel');
+    const btnPrev = document.getElementById('btnPrev');
+    const btnNext = document.getElementById('btnNext');
+    const allNodes = document.querySelectorAll('.node-group');
+    const allEdges = document.querySelectorAll('.edge-line');
+
+    steps.forEach((s, i) => {
+      const btn = document.createElement('button');
+      btn.className = 'step-btn';
+      btn.textContent = s.label;
+      btn.addEventListener('click', () => goToStep(i));
+      stepBar.appendChild(btn);
+    });
+
+    function goToStep(index) {
+      currentStep = index;
+      const step = steps[index];
+      const btns = stepBar.querySelectorAll('.step-btn');
+      btns.forEach((b, i) => {
+        b.classList.remove('active', 'done');
+        if (i === index) b.classList.add('active');
+        else if (i < index) b.classList.add('done');
+      });
+      allNodes.forEach(n => { n.classList.remove('highlighted'); n.classList.add('dimmed'); });
+      allEdges.forEach(e => { e.classList.remove('active'); e.classList.add('dimmed'); });
+      step.highlightNodes.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) { el.classList.remove('dimmed'); el.classList.add('highlighted'); }
+      });
+      step.highlightEdges.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) { el.classList.remove('dimmed'); el.classList.add('active'); }
+      });
+      infoTitle.textContent = step.title;
+      infoBody.innerHTML = step.body;
+      if (step.keyPoint) {
+        infoKeyPoint.textContent = step.keyPoint;
+        infoKeyPoint.style.display = 'block';
+      } else {
+        infoKeyPoint.style.display = 'none';
+      }
+      infoPanel.classList.remove('highlight');
+      void infoPanel.offsetWidth;
+      infoPanel.classList.add('highlight');
+      btnPrev.disabled = index === 0;
+      btnNext.textContent = index === steps.length - 1 ? '重新開始 ↺' : '下一步 →';
+      if (step.onEnter) step.onEnter();
+    }
+
+    btnPrev.addEventListener('click', () => { if (currentStep > 0) goToStep(currentStep - 1); });
+    btnNext.addEventListener('click', () => {
+      if (currentStep === -1) goToStep(0);
+      else if (currentStep === steps.length - 1) { currentStep = -1; resetDiagram(); }
+      else goToStep(currentStep + 1);
+    });
+
+    function resetDiagram() {
+      allNodes.forEach(n => { n.classList.remove('highlighted', 'dimmed'); });
+      allEdges.forEach(e => { e.classList.remove('active', 'dimmed'); });
+      stepBar.querySelectorAll('.step-btn').forEach(b => b.classList.remove('active', 'done'));
+      infoTitle.textContent = '選擇一個步驟開始';
+      infoBody.innerHTML = '不是所有網路都一樣大。Tier 結構描述網路間的階層關係——但這個「俱樂部」沒有正式名單，是業界自行公認的。';
+      infoKeyPoint.style.display = 'none';
+      infoPanel.classList.remove('highlight');
+      btnPrev.disabled = true;
+      btnNext.textContent = '開始 →';
+      rejectMark.style.display = 'none';
+      setLabels(false);
+    }
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowRight' || e.key === 'ArrowDown') { e.preventDefault(); btnNext.click(); }
+      else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') { e.preventDefault(); btnPrev.click(); }
+    });
+  })();
+  </script>
+</body>
+</html>

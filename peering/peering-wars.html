@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Peering 戰爭 — HIW</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=Noto+Sans+TC:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../shared/style.css">
+</head>
+<body>
+  <nav class="site-nav">
+    <a href="../index.html" class="logo">HIW</a>
+    <ul class="nav-links">
+      <li><a href="../index.html">首頁</a></li>
+      <li><a href="index.html">Peering</a></li>
+      <li><a href="peering-wars.html" class="active">Peering 戰爭</a></li>
+    </ul>
+  </nav>
+
+  <div class="page-container">
+    <h1 class="page-title">Peering 戰爭</h1>
+    <p class="page-subtitle">Netflix 卡卡的時候，問題不一定在 Netflix 也不一定在你家網速。</p>
+
+    <div class="step-bar" id="stepBar"></div>
+
+    <div class="diagram-container">
+      <svg id="diagram" viewBox="0 0 900 360" xmlns="http://www.w3.org/2000/svg">
+        <!-- 主流量鏈 -->
+        <line id="edge-netflix-mid" class="edge-line" x1="210" y1="195" x2="320" y2="195"/>
+        <line id="edge-mid-comcast" class="edge-line" x1="460" y1="195" x2="540" y2="195"/>
+        <line id="edge-comcast-user" class="edge-line" x1="680" y1="195" x2="760" y2="195"/>
+
+        <!-- 付費直連（步驟 4-5 顯示）-->
+        <path id="edge-paid-peering" class="edge-line" d="M 140 220 Q 375 320 610 220" fill="none" style="display:none;"/>
+
+        <!-- 擁塞標記（步驟 2-3 顯示）-->
+        <g id="congestion-mark" style="display:none;">
+          <circle cx="500" cy="195" r="16" fill="var(--node-server)"/>
+          <text x="500" y="200" font-size="14" font-weight="700" text-anchor="middle" fill="white" font-family="inherit">塞</text>
+        </g>
+
+        <!-- 付費 peering 標籤 -->
+        <g id="label-paid" style="display:none;">
+          <text x="375" y="295" text-anchor="middle" font-size="13" font-weight="600"
+                fill="var(--node-server)" stroke="var(--bg-card)" stroke-width="4" paint-order="stroke fill">Netflix 付費直連</text>
+        </g>
+
+        <!-- 節點 -->
+        <g id="node-netflix" class="node-group">
+          <rect class="node-box" x="70" y="170" width="140" height="50" rx="10"
+                fill="var(--node-server)" opacity="0.15" stroke="var(--node-server)" stroke-width="2"/>
+          <text class="node-label" x="140" y="193" fill="var(--node-server)">Netflix</text>
+          <text class="node-sublabel" x="140" y="210">內容公司</text>
+        </g>
+
+        <g id="node-mid" class="node-group">
+          <rect class="node-box" x="320" y="170" width="140" height="50" rx="10"
+                fill="var(--node-asn)" opacity="0.15" stroke="var(--node-asn)" stroke-width="2"/>
+          <text class="node-label" x="390" y="193" fill="var(--node-asn)">中間網路</text>
+          <text class="node-sublabel" x="390" y="210">transit 商</text>
+        </g>
+
+        <g id="node-comcast" class="node-group">
+          <rect class="node-box" x="540" y="170" width="140" height="50" rx="10"
+                fill="var(--node-isp)" opacity="0.15" stroke="var(--node-isp)" stroke-width="2"/>
+          <text class="node-label" x="610" y="193" fill="var(--node-isp)">Comcast</text>
+          <text class="node-sublabel" x="610" y="210">你家 ISP</text>
+        </g>
+
+        <g id="node-user" class="node-group">
+          <rect class="node-box" x="760" y="170" width="140" height="50" rx="10"
+                fill="var(--node-user)" opacity="0.15" stroke="var(--node-user)" stroke-width="2"/>
+          <text class="node-label" x="830" y="193" fill="var(--node-user)">你</text>
+          <text class="node-sublabel" x="830" y="210" id="sub-user">看 Netflix</text>
+        </g>
+      </svg>
+    </div>
+
+    <div class="info-panel" id="infoPanel">
+      <h3 id="infoTitle">選擇一個步驟開始</h3>
+      <p id="infoBody">2014 年初，許多 Netflix 訂戶發現晚上看片畫質從 HD 掉到 480p。問題出在哪裡？這個故事打開了「網路中立性」辯論的缺口。</p>
+      <div class="key-point" id="infoKeyPoint" style="display:none;"></div>
+    </div>
+
+    <div class="step-nav">
+      <button id="btnPrev" disabled>← 上一步</button>
+      <button id="btnNext">開始 →</button>
+    </div>
+  </div>
+
+  <footer class="site-footer">HIW — How Internet Works · © weichen · 以 <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">CC BY 4.0</a> 授權釋出</footer>
+
+  <script>
+  (function () {
+    const congestion = document.getElementById('congestion-mark');
+    const paidEdge = document.getElementById('edge-paid-peering');
+    const labelPaid = document.getElementById('label-paid');
+    const subUser = document.getElementById('sub-user');
+
+    function reset() {
+      congestion.style.display = 'none';
+      paidEdge.style.display = 'none';
+      labelPaid.style.display = 'none';
+    }
+
+    const steps = [
+      {
+        label: '1. 正常運作',
+        title: '你晚上看 Netflix',
+        body: '你的 Netflix 影片要從 Netflix 的伺服器送到你家。中間經過：Netflix → 中間網路（transit 商或第三方 peering 點）→ 你家 ISP（這裡用 Comcast 為例）→ 你。<br><br>正常情況下，這條鏈路頻寬足夠、畫質流暢、沒人需要去想「中間到底經過誰」。',
+        keyPoint: '一切順利的時候，你不會去想中間經過誰、誰跟誰有什麼商業關係。',
+        highlightNodes: ['node-netflix', 'node-mid', 'node-comcast', 'node-user'],
+        highlightEdges: ['edge-netflix-mid', 'edge-mid-comcast', 'edge-comcast-user'],
+        onEnter: () => { reset(); subUser.textContent = '畫質：4K'; },
+      },
+      {
+        label: '2. 流量爆增',
+        title: '流量越來越大，瓶頸出現',
+        body: '隨著 Netflix 訂戶越來越多，每天晚上送進 Comcast 的流量越來越大。中間網路 → Comcast 之間的 peering 端口逐漸塞滿。' +
+              '<br><br>正常做法是雙方協議擴充端口。但 Comcast 不太想：對 Comcast 來說，這變成<strong>嚴重不對稱流量</strong>——Netflix 一直往 Comcast 送、Comcast 沒有對等的回送。Comcast 的論點是：Netflix 應該<strong>付錢</strong>來擴充端口。' +
+              '<details class="analogy-box"><summary>為什麼這是個問題</summary><div class="analogy-content">Settlement-free peering 的前提假設是「雙方流量大致對等」。但影音串流打破這個假設——一邊大量送、一邊只接收。當原本的「對等」假設崩解，雙方就開始重新談判。</div></details>',
+        keyPoint: 'Peering 的「對等」假設破裂——當流量嚴重不對稱，雙方對「誰該付擴充費」就吵起來。',
+        highlightNodes: ['node-mid', 'node-comcast'],
+        highlightEdges: ['edge-mid-comcast'],
+        onEnter: () => { reset(); congestion.style.display = 'block'; subUser.textContent = '開始卡頓'; },
+      },
+      {
+        label: '3. 你開始看到 480p',
+        title: '使用者受害：畫質降級',
+        body: '端口擁塞的後果：流量在 peak hour 排隊，封包丟失、buffering、自動降畫質。2014 年初，Netflix 在 Comcast 網路上的串流速度<strong>下降約 38%</strong>。使用者抱怨 Netflix 卡卡。' +
+              '<br><br>但 Netflix 跟 Comcast 互推責任：' +
+              '<br>• Netflix 說 Comcast 故意不擴充端口、勒索 Netflix 付費' +
+              '<br>• Comcast 說是 Netflix 的技術配置不當、把所有流量塞進少數路徑' +
+              '<br><br>使用者搞不清楚誰錯，只知道 Netflix 看不順。',
+        keyPoint: '你看到的「Netflix 卡卡」可能既不是 Netflix 的問題、也不是你家網速的問題——而是兩家公司在 peering 上的角力。',
+        highlightNodes: ['node-mid', 'node-comcast', 'node-user'],
+        highlightEdges: ['edge-mid-comcast', 'edge-comcast-user'],
+        onEnter: () => { reset(); congestion.style.display = 'block'; subUser.textContent = '畫質：480p'; },
+      },
+      {
+        label: '4. Netflix 付錢',
+        title: '2014：Netflix 簽協議，付費直連 Comcast',
+        body: '2014 年 2 月，Netflix 跟 Comcast 簽了直接 peering 協議——Netflix 付費取得直連 Comcast 網路的高速通道，繞過原本的中間網路。畫質立刻回到 HD/4K。' +
+              '<br><br>但這個先例打破了「ISP 不向內容公司收費」的默契。隨後 Verizon、AT&T 也跟 Netflix 達成類似協議。' +
+              '<br><br>網路中立性運動因此聚焦：<strong>ISP 能不能根據內容/來源歧視流量？</strong>美國 FCC 的政策反覆（歐巴馬時期支持中立、川普時期取消），歐盟則明文禁止這類做法。' +
+              '<details class="analogy-box"><summary>為什麼這在當時是大事</summary><div class="analogy-content">過去網路的隱含規則是：ISP 對所有流量一視同仁。Netflix 付錢給 Comcast 開了一個口——<strong>有錢的內容公司可以買快車道</strong>。批評者擔心這會讓小型/新創內容公司無法跟巨頭競爭。</div></details>',
+        keyPoint: 'Peering 商業關係決定使用者體驗。網路中立性辯論不是抽象——就在處理「ISP 能不能向特定內容公司收快車道費」。',
+        highlightNodes: ['node-netflix', 'node-comcast', 'node-user'],
+        highlightEdges: ['edge-comcast-user'],
+        onEnter: () => {
+          reset();
+          paidEdge.style.display = 'block';
+          paidEdge.classList.remove('dimmed');
+          paidEdge.classList.add('active');
+          labelPaid.style.display = 'block';
+          subUser.textContent = '畫質：4K（回來了）';
+        },
+      },
+      {
+        label: '5. 啟示',
+        title: '你的網速好不好，是政策問題',
+        body: '你晚上能不能順順看 Netflix，部分取決於：' +
+              '<br>• Netflix 跟你家 ISP 的商業關係談得怎樣' +
+              '<br>• 你所在國家對網路中立性的政策框架如何規範這類談判' +
+              '<br>• ISP 願不願意為「免費」流量擴充端口' +
+              '<br><br>網路體驗從來不是純技術——商業協商與政策框架在背後決定一切。' +
+              '<br><br>延伸：peering 戰爭發生在 ISP 跟內容公司之間，那 ISP 之間呢？看 <a href="tier-structure.html">Tier 結構</a>。當大公司直接 peering 繞過中間網路，會發生什麼？看 <a href="flattening.html">扁平化</a>。',
+        keyPoint: '網路體驗從來不是純技術——商業協商與政策框架在背後決定一切。',
+        highlightNodes: ['node-netflix', 'node-mid', 'node-comcast', 'node-user'],
+        highlightEdges: ['edge-netflix-mid', 'edge-mid-comcast', 'edge-comcast-user'],
+        onEnter: () => {
+          reset();
+          paidEdge.style.display = 'block';
+          paidEdge.classList.remove('dimmed');
+          paidEdge.classList.add('active');
+          labelPaid.style.display = 'block';
+          subUser.textContent = '回顧';
+        },
+      },
+    ];
+
+    let currentStep = -1;
+    const stepBar = document.getElementById('stepBar');
+    const infoTitle = document.getElementById('infoTitle');
+    const infoBody = document.getElementById('infoBody');
+    const infoKeyPoint = document.getElementById('infoKeyPoint');
+    const infoPanel = document.getElementById('infoPanel');
+    const btnPrev = document.getElementById('btnPrev');
+    const btnNext = document.getElementById('btnNext');
+    const allNodes = document.querySelectorAll('.node-group');
+    const allEdges = document.querySelectorAll('.edge-line');
+
+    steps.forEach((s, i) => {
+      const btn = document.createElement('button');
+      btn.className = 'step-btn';
+      btn.textContent = s.label;
+      btn.addEventListener('click', () => goToStep(i));
+      stepBar.appendChild(btn);
+    });
+
+    function goToStep(index) {
+      currentStep = index;
+      const step = steps[index];
+      const btns = stepBar.querySelectorAll('.step-btn');
+      btns.forEach((b, i) => {
+        b.classList.remove('active', 'done');
+        if (i === index) b.classList.add('active');
+        else if (i < index) b.classList.add('done');
+      });
+      allNodes.forEach(n => { n.classList.remove('highlighted'); n.classList.add('dimmed'); });
+      allEdges.forEach(e => { e.classList.remove('active'); e.classList.add('dimmed'); });
+      step.highlightNodes.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) { el.classList.remove('dimmed'); el.classList.add('highlighted'); }
+      });
+      step.highlightEdges.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) { el.classList.remove('dimmed'); el.classList.add('active'); }
+      });
+      infoTitle.textContent = step.title;
+      infoBody.innerHTML = step.body;
+      if (step.keyPoint) {
+        infoKeyPoint.textContent = step.keyPoint;
+        infoKeyPoint.style.display = 'block';
+      } else {
+        infoKeyPoint.style.display = 'none';
+      }
+      infoPanel.classList.remove('highlight');
+      void infoPanel.offsetWidth;
+      infoPanel.classList.add('highlight');
+      btnPrev.disabled = index === 0;
+      btnNext.textContent = index === steps.length - 1 ? '重新開始 ↺' : '下一步 →';
+      if (step.onEnter) step.onEnter();
+    }
+
+    btnPrev.addEventListener('click', () => { if (currentStep > 0) goToStep(currentStep - 1); });
+    btnNext.addEventListener('click', () => {
+      if (currentStep === -1) goToStep(0);
+      else if (currentStep === steps.length - 1) { currentStep = -1; resetDiagram(); }
+      else goToStep(currentStep + 1);
+    });
+
+    function resetDiagram() {
+      allNodes.forEach(n => { n.classList.remove('highlighted', 'dimmed'); });
+      allEdges.forEach(e => { e.classList.remove('active', 'dimmed'); });
+      stepBar.querySelectorAll('.step-btn').forEach(b => b.classList.remove('active', 'done'));
+      infoTitle.textContent = '選擇一個步驟開始';
+      infoBody.innerHTML = '2014 年初，許多 Netflix 訂戶發現晚上看片畫質從 HD 掉到 480p。問題出在哪裡？這個故事打開了「網路中立性」辯論的缺口。';
+      infoKeyPoint.style.display = 'none';
+      infoPanel.classList.remove('highlight');
+      btnPrev.disabled = true;
+      btnNext.textContent = '開始 →';
+      reset();
+      subUser.textContent = '看 Netflix';
+    }
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowRight' || e.key === 'ArrowDown') { e.preventDefault(); btnNext.click(); }
+      else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') { e.preventDefault(); btnPrev.click(); }
+    });
+  })();
+  </script>
+</body>
+</html>

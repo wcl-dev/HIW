@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>海底電纜 — HIW</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=Noto+Sans+TC:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../shared/style.css">
+</head>
+<body>
+  <nav class="site-nav">
+    <a href="../index.html" class="logo">HIW</a>
+    <ul class="nav-links">
+      <li><a href="../index.html">首頁</a></li>
+      <li><a href="index.html">Peering</a></li>
+      <li><a href="submarine-cables.html" class="active">海底電纜</a></li>
+    </ul>
+  </nav>
+
+  <div class="page-container">
+    <h1 class="page-title">海底電纜</h1>
+    <p class="page-subtitle">網路降速 50 天，這在技術上是怎麼回事？</p>
+
+    <div class="step-bar" id="stepBar"></div>
+
+    <div class="diagram-container">
+      <svg id="diagram" viewBox="0 0 900 360" xmlns="http://www.w3.org/2000/svg">
+        <!-- 海纜 -->
+        <line id="cable-tw-us" class="edge-line" x1="500" y1="180" x2="770" y2="140" stroke-width="2.5"/>
+        <line id="cable-tw-jp" class="edge-line" x1="450" y1="160" x2="570" y2="70" stroke-width="2.5"/>
+        <line id="cable-tw-hk" class="edge-line" x1="400" y1="200" x2="240" y2="220" stroke-width="2.5"/>
+        <line id="cable-tw-se" class="edge-line" x1="450" y1="200" x2="470" y2="300" stroke-width="2.5"/>
+        <line id="cable-matsu-1" class="edge-line" x1="430" y1="160" x2="380" y2="110" stroke-width="2.5"/>
+        <line id="cable-matsu-2" class="edge-line" x1="410" y1="160" x2="360" y2="110" stroke-width="2.5"/>
+
+        <!-- 斷纜 X 標記 -->
+        <g id="cut-jp" style="display:none;">
+          <line x1="500" y1="100" x2="530" y2="130" stroke="var(--node-server)" stroke-width="3"/>
+          <line x1="530" y1="100" x2="500" y2="130" stroke="var(--node-server)" stroke-width="3"/>
+        </g>
+        <g id="cut-matsu-1" style="display:none;">
+          <line x1="395" y1="125" x2="415" y2="145" stroke="var(--node-server)" stroke-width="3"/>
+          <line x1="415" y1="125" x2="395" y2="145" stroke="var(--node-server)" stroke-width="3"/>
+        </g>
+        <g id="cut-matsu-2" style="display:none;">
+          <line x1="370" y1="125" x2="390" y2="145" stroke="var(--node-server)" stroke-width="3"/>
+          <line x1="390" y1="125" x2="370" y2="145" stroke="var(--node-server)" stroke-width="3"/>
+        </g>
+
+        <!-- 中美競爭標籤 -->
+        <g id="label-us-competition" style="display:none;">
+          <text x="640" y="155" text-anchor="middle" font-size="13" font-weight="600"
+                fill="var(--node-asn)" stroke="var(--bg-card)" stroke-width="4" paint-order="stroke fill">中美海纜競爭區</text>
+        </g>
+
+        <!-- 節點 -->
+        <g id="node-taiwan" class="node-group">
+          <rect class="node-box" x="400" y="160" width="100" height="40" rx="10"
+                fill="var(--node-isp)" opacity="0.18" stroke="var(--node-isp)" stroke-width="2.5"/>
+          <text class="node-label" x="450" y="178" fill="var(--node-isp)">台灣</text>
+          <text class="node-sublabel" x="450" y="193">本島</text>
+        </g>
+
+        <g id="node-matsu" class="node-group">
+          <rect class="node-box" x="320" y="80" width="70" height="30" rx="8"
+                fill="var(--node-user)" opacity="0.15" stroke="var(--node-user)" stroke-width="2"/>
+          <text class="node-label" x="355" y="98" fill="var(--node-user)" font-size="13">馬祖</text>
+          <text class="node-sublabel" x="355" y="108" id="sub-matsu">1.4 萬居民</text>
+        </g>
+
+        <g id="node-us" class="node-group">
+          <rect class="node-box" x="770" y="120" width="100" height="40" rx="10"
+                fill="var(--node-server)" opacity="0.15" stroke="var(--node-server)" stroke-width="2"/>
+          <text class="node-label" x="820" y="138" fill="var(--node-server)">美國</text>
+          <text class="node-sublabel" x="820" y="153">跨太平洋</text>
+        </g>
+
+        <g id="node-japan" class="node-group">
+          <rect class="node-box" x="560" y="30" width="100" height="40" rx="10"
+                fill="var(--node-asn)" opacity="0.15" stroke="var(--node-asn)" stroke-width="2"/>
+          <text class="node-label" x="610" y="48" fill="var(--node-asn)">日本</text>
+          <text class="node-sublabel" x="610" y="63">東亞樞紐</text>
+        </g>
+
+        <g id="node-hk" class="node-group">
+          <rect class="node-box" x="140" y="200" width="100" height="40" rx="10"
+                fill="var(--node-dns)" opacity="0.15" stroke="var(--node-dns)" stroke-width="2"/>
+          <text class="node-label" x="190" y="218" fill="var(--node-dns)">香港</text>
+          <text class="node-sublabel" x="190" y="233">中國大陸方向</text>
+        </g>
+
+        <g id="node-se" class="node-group">
+          <rect class="node-box" x="400" y="300" width="120" height="40" rx="10"
+                fill="var(--node-ixp)" opacity="0.15" stroke="var(--node-ixp)" stroke-width="2"/>
+          <text class="node-label" x="460" y="318" fill="var(--node-ixp)">東南亞</text>
+          <text class="node-sublabel" x="460" y="333">新加坡 / 菲律賓</text>
+        </g>
+      </svg>
+    </div>
+
+    <div class="info-panel" id="infoPanel">
+      <h3 id="infoTitle">選擇一個步驟開始</h3>
+      <p id="infoBody">你以為網路是雲端的？其實 95% 的國際流量靠海底電纜傳輸——這是國家對外網路的真實基礎，也是國安議題。</p>
+      <div class="key-point" id="infoKeyPoint" style="display:none;"></div>
+    </div>
+
+    <div class="step-nav">
+      <button id="btnPrev" disabled>← 上一步</button>
+      <button id="btnNext">開始 →</button>
+    </div>
+  </div>
+
+  <footer class="site-footer">HIW — How Internet Works · © weichen · 以 <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">CC BY 4.0</a> 授權釋出</footer>
+
+  <script>
+  (function () {
+    const cutJp = document.getElementById('cut-jp');
+    const cutM1 = document.getElementById('cut-matsu-1');
+    const cutM2 = document.getElementById('cut-matsu-2');
+    const labelUS = document.getElementById('label-us-competition');
+    const subMatsu = document.getElementById('sub-matsu');
+
+    function reset() {
+      cutJp.style.display = 'none';
+      cutM1.style.display = 'none';
+      cutM2.style.display = 'none';
+      labelUS.style.display = 'none';
+    }
+
+    const allCables = ['cable-tw-us', 'cable-tw-jp', 'cable-tw-hk', 'cable-tw-se', 'cable-matsu-1', 'cable-matsu-2'];
+    const allRegions = ['node-taiwan', 'node-matsu', 'node-us', 'node-japan', 'node-hk', 'node-se'];
+
+    const steps = [
+      {
+        label: '1. 國際流量靠海纜',
+        title: '95% 的國際流量靠海底電纜',
+        body: '你以為網路是雲端的？其實全球 <strong>95% 的國際流量靠海底電纜</strong>傳輸。台灣周邊主要海纜方向：' +
+              '<br>• 跨太平洋到美國（如 SJC、APCN-2、TPE）' +
+              '<br>• 往日本（東亞樞紐）' +
+              '<br>• 往香港、中國方向' +
+              '<br>• 往東南亞（新加坡是亞洲海纜樞紐）' +
+              '<br>• 跨海到馬祖等離島（短程海纜）' +
+              '<br><br>每條海纜頻寬巨大（單條可達數十 Tbps），平時流量分散在多條纜上。' +
+              '<details class="analogy-box"><summary>海底電纜的實際樣子</summary><div class="analogy-content">海纜的核心是光纖，外面層層保護：金屬鎧裝、橡膠絕緣、最外層是聚乙烯。每條纜直徑約 17-21 mm（拇指粗）。在淺海區會更厚實，深海區可以裸露在海床上。</div></details>',
+        keyPoint: '網路是物理的——海纜是國家對外連線的真實基礎，但很少進入公共討論。',
+        highlightNodes: allRegions,
+        highlightEdges: allCables,
+        onEnter: () => { reset(); subMatsu.textContent = '1.4 萬居民'; },
+      },
+      {
+        label: '2. 一條斷掉，冗餘設計',
+        title: '一條海纜斷了，會怎樣？',
+        body: '海纜其實常被切斷——船錨擦過、漁網拖過、地震、火山——平均每年全球有 <strong>100-200 件</strong>切纜事件。但通常使用者感覺不到，因為流量會自動切到其他海纜。' +
+              '<br><br>例如台灣對日本的海纜壞了，流量會繞道美國或香港，可能多一些延遲，但繼續運作。' +
+              '<br><br>這套自動繞道機制依賴 <strong>BGP 路由</strong>——當一條路斷了，路由協議自動找替代路徑。' +
+              '<br><br>關鍵是「冗餘」（redundancy）：海纜越多越分散，斷一條的影響越小。',
+        keyPoint: '國家網路韌性 = 海纜的數量與多元性。多條纜分散風險，少條纜就是脆弱。',
+        highlightNodes: ['node-taiwan', 'node-japan', 'node-us', 'node-hk'],
+        highlightEdges: ['cable-tw-us', 'cable-tw-jp', 'cable-tw-hk'],
+        onEnter: () => { reset(); cutJp.style.display = 'block'; subMatsu.textContent = '1.4 萬居民'; },
+      },
+      {
+        label: '3. 兩條同時斷',
+        title: '2023：兩條海纜同時斷掉',
+        body: '2023 年 2 月，台灣本島到馬祖的<strong>兩條海底電纜</strong>在 6 天內先後斷掉（推定為船隻錨纜拖斷）。馬祖跟本島之間沒有其他海纜備援。' +
+              '<br><br>結果：馬祖網路<strong>完全降級</strong>到只剩衛星備援，速度爆掉。1.4 萬居民的網路、ATM、行動服務全部受影響。<strong>50 天後</strong>才修復其中一條。' +
+              '<br><br>這是物理層的脆弱性：當所有冗餘路徑都失效，剩下的衛星備援頻寬遠不夠日常使用。' +
+              '<details class="analogy-box"><summary>為什麼修這麼久</summary><div class="analogy-content">修海纜需要專用船舶（cable repair ship）。全球這類船只有約 60 艘、調度繁忙，台灣周邊修繕船需從新加坡或日本調度。海象、天氣也會影響工期。修一次纜成本通常超過數百萬美元。</div></details>',
+        keyPoint: '對外纜越少、冗餘越少，地區網路就越脆弱——馬祖是台灣本島的縮影警示。',
+        highlightNodes: ['node-taiwan', 'node-matsu'],
+        highlightEdges: ['cable-matsu-1', 'cable-matsu-2'],
+        onEnter: () => {
+          reset();
+          cutM1.style.display = 'block';
+          cutM2.style.display = 'block';
+          subMatsu.textContent = '只剩衛星';
+        },
+      },
+      {
+        label: '4. 地緣政治',
+        title: '海纜不只是電線——是地緣政治',
+        body: '海纜建設是國家戰略：' +
+              '<br><br><strong>中美在太平洋的海纜競爭</strong>：原本由 SubCom（美國）主導，近年中國 HMN Tech（前華為）試圖搶占新海纜計畫，引發美國國安疑慮。多個跨太平洋海纜計畫因此調整路線、避開香港，改走菲律賓、新加坡。' +
+              '<br><br><strong>紅海海纜</strong>：2024 年葉門紅海地區海纜遭破壞，影響歐亞流量。' +
+              '<br><br><strong>Tonga 火山</strong>：2022 年火山噴發切斷東加王國唯一海纜，全國離線一個月。' +
+              '<br><br>誰擁有海纜、走哪條路、登陸點在哪——這些都是國安與外交議題。' +
+              '<details class="analogy-box"><summary>台灣周邊的關鍵考量</summary><div class="analogy-content">台灣本身就是太平洋海纜的重要登陸點。海纜登陸站位置、海纜的所有權結構（台灣公司還是外資）、登陸站的物理保護（國安等級設施），都是公民議題但很少被討論。</div></details>',
+        keyPoint: '海纜的擁有者與路徑，等於決定一個國家的數位主權與流量走向。',
+        highlightNodes: ['node-taiwan', 'node-us'],
+        highlightEdges: ['cable-tw-us'],
+        onEnter: () => { reset(); labelUS.style.display = 'block'; subMatsu.textContent = '1.4 萬居民'; },
+      },
+      {
+        label: '5. 啟示',
+        title: '物理層 peering 是國安議題',
+        body: '多數網路討論集中在數位層（誰封誰、誰加密誰）——但底下的物理層往往決定一切。一個地區的網路韌性、數位主權、抗干擾能力，相當程度取決於海纜的<strong>數量、多元性、路徑、擁有者</strong>。' +
+              '<br><br>幾個值得思考的問題：' +
+              '<br>• 台灣本島的海纜冗餘夠嗎？登陸點分散嗎？' +
+              '<br>• 海纜的所有權結構是什麼？外資佔多少？' +
+              '<br>• 修繕船的調度安排，依賴誰？' +
+              '<br><br>這些在公共討論中非常少見，但極為關鍵。' +
+              '<br><br>延伸：政府主動關掉網路怎麼運作？看 <a href="../dns-ip-asn/shutdown-seizure.html">網路斷網與域名扣押</a>。',
+        keyPoint: '網路韌性不只是技術選擇，是地緣選擇。一個地區的對外網路韌性，是公民議題。',
+        highlightNodes: allRegions,
+        highlightEdges: allCables,
+        onEnter: () => { reset(); subMatsu.textContent = '1.4 萬居民'; },
+      },
+    ];
+
+    let currentStep = -1;
+    const stepBar = document.getElementById('stepBar');
+    const infoTitle = document.getElementById('infoTitle');
+    const infoBody = document.getElementById('infoBody');
+    const infoKeyPoint = document.getElementById('infoKeyPoint');
+    const infoPanel = document.getElementById('infoPanel');
+    const btnPrev = document.getElementById('btnPrev');
+    const btnNext = document.getElementById('btnNext');
+    const allNodes = document.querySelectorAll('.node-group');
+    const allEdges = document.querySelectorAll('.edge-line');
+
+    steps.forEach((s, i) => {
+      const btn = document.createElement('button');
+      btn.className = 'step-btn';
+      btn.textContent = s.label;
+      btn.addEventListener('click', () => goToStep(i));
+      stepBar.appendChild(btn);
+    });
+
+    function goToStep(index) {
+      currentStep = index;
+      const step = steps[index];
+      const btns = stepBar.querySelectorAll('.step-btn');
+      btns.forEach((b, i) => {
+        b.classList.remove('active', 'done');
+        if (i === index) b.classList.add('active');
+        else if (i < index) b.classList.add('done');
+      });
+      allNodes.forEach(n => { n.classList.remove('highlighted'); n.classList.add('dimmed'); });
+      allEdges.forEach(e => { e.classList.remove('active'); e.classList.add('dimmed'); });
+      step.highlightNodes.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) { el.classList.remove('dimmed'); el.classList.add('highlighted'); }
+      });
+      step.highlightEdges.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) { el.classList.remove('dimmed'); el.classList.add('active'); }
+      });
+      infoTitle.textContent = step.title;
+      infoBody.innerHTML = step.body;
+      if (step.keyPoint) {
+        infoKeyPoint.textContent = step.keyPoint;
+        infoKeyPoint.style.display = 'block';
+      } else {
+        infoKeyPoint.style.display = 'none';
+      }
+      infoPanel.classList.remove('highlight');
+      void infoPanel.offsetWidth;
+      infoPanel.classList.add('highlight');
+      btnPrev.disabled = index === 0;
+      btnNext.textContent = index === steps.length - 1 ? '重新開始 ↺' : '下一步 →';
+      if (step.onEnter) step.onEnter();
+    }
+
+    btnPrev.addEventListener('click', () => { if (currentStep > 0) goToStep(currentStep - 1); });
+    btnNext.addEventListener('click', () => {
+      if (currentStep === -1) goToStep(0);
+      else if (currentStep === steps.length - 1) { currentStep = -1; resetDiagram(); }
+      else goToStep(currentStep + 1);
+    });
+
+    function resetDiagram() {
+      allNodes.forEach(n => { n.classList.remove('highlighted', 'dimmed'); });
+      allEdges.forEach(e => { e.classList.remove('active', 'dimmed'); });
+      stepBar.querySelectorAll('.step-btn').forEach(b => b.classList.remove('active', 'done'));
+      infoTitle.textContent = '選擇一個步驟開始';
+      infoBody.innerHTML = '你以為網路是雲端的？其實 95% 的國際流量靠海底電纜傳輸——這是國家對外網路的真實基礎，也是國安議題。';
+      infoKeyPoint.style.display = 'none';
+      infoPanel.classList.remove('highlight');
+      btnPrev.disabled = true;
+      btnNext.textContent = '開始 →';
+      reset();
+      subMatsu.textContent = '1.4 萬居民';
+    }
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowRight' || e.key === 'ArrowDown') { e.preventDefault(); btnNext.click(); }
+      else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') { e.preventDefault(); btnPrev.click(); }
+    });
+  })();
+  </script>
+</body>
+</html>

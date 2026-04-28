@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IXP — HIW</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=Noto+Sans+TC:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../shared/style.css">
+</head>
+<body>
+  <nav class="site-nav">
+    <a href="../index.html" class="logo">HIW</a>
+    <ul class="nav-links">
+      <li><a href="../index.html">首頁</a></li>
+      <li><a href="index.html">Peering</a></li>
+      <li><a href="ixp.html" class="active">IXP</a></li>
+    </ul>
+  </nav>
+
+  <div class="page-container">
+    <h1 class="page-title">IXP：網際網路交換中心</h1>
+    <p class="page-subtitle">為什麼全世界主要的網路交換中心都擠在少數幾棟機房裡？</p>
+
+    <div class="step-bar" id="stepBar"></div>
+
+    <div class="diagram-container">
+      <svg id="diagram" viewBox="0 0 900 360" xmlns="http://www.w3.org/2000/svg">
+        <!-- Mesh 連線（15 條）-->
+        <g id="mesh-edges">
+          <line id="m12" class="edge-line" x1="180" y1="60" x2="450" y2="60"/>
+          <line id="m13" class="edge-line" x1="180" y1="60" x2="720" y2="60"/>
+          <line id="m23" class="edge-line" x1="450" y1="60" x2="720" y2="60"/>
+          <line id="m45" class="edge-line" x1="180" y1="300" x2="450" y2="300"/>
+          <line id="m46" class="edge-line" x1="180" y1="300" x2="720" y2="300"/>
+          <line id="m56" class="edge-line" x1="450" y1="300" x2="720" y2="300"/>
+          <line id="m14" class="edge-line" x1="180" y1="60" x2="180" y2="300"/>
+          <line id="m25" class="edge-line" x1="450" y1="60" x2="450" y2="300"/>
+          <line id="m36" class="edge-line" x1="720" y1="60" x2="720" y2="300"/>
+          <line id="m15" class="edge-line" x1="180" y1="60" x2="450" y2="300"/>
+          <line id="m16" class="edge-line" x1="180" y1="60" x2="720" y2="300"/>
+          <line id="m24" class="edge-line" x1="450" y1="60" x2="180" y2="300"/>
+          <line id="m26" class="edge-line" x1="450" y1="60" x2="720" y2="300"/>
+          <line id="m34" class="edge-line" x1="720" y1="60" x2="180" y2="300"/>
+          <line id="m35" class="edge-line" x1="720" y1="60" x2="450" y2="300"/>
+        </g>
+
+        <!-- Star 連線（6 條，連到 IXP）-->
+        <g id="star-edges" style="display:none;">
+          <line id="s1" class="edge-line" x1="450" y1="180" x2="180" y2="60"/>
+          <line id="s2" class="edge-line" x1="450" y1="180" x2="450" y2="60"/>
+          <line id="s3" class="edge-line" x1="450" y1="180" x2="720" y2="60"/>
+          <line id="s4" class="edge-line" x1="450" y1="180" x2="180" y2="300"/>
+          <line id="s5" class="edge-line" x1="450" y1="180" x2="450" y2="300"/>
+          <line id="s6" class="edge-line" x1="450" y1="180" x2="720" y2="300"/>
+        </g>
+
+        <!-- IXP 中心節點 -->
+        <g id="node-ixp" class="node-group" style="display:none;">
+          <rect class="node-box" x="380" y="155" width="140" height="50" rx="10"
+                fill="var(--node-ixp)" opacity="0.18" stroke="var(--node-ixp)" stroke-width="2.5"/>
+          <text class="node-label" x="450" y="178" fill="var(--node-ixp)">IXP</text>
+          <text class="node-sublabel" x="450" y="195" id="sub-ixp">交換中心</text>
+        </g>
+
+        <!-- 6 個 AS 節點 -->
+        <g id="node-as1" class="node-group">
+          <rect class="node-box" x="130" y="40" width="100" height="40" rx="10"
+                fill="var(--node-isp)" opacity="0.15" stroke="var(--node-isp)" stroke-width="2"/>
+          <text class="node-label" x="180" y="58" fill="var(--node-isp)" font-size="13">中華電信</text>
+          <text class="node-sublabel" x="180" y="73">ISP</text>
+        </g>
+
+        <g id="node-as2" class="node-group">
+          <rect class="node-box" x="400" y="40" width="100" height="40" rx="10"
+                fill="var(--node-server)" opacity="0.15" stroke="var(--node-server)" stroke-width="2"/>
+          <text class="node-label" x="450" y="58" fill="var(--node-server)" font-size="13">Google</text>
+          <text class="node-sublabel" x="450" y="73">內容</text>
+        </g>
+
+        <g id="node-as3" class="node-group">
+          <rect class="node-box" x="670" y="40" width="100" height="40" rx="10"
+                fill="var(--node-asn)" opacity="0.15" stroke="var(--node-asn)" stroke-width="2"/>
+          <text class="node-label" x="720" y="58" fill="var(--node-asn)" font-size="13">TANet</text>
+          <text class="node-sublabel" x="720" y="73">學術網路</text>
+        </g>
+
+        <g id="node-as4" class="node-group">
+          <rect class="node-box" x="130" y="280" width="100" height="40" rx="10"
+                fill="var(--node-isp)" opacity="0.15" stroke="var(--node-isp)" stroke-width="2"/>
+          <text class="node-label" x="180" y="298" fill="var(--node-isp)" font-size="13">台灣大寬頻</text>
+          <text class="node-sublabel" x="180" y="313">ISP</text>
+        </g>
+
+        <g id="node-as5" class="node-group">
+          <rect class="node-box" x="400" y="280" width="100" height="40" rx="10"
+                fill="var(--node-dns)" opacity="0.15" stroke="var(--node-dns)" stroke-width="2"/>
+          <text class="node-label" x="450" y="298" fill="var(--node-dns)" font-size="13">金資中心</text>
+          <text class="node-sublabel" x="450" y="313">金融網路</text>
+        </g>
+
+        <g id="node-as6" class="node-group">
+          <rect class="node-box" x="670" y="280" width="100" height="40" rx="10"
+                fill="var(--node-server)" opacity="0.15" stroke="var(--node-server)" stroke-width="2"/>
+          <text class="node-label" x="720" y="298" fill="var(--node-server)" font-size="13">AWS</text>
+          <text class="node-sublabel" x="720" y="313">雲端</text>
+        </g>
+      </svg>
+    </div>
+
+    <div class="info-panel" id="infoPanel">
+      <h3 id="infoTitle">選擇一個步驟開始</h3>
+      <p id="infoBody">N 個網路要互連，可以兩兩拉線——但這會很快變成爆炸式複雜。實務上，大家擠到同一個機房，把問題從 O(N²) 簡化成 O(N)。</p>
+      <div class="key-point" id="infoKeyPoint" style="display:none;"></div>
+    </div>
+
+    <div class="step-nav">
+      <button id="btnPrev" disabled>← 上一步</button>
+      <button id="btnNext">開始 →</button>
+    </div>
+  </div>
+
+  <footer class="site-footer">HIW — How Internet Works · © weichen · 以 <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">CC BY 4.0</a> 授權釋出</footer>
+
+  <script>
+  (function () {
+    const meshGroup = document.getElementById('mesh-edges');
+    const starGroup = document.getElementById('star-edges');
+    const ixpNode = document.getElementById('node-ixp');
+    const subIxp = document.getElementById('sub-ixp');
+
+    function showMesh() {
+      meshGroup.style.display = 'block';
+      starGroup.style.display = 'none';
+      ixpNode.style.display = 'none';
+    }
+    function showStar(ixpSubLabel) {
+      meshGroup.style.display = 'none';
+      starGroup.style.display = 'block';
+      ixpNode.style.display = 'block';
+      subIxp.textContent = ixpSubLabel || '交換中心';
+    }
+
+    const meshEdges = ['m12','m13','m23','m45','m46','m56','m14','m25','m36','m15','m16','m24','m26','m34','m35'];
+    const starEdges = ['s1','s2','s3','s4','s5','s6'];
+    const allAsNodes = ['node-as1','node-as2','node-as3','node-as4','node-as5','node-as6'];
+
+    const steps = [
+      {
+        label: '1. 沒有 IXP 的世界',
+        title: 'N 個網路要互連，需要幾條線？',
+        body: '6 個獨立網路要兩兩互連，需要 <strong>15 條</strong>專線。10 個網路就要 <strong>45 條</strong>，100 個就要 <strong>4,950 條</strong>。每加一個成員，整套系統要新增的線越來越多。<br><br>不只技術上難管，每對成員都要協商、簽約、佈設備，成本爆炸。' +
+              '<details class="analogy-box"><summary>數學小觀察</summary><div class="analogy-content">N 個成員兩兩互連需要 N×(N-1)/2 條線。10 個成員 45 條，1000 個就要 50 萬條——這顯然不可行。網路擴張時，需要更聰明的方式。</div></details>',
+        keyPoint: '兩兩拉線無法擴張——N 個成員需要 N² 級別的連線數，很快不可行。',
+        highlightNodes: allAsNodes,
+        highlightEdges: meshEdges,
+        onEnter: showMesh,
+      },
+      {
+        label: '2. 解法：擠到同一機房',
+        title: 'IXP：把所有人拉到同一個交換點',
+        body: '解決方案：所有人都連到<strong>同一個中立交換中心</strong>（IXP, Internet Exchange Point）。每個成員只需要拉一條線到 IXP，就能交換流量到所有其他成員。<br><br>線數從 N×(N-1)/2 降到 N。10 個成員只要 10 條線、100 個成員 100 條線。新成員加入時，舊成員<strong>什麼都不用做</strong>——新成員自己拉一條線到 IXP 就完成。' +
+              '<details class="analogy-box"><summary>生活化比喻</summary><div class="analogy-content">想像每家公司不再彼此送公文，而是大家都把公文送到同一棟郵政總局——只要 N 條路徑就夠了。</div></details>',
+        keyPoint: 'IXP 把互連從 O(N²) 簡化成 O(N)——這是現代網路能擴張到 8 萬個 AS 的關鍵基礎建設。',
+        highlightNodes: [...allAsNodes, 'node-ixp'],
+        highlightEdges: starEdges,
+        onEnter: () => showStar('交換中心'),
+      },
+      {
+        label: '3. IXP 是什麼',
+        title: '物理上：機房裡的大型交換器；商業上：中立第三方',
+        body: '<strong>物理層</strong>：IXP 通常是一棟特定的<strong>數據中心機房</strong>，裡面有一台或多台超大型網路交換器（switch）。所有成員把光纖拉進這個機房，連到交換器。<br><br><strong>商業層</strong>：IXP 不是 ISP——它本身不傳輸流量，只提供「交換場地」。成員之間的 peering 協議由成員自行談判。' +
+              '<br><br><strong>組織形態</strong>：很多 IXP 是<strong>非營利組織</strong>或會員制（如 AMS-IX、DE-CIX），收費僅夠維運機房；也有商業 IXP（如 Equinix）。' +
+              '<br><br>關鍵字：<strong>中立性</strong>。IXP 不偏袒任何成員，這是它的核心價值。',
+        keyPoint: 'IXP 在物理上是機房，在商業上是中立交換場地——它不傳輸流量，只提供成員之間互相連線的場所。',
+        highlightNodes: [...allAsNodes, 'node-ixp'],
+        highlightEdges: starEdges,
+        onEnter: () => showStar('機房 + 大型交換器'),
+      },
+      {
+        label: '4. 真實 IXP',
+        title: '世界上的主要 IXP',
+        body: '<strong>全球規模最大：</strong>' +
+              '<br>• <strong>DE-CIX</strong>（法蘭克福，德國）：全球最大，每秒峰值流量超過 18 Tbps' +
+              '<br>• <strong>AMS-IX</strong>（阿姆斯特丹，荷蘭）：歐洲第二大' +
+              '<br>• <strong>LINX</strong>（倫敦）、<strong>Equinix Ashburn</strong>（美國維吉尼亞，俗稱 NoVA）' +
+              '<br><br><strong>台灣的 IXP：</strong>' +
+              '<br>• <strong>TWIX</strong>：中華電信主導，連接眾多 ISP' +
+              '<br>• <strong>TPIX</strong>：是方電訊主導的中立 IXP' +
+              '<br>• 都集中在台北、新北的少數機房，這也是為什麼海纜登陸點的選址這麼關鍵。' +
+              '<br><br>有趣的事實：城市的 IXP 規模反映該城市作為「網路樞紐」的地位。法蘭克福、阿姆斯特丹之所以是歐洲網路心臟，就是因為這裡是 IXP 集中地。',
+        keyPoint: 'IXP 的所在地，決定了一座城市在全球網路中的地位——也是國家網路韌性的關鍵節點。',
+        highlightNodes: [...allAsNodes, 'node-ixp'],
+        highlightEdges: starEdges,
+        onEnter: () => showStar('TWIX / TPIX'),
+      },
+      {
+        label: '5. 啟示',
+        title: 'IXP 是城市網路的心臟',
+        body: 'IXP 不只是技術設施，是<strong>城市網路的心臟</strong>。誰能進 IXP、誰決定 IXP 規則、誰擁有 IXP 機房——就是這個城市網路的權力結構。<br><br>幾個值得思考的問題：<br>• 台灣的 IXP 治理長什麼樣？是會員制還是商業壟斷？<br>• 小型 ISP、學術網路、公益組織能不能輕易進 IXP？費用多少？<br>• 海纜登陸點到 IXP 之間的物理路徑，有沒有單點失敗風險？<br><br>這些問題很少進入公共討論，但它們直接決定一個地方的數位主權。' +
+              '<br><br>延伸：那 IXP 上面的 ISP 之間互連是什麼關係？看 <a href="transit-peering.html">Transit vs Peering</a>、<a href="tier-structure.html">Tier 結構</a>。',
+        keyPoint: 'IXP 是城市網路的心臟——它的治理結構決定了這個地方的網路是開放還是封閉。',
+        highlightNodes: [...allAsNodes, 'node-ixp'],
+        highlightEdges: starEdges,
+        onEnter: () => showStar('治理問題'),
+      },
+    ];
+
+    let currentStep = -1;
+    const stepBar = document.getElementById('stepBar');
+    const infoTitle = document.getElementById('infoTitle');
+    const infoBody = document.getElementById('infoBody');
+    const infoKeyPoint = document.getElementById('infoKeyPoint');
+    const infoPanel = document.getElementById('infoPanel');
+    const btnPrev = document.getElementById('btnPrev');
+    const btnNext = document.getElementById('btnNext');
+    const allNodes = document.querySelectorAll('.node-group');
+    const allEdges = document.querySelectorAll('.edge-line');
+
+    steps.forEach((s, i) => {
+      const btn = document.createElement('button');
+      btn.className = 'step-btn';
+      btn.textContent = s.label;
+      btn.addEventListener('click', () => goToStep(i));
+      stepBar.appendChild(btn);
+    });
+
+    function goToStep(index) {
+      currentStep = index;
+      const step = steps[index];
+      const btns = stepBar.querySelectorAll('.step-btn');
+      btns.forEach((b, i) => {
+        b.classList.remove('active', 'done');
+        if (i === index) b.classList.add('active');
+        else if (i < index) b.classList.add('done');
+      });
+      allNodes.forEach(n => { n.classList.remove('highlighted'); n.classList.add('dimmed'); });
+      allEdges.forEach(e => { e.classList.remove('active'); e.classList.add('dimmed'); });
+      step.highlightNodes.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) { el.classList.remove('dimmed'); el.classList.add('highlighted'); }
+      });
+      step.highlightEdges.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) { el.classList.remove('dimmed'); el.classList.add('active'); }
+      });
+      infoTitle.textContent = step.title;
+      infoBody.innerHTML = step.body;
+      if (step.keyPoint) {
+        infoKeyPoint.textContent = step.keyPoint;
+        infoKeyPoint.style.display = 'block';
+      } else {
+        infoKeyPoint.style.display = 'none';
+      }
+      infoPanel.classList.remove('highlight');
+      void infoPanel.offsetWidth;
+      infoPanel.classList.add('highlight');
+      btnPrev.disabled = index === 0;
+      btnNext.textContent = index === steps.length - 1 ? '重新開始 ↺' : '下一步 →';
+      if (step.onEnter) step.onEnter();
+    }
+
+    btnPrev.addEventListener('click', () => { if (currentStep > 0) goToStep(currentStep - 1); });
+    btnNext.addEventListener('click', () => {
+      if (currentStep === -1) goToStep(0);
+      else if (currentStep === steps.length - 1) { currentStep = -1; resetDiagram(); }
+      else goToStep(currentStep + 1);
+    });
+
+    function resetDiagram() {
+      allNodes.forEach(n => { n.classList.remove('highlighted', 'dimmed'); });
+      allEdges.forEach(e => { e.classList.remove('active', 'dimmed'); });
+      stepBar.querySelectorAll('.step-btn').forEach(b => b.classList.remove('active', 'done'));
+      infoTitle.textContent = '選擇一個步驟開始';
+      infoBody.innerHTML = 'N 個網路要互連，可以兩兩拉線——但這會很快變成爆炸式複雜。實務上，大家擠到同一個機房，把問題從 O(N²) 簡化成 O(N)。';
+      infoKeyPoint.style.display = 'none';
+      infoPanel.classList.remove('highlight');
+      btnPrev.disabled = true;
+      btnNext.textContent = '開始 →';
+      showMesh();
+    }
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowRight' || e.key === 'ArrowDown') { e.preventDefault(); btnNext.click(); }
+      else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') { e.preventDefault(); btnPrev.click(); }
+    });
+  })();
+  </script>
+</body>
+</html>

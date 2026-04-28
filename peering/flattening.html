@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>扁平化 — HIW</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=Noto+Sans+TC:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../shared/style.css">
+</head>
+<body>
+  <nav class="site-nav">
+    <a href="../index.html" class="logo">HIW</a>
+    <ul class="nav-links">
+      <li><a href="../index.html">首頁</a></li>
+      <li><a href="index.html">Peering</a></li>
+      <li><a href="flattening.html" class="active">扁平化</a></li>
+    </ul>
+  </nav>
+
+  <div class="page-container">
+    <h1 class="page-title">扁平化</h1>
+    <p class="page-subtitle">為什麼 Cloudflare 故障，半個網路就一起癱瘓？</p>
+
+    <div class="step-bar" id="stepBar"></div>
+
+    <div class="diagram-container">
+      <svg id="diagram" viewBox="0 0 900 320" xmlns="http://www.w3.org/2000/svg">
+        <!-- 舊金字塔連線 -->
+        <line id="edge-user-isp" class="edge-line" x1="190" y1="200" x2="240" y2="200"/>
+        <line id="edge-isp-t2" class="edge-line" x1="310" y1="180" x2="460" y2="150"/>
+        <line id="edge-t2-t1" class="edge-line" x1="460" y1="110" x2="610" y2="80"/>
+        <line id="edge-t1-content" class="edge-line" x1="680" y1="70" x2="720" y2="200"/>
+
+        <!-- 扁平化直連線 -->
+        <line id="edge-isp-content" class="edge-line" x1="380" y1="200" x2="720" y2="200" style="display:none;"/>
+
+        <!-- 故障閃光 -->
+        <g id="fault-mark" style="display:none;">
+          <circle cx="790" cy="200" r="55" fill="var(--node-server)" opacity="0.25"/>
+          <text x="790" y="265" text-anchor="middle" font-size="13" font-weight="600"
+                fill="var(--node-server)" stroke="var(--bg-card)" stroke-width="4" paint-order="stroke fill">故障！</text>
+        </g>
+
+        <!-- 節點 -->
+        <g id="node-user" class="node-group">
+          <rect class="node-box" x="70" y="180" width="120" height="40" rx="10"
+                fill="var(--node-user)" opacity="0.15" stroke="var(--node-user)" stroke-width="2"/>
+          <text class="node-label" x="130" y="198" fill="var(--node-user)">你</text>
+          <text class="node-sublabel" x="130" y="213" id="sub-user">家用網路</text>
+        </g>
+
+        <g id="node-isp" class="node-group">
+          <rect class="node-box" x="240" y="180" width="140" height="40" rx="10"
+                fill="var(--node-isp)" opacity="0.15" stroke="var(--node-isp)" stroke-width="2"/>
+          <text class="node-label" x="310" y="198" fill="var(--node-isp)">你家 ISP</text>
+          <text class="node-sublabel" x="310" y="213">中華電信等</text>
+        </g>
+
+        <g id="node-t2" class="node-group">
+          <rect class="node-box" x="400" y="110" width="120" height="40" rx="10"
+                fill="var(--node-asn)" opacity="0.15" stroke="var(--node-asn)" stroke-width="2"/>
+          <text class="node-label" x="460" y="128" fill="var(--node-asn)">Tier 2 ISP</text>
+          <text class="node-sublabel" x="460" y="143">區域骨幹</text>
+        </g>
+
+        <g id="node-t1" class="node-group">
+          <rect class="node-box" x="540" y="40" width="140" height="40" rx="10"
+                fill="var(--node-asn)" opacity="0.15" stroke="var(--node-asn)" stroke-width="2"/>
+          <text class="node-label" x="610" y="58" fill="var(--node-asn)">Tier 1 ISP</text>
+          <text class="node-sublabel" x="610" y="73">全球骨幹</text>
+        </g>
+
+        <g id="node-content" class="node-group">
+          <rect class="node-box" x="720" y="180" width="140" height="40" rx="10"
+                fill="var(--node-server)" opacity="0.15" stroke="var(--node-server)" stroke-width="2"/>
+          <text class="node-label" x="790" y="198" fill="var(--node-server)" id="sub-content-name">內容公司</text>
+          <text class="node-sublabel" x="790" y="213" id="sub-content">CDN / 雲端</text>
+        </g>
+      </svg>
+    </div>
+
+    <div class="info-panel" id="infoPanel">
+      <h3 id="infoTitle">選擇一個步驟開始</h3>
+      <p id="infoBody">過去 10 年，網路結構從階層式金字塔變成扁平的中心輻射——CDN 跟雲端公司直接 peering 到所有大 ISP，繞過傳統 Tier 1。代價：流量集中到少數公司。</p>
+      <div class="key-point" id="infoKeyPoint" style="display:none;"></div>
+    </div>
+
+    <div class="step-nav">
+      <button id="btnPrev" disabled>← 上一步</button>
+      <button id="btnNext">開始 →</button>
+    </div>
+  </div>
+
+  <footer class="site-footer">HIW — How Internet Works · © weichen · 以 <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">CC BY 4.0</a> 授權釋出</footer>
+
+  <script>
+  (function () {
+    const nodeT2 = document.getElementById('node-t2');
+    const nodeT1 = document.getElementById('node-t1');
+    const edgeIspT2 = document.getElementById('edge-isp-t2');
+    const edgeT2T1 = document.getElementById('edge-t2-t1');
+    const edgeT1Content = document.getElementById('edge-t1-content');
+    const edgeIspContent = document.getElementById('edge-isp-content');
+    const faultMark = document.getElementById('fault-mark');
+    const subUser = document.getElementById('sub-user');
+    const subContentName = document.getElementById('sub-content-name');
+    const subContent = document.getElementById('sub-content');
+
+    function showOldPyramid() {
+      nodeT2.style.display = 'block';
+      nodeT1.style.display = 'block';
+      edgeIspT2.style.display = 'block';
+      edgeT2T1.style.display = 'block';
+      edgeT1Content.style.display = 'block';
+      edgeIspContent.style.display = 'none';
+    }
+    function showFlat() {
+      nodeT2.style.display = 'none';
+      nodeT1.style.display = 'none';
+      edgeIspT2.style.display = 'none';
+      edgeT2T1.style.display = 'none';
+      edgeT1Content.style.display = 'none';
+      edgeIspContent.style.display = 'block';
+    }
+
+    const steps = [
+      {
+        label: '1. 舊金字塔',
+        title: '傳統的網路結構：階層化',
+        body: '過去網路結構是階層式的：你連你家 ISP，ISP 透過 Tier 2 ISP 上去 Tier 1 ISP，再到內容公司。封包繞一大圈，每層都有競爭，沒有單一公司主宰。' +
+              '<br><br>這套結構在 1990s-2000s 的網路工作得很好——當時內容公司（網站、論壇）規模都不大，依賴傳統電信業的「公路」把內容送到使用者。',
+        keyPoint: '階層結構意味著流量分散在很多中間商手上——沒人能單獨關掉網路，但路徑也比較長。',
+        highlightNodes: ['node-user', 'node-isp', 'node-t2', 'node-t1', 'node-content'],
+        highlightEdges: ['edge-user-isp', 'edge-isp-t2', 'edge-t2-t1', 'edge-t1-content'],
+        onEnter: () => {
+          showOldPyramid();
+          faultMark.style.display = 'none';
+          subUser.textContent = '家用網路';
+          subContentName.textContent = '內容公司';
+          subContent.textContent = 'Yahoo, BBS, 等等';
+        },
+      },
+      {
+        label: '2. 新形態：直接 peering',
+        title: 'CDN/雲端時代：扁平化',
+        body: '過去 10 年，大型內容公司（Cloudflare, Google, Meta, AWS, Netflix）改變了規則。它們直接<strong>跑到所有大 IXP</strong>，跟所有大型 ISP 直接 peering。Netflix 甚至把伺服器（Open Connect）直接放進 ISP 的機房。' +
+              '<br><br>結果：傳統「Tier 1 → Tier 2 → ISP → 你」的金字塔，被「內容公司 ↔ ISP ↔ 你」的扁平結構取代。' +
+              '<br><br>從 ISP 的角度：跟 Cloudflare 直接 peering，省掉付給上游 transit 的費用，使用者體驗也更快——雙贏。' +
+              '<details class="analogy-box"><summary>什麼是 Open Connect</summary><div class="analogy-content">Netflix 直接把一台台快取伺服器（Open Connect Appliance）寄送並安裝在 ISP 的機房裡。當你看 Netflix，影片不是從 Netflix 美國資料中心傳過來，而是從你家 ISP 自己的機房送出——延遲幾乎為零。Google 的 Global Cache、Akamai 的快取節點也是類似邏輯。</div></details>',
+        keyPoint: '內容公司繞過了傳統電信業階層，直接接到使用者最近的入口。',
+        highlightNodes: ['node-user', 'node-isp', 'node-content'],
+        highlightEdges: ['edge-user-isp', 'edge-isp-content'],
+        onEnter: () => {
+          showFlat();
+          faultMark.style.display = 'none';
+          subUser.textContent = '家用網路';
+          subContentName.textContent = 'Cloudflare / Google';
+          subContent.textContent = 'CDN / 雲端';
+        },
+      },
+      {
+        label: '3. 路徑短、速度快',
+        title: '對使用者來說：好的一面',
+        body: '路徑短了一半，封包跳數少：' +
+              '<br>• <strong>Cloudflare 1.1.1.1</strong> 比中華電信本身的 DNS 還快——它就在你最近的 IXP 機房' +
+              '<br>• <strong>Google</strong> 自鋪海纜（10+ 條跨太平洋纜），自己控制全球延遲' +
+              '<br>• <strong>Netflix Open Connect</strong> 把熱門影片放在你家 ISP 的機房，幾乎是「在地快取」' +
+              '<br>• <strong>Meta</strong>、<strong>Amazon</strong>、<strong>Microsoft</strong> 也都在主要 IXP 直接落地' +
+              '<br><br>使用者體驗：快、穩、便宜。' +
+              '<br><br>這也是為什麼大型內容服務在發展中國家也能高品質運作——本地 IXP 直接 cache，不需要繞道美國。',
+        keyPoint: '扁平化讓網路變快——這是真實的技術進步與好處。',
+        highlightNodes: ['node-user', 'node-isp', 'node-content'],
+        highlightEdges: ['edge-user-isp', 'edge-isp-content'],
+        onEnter: () => {
+          showFlat();
+          faultMark.style.display = 'none';
+          subUser.textContent = '快、低延遲';
+          subContentName.textContent = 'Cloudflare / Google';
+          subContent.textContent = '直連你家 IXP';
+        },
+      },
+      {
+        label: '4. 副作用：集中風險',
+        title: '當 Cloudflare 故障，半個網路癱瘓',
+        body: '但代價是：流量集中到少數超大公司手上。Cloudflare、Google、AWS、Meta、Microsoft Azure 加起來承載絕大多數的網路流量。' +
+              '<br><br>當其中一家故障：' +
+              '<br>• <strong>2021 年 Meta 整天當機</strong>：FB / IG / WhatsApp 全球停擺 6 小時，35 億人受影響。原因是 BGP 設定錯誤導致 Meta 從網路上「消失」。' +
+              '<br>• <strong>2024 年 Cloudflare DNS 故障</strong>：1.1.1.1 短暫失效，半個網路解不出來。' +
+              '<br>• <strong>多次 AWS 區域故障</strong>：2017、2021、2023 年的 us-east-1 故障各影響數千個服務（Slack、Coinbase、Disney+ 等）。' +
+              '<br>• <strong>2024 年 7 月 CrowdStrike 更新事故</strong>：影響 850 萬台 Windows 主機，波及機場、銀行、醫院。' +
+              '<br><br>單點失敗的影響範圍前所未有地大。',
+        keyPoint: '你的網路順暢與否，現在依賴極少數公司不出包——傳統電信業的「分散式」韌性消失。',
+        highlightNodes: ['node-user', 'node-isp', 'node-content'],
+        highlightEdges: ['edge-user-isp', 'edge-isp-content'],
+        onEnter: () => {
+          showFlat();
+          faultMark.style.display = 'block';
+          subUser.textContent = '斷線';
+          subContentName.textContent = 'Cloudflare';
+          subContent.textContent = '故障中';
+        },
+      },
+      {
+        label: '5. 啟示',
+        title: '新權力結構，舊治理框架',
+        body: '這是當代網路治理最大的空白：傳統電信治理框架（國家對國家、ISP 對 ISP）失效，因為新權力中心是<strong>跨國的私營雲端/CDN 公司</strong>。它們不在傳統電信法規範圍內、也常不在單一國家管轄下。' +
+              '<br><br>權力的具體形態：' +
+              '<br>• 當 <strong>Cloudflare</strong> 決定不服務某個網站，那個網站可能就消失（除非另找昂貴替代）' +
+              '<br>• 當 <strong>Google</strong> 改變索引或排名政策，半個網際網路的可發現性都受影響' +
+              '<br>• 當 <strong>AWS</strong> 區域故障，數千個服務同時下線' +
+              '<br><br>這不是「壞事或好事」的問題，是<strong>權力結構轉移</strong>的問題——治理框架還沒跟上。' +
+              '<br><br>延伸：誰在管網路？看 <a href="../governance/index.html">網路治理</a>。',
+        keyPoint: '網路扁平化是技術進步，但同時是權力集中——治理框架還在追趕。',
+        highlightNodes: ['node-user', 'node-isp', 'node-content'],
+        highlightEdges: ['edge-user-isp', 'edge-isp-content'],
+        onEnter: () => {
+          showFlat();
+          faultMark.style.display = 'none';
+          subUser.textContent = '依賴少數公司';
+          subContentName.textContent = '雲端三巨頭';
+          subContent.textContent = '新權力中心';
+        },
+      },
+    ];
+
+    let currentStep = -1;
+    const stepBar = document.getElementById('stepBar');
+    const infoTitle = document.getElementById('infoTitle');
+    const infoBody = document.getElementById('infoBody');
+    const infoKeyPoint = document.getElementById('infoKeyPoint');
+    const infoPanel = document.getElementById('infoPanel');
+    const btnPrev = document.getElementById('btnPrev');
+    const btnNext = document.getElementById('btnNext');
+    const allNodes = document.querySelectorAll('.node-group');
+    const allEdges = document.querySelectorAll('.edge-line');
+
+    steps.forEach((s, i) => {
+      const btn = document.createElement('button');
+      btn.className = 'step-btn';
+      btn.textContent = s.label;
+      btn.addEventListener('click', () => goToStep(i));
+      stepBar.appendChild(btn);
+    });
+
+    function goToStep(index) {
+      currentStep = index;
+      const step = steps[index];
+      const btns = stepBar.querySelectorAll('.step-btn');
+      btns.forEach((b, i) => {
+        b.classList.remove('active', 'done');
+        if (i === index) b.classList.add('active');
+        else if (i < index) b.classList.add('done');
+      });
+      allNodes.forEach(n => { n.classList.remove('highlighted'); n.classList.add('dimmed'); });
+      allEdges.forEach(e => { e.classList.remove('active'); e.classList.add('dimmed'); });
+      step.highlightNodes.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) { el.classList.remove('dimmed'); el.classList.add('highlighted'); }
+      });
+      step.highlightEdges.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) { el.classList.remove('dimmed'); el.classList.add('active'); }
+      });
+      infoTitle.textContent = step.title;
+      infoBody.innerHTML = step.body;
+      if (step.keyPoint) {
+        infoKeyPoint.textContent = step.keyPoint;
+        infoKeyPoint.style.display = 'block';
+      } else {
+        infoKeyPoint.style.display = 'none';
+      }
+      infoPanel.classList.remove('highlight');
+      void infoPanel.offsetWidth;
+      infoPanel.classList.add('highlight');
+      btnPrev.disabled = index === 0;
+      btnNext.textContent = index === steps.length - 1 ? '重新開始 ↺' : '下一步 →';
+      if (step.onEnter) step.onEnter();
+    }
+
+    btnPrev.addEventListener('click', () => { if (currentStep > 0) goToStep(currentStep - 1); });
+    btnNext.addEventListener('click', () => {
+      if (currentStep === -1) goToStep(0);
+      else if (currentStep === steps.length - 1) { currentStep = -1; resetDiagram(); }
+      else goToStep(currentStep + 1);
+    });
+
+    function resetDiagram() {
+      allNodes.forEach(n => { n.classList.remove('highlighted', 'dimmed'); });
+      allEdges.forEach(e => { e.classList.remove('active', 'dimmed'); });
+      stepBar.querySelectorAll('.step-btn').forEach(b => b.classList.remove('active', 'done'));
+      infoTitle.textContent = '選擇一個步驟開始';
+      infoBody.innerHTML = '過去 10 年，網路結構從階層式金字塔變成扁平的中心輻射——CDN 跟雲端公司直接 peering 到所有大 ISP，繞過傳統 Tier 1。代價：流量集中到少數公司。';
+      infoKeyPoint.style.display = 'none';
+      infoPanel.classList.remove('highlight');
+      btnPrev.disabled = true;
+      btnNext.textContent = '開始 →';
+      showOldPyramid();
+      faultMark.style.display = 'none';
+      subUser.textContent = '家用網路';
+      subContentName.textContent = '內容公司';
+      subContent.textContent = 'CDN / 雲端';
+    }
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowRight' || e.key === 'ArrowDown') { e.preventDefault(); btnNext.click(); }
+      else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') { e.preventDefault(); btnPrev.click(); }
+    });
+  })();
+  </script>
+</body>
+</html>
