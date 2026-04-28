@@ -138,13 +138,17 @@
         label: '5. 修復與教訓',
         title: '怎麼修復？怎麼防範？',
         body: '<strong>修復：</strong>PCCW 撤回了來自 Pakistan Telecom 的錯誤路由公告，全球路由表逐漸恢復正常，流量重新導回 Google。' +
-              '<br><br><strong>防範機制：</strong>' +
-              '<br><strong>1) RPKI（Resource Public Key Infrastructure）</strong>——用數位簽章驗證 BGP 公告，確認「這個 AS 真的有權公告這段 IP」' +
-              '<br><strong>2) BGP Route Filtering</strong>——ISP 應該過濾上游收到的路由，不盲目接受所有公告' +
+              '<br><br><strong>業界的防範機制（技術層）：</strong>' +
+              '<br><strong>1) RPKI（Resource Public Key Infrastructure）</strong>——用<strong>數位簽章</strong>驗證 BGP 公告。每個 AS 向 RIR 申請 ROA（Route Origin Authorization）登記「我有權公告這些 IP」，其他 AS 收到 BGP 公告時可加密驗證真偽。' +
+              '<br><strong>2) BGP Route Filtering</strong>——ISP 過濾上游收到的路由，不盲目接受所有公告' +
               '<br><strong>3) IRR（Internet Routing Registry）</strong>——公開登記每個 AS 擁有的 IP 範圍，供其他 AS 驗證' +
-              '<br><br>但直到今天，<strong>RPKI 的部署率仍不到一半</strong>，BGP 劫持事件仍時有所聞。' +
+              '<br><br><strong>業界的社群準則（行動層）：</strong>' +
+              '<br><strong>MANRS</strong>（Mutually Agreed Norms for Routing Security，路由安全相互同意準則）——由 Internet Society（ISOC）推動的全球倡議。簽署的 ISP 與內容公司承諾實踐 4 項原則：過濾不正確的 BGP 公告、防止 IP 來源偽造、保持聯絡資訊更新、參與全球驗證。' +
+              '<br><br><strong>RPKI 跟 MANRS 怎麼分工？</strong>' +
+              '<br>RPKI 是<strong>技術機制</strong>（密碼學驗證），MANRS 是<strong>社群準則</strong>（行為承諾）。兩者互補——RPKI 提供工具、MANRS 透過同儕壓力推廣最佳實踐。' +
+              '<br><br><strong>部署現況（2026 年初）：</strong>全球 RPKI ROA 覆蓋率已過半（約 <strong>60%</strong>），但區域差異大——東亞平均約 31%，<strong>台灣覆蓋率超過 97%</strong>，是亞洲領先者。MANRS 全球簽署成員超過 1,000 個 AS。即便如此，BGP 劫持仍時有所聞——這類機制需要被「足夠多」AS 全面部署才有效。' +
               '<details class="analogy-box"><summary>為什麼我們該關心</summary><div class="analogy-content">BGP 劫持不只是意外——它也可以被<strong>故意利用</strong>。政府或駭客可以透過 BGP 劫持把特定網站的流量導向自己控制的伺服器，進行監控或中間人攻擊。2018 年就有針對加密貨幣網站的 BGP 劫持事件。了解這個機制，能幫助你評估網路基礎設施的風險。</div></details>',
-        keyPoint: 'BGP 在 1989 年設計時，網路上的組織彼此認識、互相信任。如今網路規模擴大了萬倍，但這個信任模型幾乎沒變。RPKI 是補救方案，但部署緩慢。',
+        keyPoint: 'RPKI 提供密碼學驗證的工具、MANRS 提供社群行為的同儕壓力——兩者一起推進 BGP 路由安全。台灣的 97% RPKI 覆蓋是國際領先，但全球部署仍不均衡。',
         highlightNodes: ['node-user', 'node-ispa', 'node-ixp', 'node-youtube'],
         highlightEdges: ['edge-user-ispa', 'edge-ispa-ixp', 'edge-ixp-youtube'],
       },

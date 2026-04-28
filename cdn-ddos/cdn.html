@@ -148,7 +148,25 @@
         onEnter: () => { nodeAttack.style.display = 'none'; nodeAttack2.style.display = 'none'; },
       },
       {
-        label: '2. 來源伺服器藏起來',
+        label: '2. 怎麼導向最近的節點？',
+        title: '「最近」節點是怎麼判斷的？',
+        body: 'CDN 的核心承諾是「使用者連到最近的節點」——但「最近」怎麼判斷？實務上有兩種主要方式：' +
+              '<br><br><strong>1) Anycast 路由（單一 IP，路由協議自動找路）</strong>' +
+              '<br>所有 CDN 節點對外公告<strong>同一個 IP 位址</strong>。當使用者的封包要送到這個 IP，BGP 路由協議自動把封包導向「網路上最近」的那個節點——不一定是地理最近，是<strong>路由跳數最少</strong>。這是 Cloudflare、Fastly 等公司的主流做法。' +
+              '<br><br><strong>2) Geo-DNS（地理 DNS，給不同使用者不同 IP）</strong>' +
+              '<br>DNS 伺服器根據查詢者的地理位置回傳不同的 IP——亞洲使用者收到亞洲節點的 IP、歐洲使用者收到歐洲節點的 IP。這是 Akamai 早期的主流做法。' +
+              '<br><br><strong>兩者比較：</strong>' +
+              '<br>• Anycast：對使用者「無感」（都是同一個 IP）；故障切換非常快，路由協議幾秒內自動繞道。' +
+              '<br>• Geo-DNS：可以根據城市等級精細導流；但故障切換要等 DNS 快取過期。' +
+              '<br><br>大部分大型 CDN 兩種混用——Anycast 為主，搭配 DNS 微調。' +
+              '<details class="analogy-box"><summary>生活化比喻</summary><div class="analogy-content">Anycast 像連鎖店都掛同一個招牌「7-11」，你只要走到任何一家最近的就能買到同樣的東西——不用知道店號。Geo-DNS 像 GPS 導航跟你說「最近的 7-11 在 XX 路 123 號」，給你一個明確的店家地址。兩種都能讓你買到東西，但運作方式不同。</div></details>',
+        keyPoint: '「最近」不是地理上的近——是網路上的近。Anycast 利用 BGP 自動找最佳路徑，Geo-DNS 則靠 DNS 查詢時的地理判斷。',
+        highlightNodes: ['node-user1', 'node-user2', 'node-user3', 'node-edge1', 'node-edge2', 'node-edge3'],
+        highlightEdges: ['edge-user1-edge1', 'edge-user2-edge2', 'edge-user3-edge3'],
+        onEnter: () => { nodeAttack.style.display = 'none'; nodeAttack2.style.display = 'none'; },
+      },
+      {
+        label: '3. 來源伺服器藏起來',
         title: '你的真伺服器不再直接面對網路',
         body: '啟用 CDN 後，你網站的 DNS 不再指向你真正的伺服器，而是<strong>指向 CDN 的節點</strong>。' +
               '<br><br>對外界來說：' +
@@ -163,7 +181,7 @@
         onEnter: () => { nodeAttack.style.display = 'none'; nodeAttack2.style.display = 'none'; },
       },
       {
-        label: '3. 攻擊被分散',
+        label: '4. 攻擊被分散',
         title: 'DDoS 打到 CDN，被分散到全球',
         body: '當攻擊者對你的網站發動 DDoS，<strong>攻擊流量會被 DNS 導向 CDN 節點</strong>——不會打到你真的伺服器。' +
               '<br><br>然後關鍵的事情發生：' +
@@ -178,7 +196,7 @@
         onEnter: () => { nodeAttack.style.display = 'block'; nodeAttack2.style.display = 'block'; },
       },
       {
-        label: '4. 但有代價',
+        label: '5. 但有代價',
         title: 'CDN 的信任問題與限制',
         body: 'CDN 不是完美方案。它也有需要理解的代價：' +
               '<br><br><strong>1) CDN 能看到你的流量</strong>' +
